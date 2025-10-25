@@ -1,3 +1,5 @@
 version: v2
 locks:
   f/common/low_risk_script: 449e71af5e2ba8e26e5cbec47b999981759d9cabc70cafbaf1fbbdf6a80dbbad
+  f/common/telegram_bot_trigger: 0503d91502aade6089a6eb6dbd5f129d5770a94cdc30003ec65649b88ccb4045
+  f/common/telegram_send_text_msg: e984e0cd1f46e465d245f933260ddc4ef8509544b264df075579165044bee3c9
