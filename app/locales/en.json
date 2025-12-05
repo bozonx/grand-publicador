@@ -26,7 +26,8 @@
     "success": "Success",
     "warning": "Warning",
     "info": "Information",
-    "view": "View"
+    "view": "View",
+    "viewAll": "View all"
   },
   "navigation": {
     "home": "Home",
@@ -228,7 +229,16 @@
     "theme": "Theme",
     "notifications": "Notifications",
     "account": "Account",
-    "saveSettings": "Save settings"
+    "saveSettings": "Save settings",
+    "selectLanguage": "Select your preferred language for the interface",
+    "languageChanged": "Language changed",
+    "nameSaved": "Name saved successfully",
+    "nameSaveError": "Failed to save name",
+    "themeDescription": "Choose your preferred theme",
+    "lightTheme": "Light",
+    "darkTheme": "Dark",
+    "systemTheme": "System",
+    "themeNote": "Theme preference is synced with your system settings by default."
   },
   "validation": {
     "required": "This field is required",
