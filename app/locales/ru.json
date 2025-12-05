@@ -260,5 +260,24 @@
   "editor": {
     "characters": "символов",
     "words": "слов"
+  },
+  "admin": {
+    "userManagement": "Управление пользователями",
+    "searchUsers": "Поиск по имени, username или email",
+    "filterByRole": "Фильтр по роли",
+    "adminsOnly": "Только админы",
+    "regularUsers": "Обычные пользователи",
+    "regularUser": "Пользователь",
+    "statistics": "Статистика",
+    "noUsersFound": "Пользователи не найдены",
+    "noUsersFiltered": "Нет пользователей, соответствующих фильтру",
+    "noUsersDescription": "В системе пока нет пользователей",
+    "grantAdmin": "Назначить админом",
+    "revokeAdmin": "Снять права админа",
+    "grantAdminConfirm": "Вы уверены, что хотите назначить этого пользователя администратором?",
+    "revokeAdminConfirm": "Вы уверены, что хотите снять права администратора с этого пользователя?",
+    "adminGranted": "Права администратора назначены",
+    "adminRevoked": "Права администратора сняты",
+    "userUpdated": "Пользователь обновлён"
   }
 }

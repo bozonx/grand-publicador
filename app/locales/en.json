@@ -260,5 +260,24 @@
   "editor": {
     "characters": "characters",
     "words": "words"
+  },
+  "admin": {
+    "userManagement": "User Management",
+    "searchUsers": "Search by name, username, or email",
+    "filterByRole": "Filter by role",
+    "adminsOnly": "Admins only",
+    "regularUsers": "Regular users",
+    "regularUser": "User",
+    "statistics": "Statistics",
+    "noUsersFound": "No users found",
+    "noUsersFiltered": "No users match your filters",
+    "noUsersDescription": "There are no users in the system yet",
+    "grantAdmin": "Grant admin",
+    "revokeAdmin": "Revoke admin",
+    "grantAdminConfirm": "Are you sure you want to grant admin rights to this user?",
+    "revokeAdminConfirm": "Are you sure you want to revoke admin rights from this user?",
+    "adminGranted": "Admin rights granted",
+    "adminRevoked": "Admin rights revoked",
+    "userUpdated": "User updated successfully"
   }
 }
