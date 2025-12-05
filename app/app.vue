@@ -22,6 +22,9 @@
       </p>
       
       <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <!-- Auth Status -->
+        <FeaturesAuthStatus />
+        
         <!-- Supabase Status -->
         <FeaturesSupabaseStatus />
         

@@ -16,8 +16,8 @@ export default defineNuxtConfig({
       { code: 'en', name: 'English', file: 'en.json' },
     ],
     defaultLocale: 'ru',
-    // Path to locale files relative to project root
-    langDir: 'app/locales',
+    // Path to locale files relative to srcDir (app/)
+    langDir: 'locales',
     // URL without language prefix for Mini App
     strategy: 'no_prefix',
     detectBrowserLanguage: {
@@ -52,5 +52,13 @@ export default defineNuxtConfig({
 
   experimental: {
     viewTransition: true, // Smooth transitions
+  },
+
+  runtimeConfig: {
+    public: {
+      devMode: process.env.VITE_DEV_MODE || 'false',
+      devTelegramId: process.env.VITE_DEV_TELEGRAM_ID || '',
+      appName: process.env.VITE_APP_NAME || 'Grand Publicador',
+    },
   },
 })

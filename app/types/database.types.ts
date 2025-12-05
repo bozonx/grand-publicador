@@ -222,6 +222,8 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          is_admin: boolean | null
+          telegram_id: number | null
           updated_at: string | null
         }
         Insert: {
@@ -230,6 +232,8 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          is_admin?: boolean | null
+          telegram_id?: number | null
           updated_at?: string | null
         }
         Update: {
@@ -238,6 +242,8 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          is_admin?: boolean | null
+          telegram_id?: number | null
           updated_at?: string | null
         }
         Relationships: []
@@ -247,7 +253,30 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      find_or_create_telegram_user: {
+        Args: {
+          p_first_name?: string
+          p_last_name?: string
+          p_telegram_id: number
+          p_username?: string
+        }
+        Returns: {
+          avatar_url: string | null
+          created_at: string | null
+          email: string
+          full_name: string | null
+          id: string
+          is_admin: boolean | null
+          telegram_id: number | null
+          updated_at: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "users"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       blog_role: "owner" | "editor" | "viewer"
