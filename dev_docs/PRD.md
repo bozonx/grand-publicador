@@ -913,6 +913,7 @@ npx supabase gen types typescript --project-id your-project-id > app/types/datab
 - Автоматический deploy на Vercel при merge в main
 - Preview environments для feature branches
 
+
 ---
 
 ## 13. План реализации для AI
