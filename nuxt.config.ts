@@ -6,11 +6,16 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxt/ui',
+    '@nuxtjs/supabase',
   ],
 
   css: [
     '~/assets/css/main.css',
   ],
+
+  supabase: {
+    redirect: false, // Отключаем редирект, т.к. auth через Telegram
+  },
 
   typescript: {
     strict: true,

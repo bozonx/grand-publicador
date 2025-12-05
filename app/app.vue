@@ -9,6 +9,9 @@
       </h1>
       
       <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <!-- Supabase Status -->
+        <FeaturesSupabaseStatus />
+        
         <!-- Card с кнопками -->
         <UiCard title="UI Components Demo" variant="elevated">
           <div class="space-y-4">
