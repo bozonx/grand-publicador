@@ -4,97 +4,90 @@ definePageMeta({
 })
 
 const { t } = useI18n()
-const { user, displayName, authMode, signOut, isAdmin } = useAuth()
+const { displayName } = useAuth()
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <!-- Header -->
-    <header class="bg-white dark:bg-gray-800 shadow">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div class="flex items-center justify-between">
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-            Grand Publicador
-          </h1>
-          <div class="flex items-center gap-4">
-            <UiLanguageSwitcher />
-            <UButton
-              v-if="authMode !== 'telegram'"
-              variant="ghost"
-              color="error"
-              @click="signOut"
-            >
-              {{ t('auth.logout') }}
-            </UButton>
+  <div>
+    <!-- Page header -->
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+        {{ t('dashboard.title') }}
+      </h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        {{ t('dashboard.welcome') }}, {{ displayName }}!
+      </p>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Blogs card -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="p-2 bg-primary-100 dark:bg-primary-900 rounded-lg">
+            <UIcon name="i-heroicons-book-open" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
           </div>
-        </div>
-      </div>
-    </header>
-
-    <!-- Main content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <!-- Welcome card -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-          {{ t('dashboard.welcome') }}, {{ displayName }}!
-        </h2>
-        <div class="flex flex-wrap gap-2 text-sm text-gray-500 dark:text-gray-400">
-          <span class="inline-flex items-center px-2 py-1 rounded bg-gray-100 dark:bg-gray-700">
-            {{ t('auth.authMode') }}: {{ t(`auth.${authMode}Mode`) }}
-          </span>
-          <span
-            v-if="isAdmin"
-            class="inline-flex items-center px-2 py-1 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200"
-          >
-            {{ t('user.isAdmin') }}
-          </span>
-          <span
-            v-if="user?.telegram_id"
-            class="inline-flex items-center px-2 py-1 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
-          >
-            Telegram ID: {{ user.telegram_id }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Quick actions -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">
             {{ t('navigation.blogs') }}
           </h3>
-          <p class="text-gray-500 dark:text-gray-400 mb-4">
-            {{ t('blog.noBlogsFound') }}
-          </p>
-          <UButton icon="i-heroicons-plus">
+        </div>
+        <p class="text-gray-500 dark:text-gray-400 mb-4 text-sm">
+          {{ t('blog.noBlogsFound') }}
+        </p>
+        <NuxtLink to="/blogs">
+          <UButton icon="i-heroicons-plus" class="w-full">
             {{ t('blog.createBlog') }}
           </UButton>
-        </div>
+        </NuxtLink>
+      </div>
 
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+      <!-- Channels card -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+            <UIcon name="i-heroicons-signal" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">
             {{ t('navigation.channels') }}
           </h3>
-          <p class="text-gray-500 dark:text-gray-400 mb-4">
-            {{ t('channel.noChannelsFound') }}
-          </p>
-          <UButton icon="i-heroicons-plus" disabled>
-            {{ t('channel.createChannel') }}
-          </UButton>
         </div>
+        <p class="text-gray-500 dark:text-gray-400 mb-4 text-sm">
+          {{ t('channel.noChannelsFound') }}
+        </p>
+        <UButton icon="i-heroicons-plus" disabled class="w-full">
+          {{ t('channel.createChannel') }}
+        </UButton>
+      </div>
 
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+      <!-- Posts card -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+            <UIcon name="i-heroicons-document-text" class="w-6 h-6 text-green-600 dark:text-green-400" />
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">
             {{ t('navigation.posts') }}
           </h3>
-          <p class="text-gray-500 dark:text-gray-400 mb-4">
-            {{ t('post.noPostsFound') }}
-          </p>
-          <UButton icon="i-heroicons-plus" disabled>
-            {{ t('post.createPost') }}
-          </UButton>
         </div>
+        <p class="text-gray-500 dark:text-gray-400 mb-4 text-sm">
+          {{ t('post.noPostsFound') }}
+        </p>
+        <UButton icon="i-heroicons-plus" disabled class="w-full">
+          {{ t('post.createPost') }}
+        </UButton>
       </div>
-    </main>
+    </div>
+
+    <!-- Recent activity section (placeholder for future) -->
+    <div class="mt-8">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        {{ t('dashboard.recentPosts') }}
+      </h2>
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <p class="text-gray-500 dark:text-gray-400 text-sm text-center py-4">
+          {{ t('post.noPostsFound') }}
+        </p>
+      </div>
+    </div>
   </div>
 </template>

@@ -37,6 +37,21 @@ All notable changes to this project will be documented in this file.
   - `/auth/register` - Registration page
   - Auth layout with language switcher
 
+- **Layouts and Navigation (Step 8)**
+  - `default.vue` layout with Header and responsive Sidebar navigation
+  - `auth.vue` layout for authentication pages
+  - `LayoutHeader.vue` component with user menu, language switcher, and mobile menu toggle
+  - `LayoutNavigation.vue` component with main navigation links
+  - Responsive mobile sidebar with overlay
+  - Admin-only navigation items (hidden for non-admin users)
+  - Admin middleware for protecting admin routes
+
+- **Pages**
+  - Dashboard (`/`) - Welcome page with quick actions
+  - Blogs list (`/blogs`) - Placeholder for blogs management
+  - Settings (`/settings`) - User profile and settings
+  - Admin Users (`/admin/users`) - Placeholder for user management (admin only)
+
 - **Database Functions**
   - `find_or_create_telegram_user` - Creates or updates user from Telegram data
   - `handle_new_auth_user` trigger - Auto-creates public.users record on Supabase Auth signup
