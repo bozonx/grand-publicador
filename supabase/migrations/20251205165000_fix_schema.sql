@@ -26,6 +26,9 @@ ALTER TABLE public.users ADD COLUMN IF NOT EXISTS username TEXT;
 -- 2. FIX BLOG_ROLE ENUM - Add 'admin' role
 -- ============================================
 
+-- Drop posts table early to avoid policy dependency issues and enum conflicts
+DROP TABLE IF EXISTS public.posts CASCADE;
+
 -- PostgreSQL doesn't allow direct enum modification, so we need to:
 -- 1. Create new enum
 -- 2. Update column to use new enum
