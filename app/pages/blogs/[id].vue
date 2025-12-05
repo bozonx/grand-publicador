@@ -273,11 +273,12 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
             </div>
           </div>
           <UButton 
-            icon="i-heroicons-plus" 
+            icon="i-heroicons-arrow-down" 
             class="w-full"
-            disabled
+            variant="outline"
+            @click="$el?.querySelector('#channels-section')?.scrollIntoView({ behavior: 'smooth' })"
           >
-            {{ t('channel.createChannel') }}
+            {{ t('common.view') }} {{ t('channel.titlePlural').toLowerCase() }}
           </UButton>
         </div>
 
@@ -399,6 +400,11 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
       <!-- Members Section -->
       <div id="members-section" class="bg-white dark:bg-gray-800 rounded-lg shadow mt-6 p-6">
         <BlogsBlogMembersList :blog-id="currentBlog.id" />
+      </div>
+
+      <!-- Channels Section -->
+      <div id="channels-section" class="bg-white dark:bg-gray-800 rounded-lg shadow mt-6 p-6">
+        <FeaturesChannelsList :blog-id="currentBlog.id" />
       </div>
 
     </div>

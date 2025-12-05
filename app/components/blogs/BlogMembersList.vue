@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
+import type { BlogMemberWithUser } from '~/composables/useBlogs'
+import type { TableColumn } from '@nuxt/ui'
 
 // Re-defining BadgeColor locally as it matches UBadge prop type
 type BadgeColor = 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral'
@@ -30,11 +32,12 @@ onMounted(() => {
 
 const canManage = computed(() => currentBlog.value && canManageMembers(currentBlog.value))
 
-const columns = [
-  { key: 'user', label: t('user.username') },
-  { key: 'role', label: t('user.role') },
-  { key: 'actions', label: '' }
-]
+// Define typed columns for the table
+const columns = computed<TableColumn<BlogMemberWithUser>[]>(() => [
+  { accessorKey: 'user', header: t('user.username') },
+  { accessorKey: 'role', header: t('user.role') },
+  { accessorKey: 'actions', header: '' }
+])
 
 function getRoleBadgeColor(role: string | undefined): BadgeColor {
   const colors: Record<string, BadgeColor> = {
@@ -101,40 +104,40 @@ async function handleRemove(row: any) {
     </div>
 
     <UTable
-      :rows="members"
+      :data="members"
       :columns="columns"
       :loading="isLoading"
       :empty-state="{ icon: 'i-heroicons-users', label: t('common.noData') }"
       class="w-full"
     >
-      <template #user-data="{ row }">
+      <template #user-cell="{ row }">
         <div class="flex items-center gap-3">
           <UAvatar
-            :src="row.user.avatar_url"
-            :alt="row.user.username || row.user.full_name"
+            :src="row.original.user.avatar_url ?? undefined"
+            :alt="row.original.user.username ?? row.original.user.full_name ?? undefined"
             size="sm"
           />
           <div>
             <div class="font-medium text-gray-900 dark:text-white text-sm">
-              {{ row.user.full_name || row.user.username }}
+              {{ row.original.user.full_name || row.original.user.username }}
             </div>
             <div class="text-xs text-gray-500">
-              {{ row.user.email }}
+              {{ row.original.user.email }}
             </div>
           </div>
         </div>
       </template>
 
-      <template #role-data="{ row }">
-        <UBadge :color="getRoleBadgeColor(row.role)" size="xs" variant="subtle">
-          {{ t(`roles.${row.role}`) }}
+      <template #role-cell="{ row }">
+        <UBadge :color="getRoleBadgeColor(row.original.role ?? undefined)" size="xs" variant="subtle">
+          {{ t(`roles.${row.original.role ?? 'viewer'}`) }}
         </UBadge>
       </template>
 
-      <template #actions-data="{ row }">
+      <template #actions-cell="{ row }">
         <UDropdown
-          v-if="canManage && row.role !== 'owner'"
-          :items="getActionItems(row)"
+          v-if="canManage && row.original.role !== 'owner'"
+          :items="getActionItems(row.original)"
         >
           <UButton
             color="neutral"
