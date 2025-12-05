@@ -12,6 +12,10 @@
     "lint": "echo 'ESLint will be configured in future steps'"
   },
   "dependencies": {
+    "@formkit/i18n": "^1.6.9",
+    "@formkit/nuxt": "^1.6.9",
+    "@formkit/themes": "^1.6.9",
+    "@formkit/vue": "^1.6.9",
     "@nuxt/ui": "^4.2.1",
     "@nuxtjs/i18n": "^10.2.1",
     "@nuxtjs/supabase": "^2.0.2",

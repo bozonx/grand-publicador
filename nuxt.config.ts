@@ -9,6 +9,7 @@ export default defineNuxtConfig({
     '@nuxtjs/supabase',
     '@nuxtjs/i18n',
     '@pinia/nuxt',
+    '@formkit/nuxt',
   ],
 
   i18n: {
