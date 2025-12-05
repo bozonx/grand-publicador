@@ -69,6 +69,13 @@ Grand Publicador — веб-приложение для управления п�
   - Встроенная аутентификация
   - Storage для медиа
 
+- **Supabase CLI** — для локальной разработки
+  - Local Supabase instance (Docker-based)
+  - Полная идентичность dev и production окружений
+  - Локальная PostgreSQL, Auth, Storage, Realtime
+  - Миграции и seed данные
+  - Автоматическая генерация TypeScript типов
+
 - **Supabase JS Client** — официальный клиент для работы с API
 
 ### 2.5 State Management
@@ -680,9 +687,11 @@ VITE_DEFAULT_LOCALE=ru
 # Copy this file to .env.development and fill in actual values
 # ===========================================
 
-# Supabase Configuration (use development project)
-SUPABASE_URL=https://your-dev-project.supabase.co
-SUPABASE_KEY=your-dev-anon-key
+# Supabase Configuration (Local Supabase via CLI)
+# Run: npx supabase start
+# These are default local Supabase credentials
+SUPABASE_URL=http://localhost:54321
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
 
 # Development Mode - enables mock auth and debug features
 VITE_DEV_MODE=true
@@ -700,9 +709,9 @@ VITE_DEFAULT_LOCALE=ru
 
 #### `.env.development` (НЕ коммитится, в .gitignore)
 ```env
-# Supabase
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_KEY=your-anon-key
+# Supabase (Local Supabase via CLI)
+SUPABASE_URL=http://localhost:54321
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
 
 # Development Mode
 VITE_DEV_MODE=true
@@ -908,10 +917,23 @@ npx supabase gen types typescript --project-id your-project-id > app/types/datab
 - Автоматические бэкапы
 - Встроенный CDN для storage
 
+**Деплой миграций:**
+```bash
+# Линк локального проекта с production Supabase
+npx supabase link --project-ref YOUR_PROJECT_REF
+
+# Деплой миграций в production
+npx supabase db push
+
+# Генерация типов для production
+npx supabase gen types typescript --project-id YOUR_PROJECT_ID > app/types/database.types.ts
+```
+
 ### 12.3 CI/CD
 - GitHub Actions для автоматического тестирования
 - Автоматический deploy на Vercel при merge в main
 - Preview environments для feature branches
+- Автоматический деплой миграций Supabase через CI/CD
 
 
 ---
@@ -1006,76 +1028,98 @@ pnpm add @nuxt/ui
 
 ---
 
-### Шаг 3: Настройка Supabase
+### Шаг 3: Настройка Local Supabase
 
-**Цель:** Интегрировать Supabase для работы с БД
+**Цель:** Настроить локальный Supabase для разработки
 
 **Действия:**
 1. Установить `@nuxtjs/supabase`
-2. Настроить переменные окружения (`.env.development`)
-3. Настроить Supabase модуль в `nuxt.config.ts`
-4. Создать composable `useSupabase()` для работы с клиентом
+2. Инициализировать Supabase CLI в проекте
+3. Запустить локальный Supabase instance
+4. Настроить переменные окружения (`.env.development`)
+5. Настроить Supabase модуль в `nuxt.config.ts`
+6. Создать composable `useSupabase()` для работы с клиентом
 
 **Команды:**
 ```bash
-# Установка Supabase
+# Установка Supabase модуля для Nuxt
 pnpm add @nuxtjs/supabase
+
+# Инициализация Supabase CLI (создает supabase/ директорию)
+npx supabase init
+
+# Запуск локального Supabase (требует Docker)
+npx supabase start
+
+# После запуска вы получите credentials:
+# API URL: http://localhost:54321
+# anon key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-**Входные данные (от пользователя):**
-- `SUPABASE_URL` — URL проекта Supabase
-- `SUPABASE_KEY` — Anon public key
+**Входные данные:**
+- Docker должен быть установлен и запущен
+- Local Supabase credentials (генерируются автоматически)
 
 **Критерии завершения:**
+- ✅ Supabase CLI инициализирован (`supabase/` директория создана)
+- ✅ Local Supabase запущен (Docker containers running)
 - ✅ Supabase клиент доступен через `useSupabaseClient()`
-- ✅ Переменные окружения настроены
+- ✅ Переменные окружения настроены с local credentials
 - ✅ Нет ошибок при запуске приложения
 - ✅ Создан файл `.env.development` (не коммитится)
 
 **Артефакты:**
-- `.env.development` (gitignored)
+- `supabase/config.toml` — конфигурация Local Supabase
+- `.env.development` (gitignored) — с local credentials
 - Обновленный `nuxt.config.ts`
 - `app/composables/useSupabase.ts` (опционально)
 
 ---
 
-### Шаг 4: Создание схемы базы данных в Supabase
+### Шаг 4: Создание схемы базы данных в Local Supabase
 
-**Цель:** Создать все таблицы и RLS политики в Supabase
+**Цель:** Создать все таблицы и RLS политики в Local Supabase
 
 **Действия:**
-1. Создать миграции для таблиц: `users`, `blogs`, `blog_members`, `channels`, `posts`
+1. Создать миграцию для таблиц: `users`, `blogs`, `blog_members`, `channels`, `posts`
 2. Создать ENUM типы: `blog_role`, `social_media_enum`, `post_type_enum`
 3. Настроить RLS политики для каждой таблицы (секция 4.6 PRD)
-4. Создать seed данные для тестирования
-5. Сгенерировать TypeScript типы из схемы
+4. Применить миграцию к локальной БД
+5. Создать seed данные для тестирования
+6. Сгенерировать TypeScript типы из схемы
 
 **Команды:**
 ```bash
-# Инициализация Supabase локально (опционально)
-npx supabase init
-
-# Создание миграции
+# Создание новой миграции
 npx supabase migration new initial_schema
 
-# Применение миграций (если используете локальный Supabase)
+# Редактировать файл миграции в supabase/migrations/XXXXXX_initial_schema.sql
+# Добавить SQL код для создания таблиц, ENUM, RLS политик
+
+# Применение миграций к локальной БД
+npx supabase db reset
+
+# Или только применить новые миграции
 npx supabase db push
 
-# Генерация TypeScript типов
-npx supabase gen types typescript --project-id YOUR_PROJECT_ID > app/types/database.ts
+# Генерация TypeScript типов из локальной БД
+npx supabase gen types typescript --local > app/types/database.types.ts
+
+# Создание seed данных (опционально)
+# Редактировать supabase/seed.sql
 ```
 
 **Критерии завершения:**
-- ✅ Все таблицы созданы в Supabase
+- ✅ Все таблицы созданы в Local Supabase
 - ✅ RLS политики настроены и включены
 - ✅ Seed данные загружены (минимум 1 тестовый пользователь, 1 блог)
-- ✅ TypeScript типы сгенерированы в `app/types/database.ts`
+- ✅ TypeScript типы сгенерированы в `app/types/database.types.ts`
 - ✅ Можно выполнить SELECT запрос к таблице `users`
 
 **Артефакты:**
-- `supabase/migrations/XXXXXX_initial_schema.sql`
-- `supabase/seed.sql`
-- `app/types/database.ts`
+- `supabase/migrations/XXXXXX_initial_schema.sql` — SQL миграция
+- `supabase/seed.sql` — seed данные
+- `app/types/database.types.ts` — TypeScript типы БД
 
 **Примечание для AI:** SQL схемы находятся в секциях 4.1-4.5 PRD. RLS политики описаны в секции 4.6.
 

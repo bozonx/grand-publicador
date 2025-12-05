@@ -38,23 +38,30 @@ cd grand-publicador
 pnpm install
 ```
 
-3. Настройте переменные окружения:
+3. Запустите Local Supabase (требует Docker):
 ```bash
-# Скопируйте example файл
-cp .env.development.example .env.development
+# Инициализация Supabase (только первый раз)
+npx supabase init
 
-# Отредактируйте .env.development и заполните:
-# - SUPABASE_URL
-# - SUPABASE_KEY
-# - VITE_DEV_TELEGRAM_ID (ваш Telegram ID для разработки)
+# Запуск Local Supabase
+npx supabase start
 ```
 
-4. Запустите dev сервер:
+4. Настройте переменные окружения:
+```bash
+# Файл .env.development уже настроен с Local Supabase credentials
+# Обновите только VITE_DEV_TELEGRAM_ID (ваш Telegram ID для разработки)
+# Получите его от @userinfobot в Telegram
+```
+
+5. Запустите dev сервер:
 ```bash
 pnpm dev
 ```
 
 Приложение будет доступно по адресу `http://localhost:3000`
+
+**Supabase Studio:** http://localhost:54323 (для управления БД)
 
 ## 📁 Структура проекта
 
