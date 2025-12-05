@@ -83,14 +83,62 @@ Grand Publicador — веб-приложение для управления п�
   - Получение user_id и данных пользователя
   - Доступ к функциям Telegram (haptic feedback, theme, etc.)
 
-### 2.7 Дополнительные библиотеки
+### 2.7 Интернационализация (i18n)
+**Рекомендуемая библиотека: @nuxtjs/i18n**
+
+**Преимущества:**
+- Официальный модуль Nuxt
+- Lazy loading переводов
+- SEO-friendly (hreflang, локализованные URL)
+- Автоматическое определение языка браузера
+- Интеграция с Vue I18n
+- Поддержка плюрализации и форматирования дат/чисел
+
+**Поддерживаемые языки (MVP):**
+- Русский (ru) — основной
+- Английский (en)
+
+**Структура переводов:**
+```
+app/
+├── locales/
+│   ├── ru.json
+│   └── en.json
+```
+
+### 2.8 Rich Text Editor
+**Рекомендуемая библиотека: Tiptap**
+
+**Почему Tiptap:**
+- Headless редактор — полный контроль над UI
+- Модульная архитектура — подключаем только нужные расширения
+- Основан на ProseMirror — надежный и производительный core
+- Отличная поддержка Vue 3 / Nuxt
+- TypeScript support
+- Активное сообщество и развитие
+- Бесплатный open-source core
+
+**Основные расширения для MVP:**
+- `@tiptap/starter-kit` — базовый набор (bold, italic, lists, headings)
+- `@tiptap/extension-link` — ссылки
+- `@tiptap/extension-placeholder` — плейсхолдер
+- `@tiptap/extension-character-count` — счетчик символов
+
+**Альтернативы:**
+- **Quill** — популярный, но менее гибкий
+- **Editor.js** — блочный редактор, хорош для статей
+- **CKEditor** — мощный, но тяжеловесный и с коммерческой лицензией
+
+### 2.9 Дополнительные библиотеки
 - **@nuxtjs/supabase** — Nuxt модуль для Supabase интеграции
 - **@nuxtjs/tailwindcss** — интеграция TailwindCSS
+- **@nuxtjs/i18n** — интернационализация
+- **@tiptap/vue-3** — Rich Text Editor
 - **@vueuse/core** — композиция утилит
 - **dayjs** — работа с датами
 - **zod** — TypeScript-first схемы валидации
 
-### 2.8 Development Tools
+### 2.10 Development Tools
 - **TypeScript** — строгая типизация
 - **ESLint + Prettier** — code quality
 - **Vitest** — unit testing
@@ -108,10 +156,14 @@ grand-publicador/
 │   ├── components/                # Vue компоненты
 │   │   ├── ui/                    # UI kit компоненты
 │   │   ├── forms/                 # Формы
+│   │   ├── editor/                # Rich Text Editor компоненты
 │   │   ├── layout/                # Layout компоненты
 │   │   └── features/              # Feature-specific компоненты
 │   ├── composables/               # Composable functions
 │   ├── layouts/                   # Layouts
+│   ├── locales/                   # i18n переводы
+│   │   ├── ru.json                # Русский язык
+│   │   └── en.json                # Английский язык
 │   ├── middleware/                # Route middleware
 │   ├── pages/                     # File-based routing
 │   ├── plugins/                   # Nuxt plugins
@@ -124,8 +176,10 @@ grand-publicador/
 │   ├── migrations/
 │   └── seed.sql
 ├── dev_docs/                      # Development documentation
-├── .env.development               # Dev environment variables
-├── .env.production                # Prod environment variables
+├── .env.example                   # Example environment variables (committed)
+├── .env.development.example       # Example dev environment (committed)
+├── .env.development               # Dev environment variables (gitignored)
+├── .env.production                # Prod environment variables (gitignored)
 ├── nuxt.config.ts                 # Nuxt configuration
 ├── tailwind.config.ts             # Tailwind configuration
 ├── tsconfig.json                  # TypeScript configuration
@@ -546,10 +600,11 @@ Supabase RLS обеспечит безопасность данных на ур�
 
 **Сложные:**
 - Form Builder (FormKit)
-- Rich Text Editor (опционально, для content поля)
+- Rich Text Editor (Tiptap) — для content поля
 - Date/Time Picker
 - Multi-select Tags Input
 - Confirmation Dialogs
+- Language Switcher — переключение языка интерфейса
 
 ---
 
@@ -590,7 +645,60 @@ Supabase RLS обеспечит безопасность данных на ур�
 
 ### 8.1 Переменные окружения
 
-#### `.env.development`
+#### `.env.example` (коммитится в репозиторий)
+```env
+# ===========================================
+# EXAMPLE ENVIRONMENT VARIABLES
+# Copy this file to .env.development or .env.production
+# and fill in the actual values
+# ===========================================
+
+# Supabase Configuration
+# Get these from: https://supabase.com/dashboard/project/YOUR_PROJECT/settings/api
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-anon-key
+
+# Development Mode
+# Set to true for local development, false for production
+VITE_DEV_MODE=false
+
+# Dev Telegram User ID (only for development)
+# Used to simulate Telegram auth in local dev environment
+VITE_DEV_TELEGRAM_ID=
+
+# App Configuration
+VITE_APP_NAME=Grand Publicador
+
+# Default locale (ru or en)
+VITE_DEFAULT_LOCALE=ru
+```
+
+#### `.env.development.example` (коммитится в репозиторий)
+```env
+# ===========================================
+# DEVELOPMENT ENVIRONMENT VARIABLES
+# Copy this file to .env.development and fill in actual values
+# ===========================================
+
+# Supabase Configuration (use development project)
+SUPABASE_URL=https://your-dev-project.supabase.co
+SUPABASE_KEY=your-dev-anon-key
+
+# Development Mode - enables mock auth and debug features
+VITE_DEV_MODE=true
+
+# Your Telegram User ID for testing
+# Get it from @userinfobot in Telegram
+VITE_DEV_TELEGRAM_ID=123456789
+
+# App Configuration
+VITE_APP_NAME=Grand Publicador (Dev)
+
+# Default locale for development
+VITE_DEFAULT_LOCALE=ru
+```
+
+#### `.env.development` (НЕ коммитится, в .gitignore)
 ```env
 # Supabase
 SUPABASE_URL=https://your-project.supabase.co
@@ -601,10 +709,11 @@ VITE_DEV_MODE=true
 VITE_DEV_TELEGRAM_ID=123456789
 
 # App Config
-VITE_APP_NAME=Grand Publicador
+VITE_APP_NAME=Grand Publicador (Dev)
+VITE_DEFAULT_LOCALE=ru
 ```
 
-#### `.env.production`
+#### `.env.production` (НЕ коммитится, в .gitignore)
 ```env
 # Supabase
 SUPABASE_URL=https://your-project.supabase.co
@@ -615,6 +724,7 @@ VITE_DEV_MODE=false
 
 # App Config
 VITE_APP_NAME=Grand Publicador
+VITE_DEFAULT_LOCALE=ru
 ```
 
 ### 8.2 Конфигурация Nuxt
@@ -625,6 +735,7 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/supabase',
     '@nuxtjs/tailwindcss',
+    '@nuxtjs/i18n',
     '@pinia/nuxt',
     '@vueuse/nuxt',
     '@formkit/nuxt',
@@ -632,6 +743,22 @@ export default defineNuxtConfig({
   
   supabase: {
     redirect: false, // Отключаем редирект, т.к. auth через Telegram
+  },
+  
+  i18n: {
+    locales: [
+      { code: 'ru', name: 'Русский', file: 'ru.json' },
+      { code: 'en', name: 'English', file: 'en.json' },
+    ],
+    defaultLocale: 'ru',
+    lazy: true,
+    langDir: 'locales/',
+    strategy: 'no_prefix', // URL без префикса языка для Mini App
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_locale',
+      fallbackLocale: 'ru',
+    },
   },
   
   typescript: {
@@ -859,6 +986,8 @@ MVP фокусируется на базовом функционале упра
 - [Nuxt 4 Documentation](https://nuxt.com)
 - [Supabase Documentation](https://supabase.com/docs)
 - [FormKit Documentation](https://formkit.com)
+- [Tiptap Editor](https://tiptap.dev)
+- [Nuxt I18n](https://i18n.nuxtjs.org)
 - [Telegram Mini Apps](https://core.telegram.org/bots/webapps)
 - [TailwindCSS](https://tailwindcss.com)
 
