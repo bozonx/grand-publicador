@@ -328,17 +328,27 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
                 {{ t('post.titlePlural') }}
               </h3>
               <p class="text-sm text-gray-500 dark:text-gray-400">
-                0 {{ t('post.titlePlural').toLowerCase() }}
+                {{ currentBlog.postCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
               </p>
             </div>
           </div>
-          <UButton 
-            icon="i-heroicons-plus" 
-            class="w-full"
-            disabled
-          >
-            {{ t('post.createPost') }}
-          </UButton>
+          <div class="flex gap-2">
+            <UButton 
+              icon="i-heroicons-arrow-right" 
+              class="flex-1"
+              variant="outline"
+              :to="`/blogs/${currentBlog.id}/posts`"
+            >
+              {{ t('common.view') }}
+            </UButton>
+            <UButton 
+              icon="i-heroicons-plus" 
+              color="primary"
+              :to="`/blogs/${currentBlog.id}/posts/new`"
+            >
+              {{ t('common.create') }}
+            </UButton>
+          </div>
         </div>
       </div>
 

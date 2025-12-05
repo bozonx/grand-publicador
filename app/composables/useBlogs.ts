@@ -24,6 +24,7 @@ export interface BlogWithRole extends BlogWithOwner {
   role?: BlogRole
   memberCount?: number
   channelCount?: number
+  postCount?: number
 }
 
 /**
