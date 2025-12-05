@@ -2,11 +2,24 @@
   <div class="min-h-screen bg-gray-50">
     <NuxtRouteAnnouncer />
     
-    <!-- Тестовая страница для демонстрации UI компонентов -->
+    <!-- Header with Language Switcher -->
+    <header class="bg-white border-b border-gray-200 px-4 py-3">
+      <div class="container mx-auto flex items-center justify-between">
+        <h1 class="text-xl font-bold text-gray-900">
+          Grand Publicador
+        </h1>
+        <UiLanguageSwitcher />
+      </div>
+    </header>
+    
+    <!-- Demo page for UI components -->
     <div class="container mx-auto px-4 py-8">
-      <h1 class="text-4xl font-bold text-gray-900 mb-8">
-        Grand Publicador
-      </h1>
+      <h2 class="text-3xl font-bold text-gray-900 mb-2">
+        {{ t('dashboard.title') }}
+      </h2>
+      <p class="text-gray-600 mb-8">
+        {{ t('dashboard.welcome') }}!
+      </p>
       
       <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <!-- Supabase Status -->
@@ -91,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+const { t } = useI18n()
 
 const testEmail = ref('')
 const testPassword = ref('')

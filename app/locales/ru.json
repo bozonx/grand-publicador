@@ -1,0 +1,176 @@
+{
+  "common": {
+    "loading": "Загрузка...",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "create": "Создать",
+    "search": "Поиск",
+    "filter": "Фильтр",
+    "actions": "Действия",
+    "confirm": "Подтвердить",
+    "back": "Назад",
+    "next": "Далее",
+    "close": "Закрыть",
+    "yes": "Да",
+    "no": "Нет",
+    "all": "Все",
+    "none": "Нет",
+    "submit": "Отправить",
+    "reset": "Сбросить",
+    "required": "Обязательное поле",
+    "optional": "Необязательно",
+    "noData": "Нет данных",
+    "error": "Ошибка",
+    "success": "Успешно",
+    "warning": "Предупреждение",
+    "info": "Информация"
+  },
+  "navigation": {
+    "home": "Главная",
+    "dashboard": "Панель управления",
+    "blogs": "Блоги",
+    "channels": "Каналы",
+    "posts": "Публикации",
+    "users": "Пользователи",
+    "settings": "Настройки",
+    "admin": "Администрирование"
+  },
+  "auth": {
+    "login": "Войти",
+    "logout": "Выйти",
+    "profile": "Профиль",
+    "notAuthenticated": "Вы не авторизованы",
+    "accessDenied": "Доступ запрещён",
+    "adminOnly": "Только для администраторов"
+  },
+  "user": {
+    "username": "Имя пользователя",
+    "firstName": "Имя",
+    "lastName": "Фамилия",
+    "displayName": "Отображаемое имя",
+    "telegramId": "Telegram ID",
+    "role": "Роль",
+    "isAdmin": "Администратор",
+    "createdAt": "Дата регистрации"
+  },
+  "blog": {
+    "title": "Блог",
+    "titlePlural": "Блоги",
+    "name": "Название",
+    "description": "Описание",
+    "owner": "Владелец",
+    "members": "Участники",
+    "createBlog": "Создать блог",
+    "editBlog": "Редактировать блог",
+    "deleteBlog": "Удалить блог",
+    "deleteConfirm": "Вы уверены, что хотите удалить этот блог? Все связанные данные будут удалены.",
+    "noBlogsFound": "Блоги не найдены",
+    "myBlogs": "Мои блоги"
+  },
+  "blogMember": {
+    "title": "Участник",
+    "titlePlural": "Участники",
+    "invite": "Пригласить участника",
+    "changeRole": "Изменить роль",
+    "remove": "Удалить участника",
+    "removeConfirm": "Вы уверены, что хотите удалить этого участника?",
+    "cannotRemoveOwner": "Невозможно удалить владельца блога"
+  },
+  "roles": {
+    "owner": "Владелец",
+    "admin": "Администратор",
+    "editor": "Редактор",
+    "viewer": "Наблюдатель"
+  },
+  "channel": {
+    "title": "Канал",
+    "titlePlural": "Каналы",
+    "name": "Название канала",
+    "socialMedia": "Социальная сеть",
+    "identifier": "Идентификатор канала",
+    "isActive": "Активен",
+    "createChannel": "Создать канал",
+    "editChannel": "Редактировать канал",
+    "deleteChannel": "Удалить канал",
+    "deleteConfirm": "Вы уверены, что хотите удалить этот канал?",
+    "noChannelsFound": "Каналы не найдены"
+  },
+  "socialMedia": {
+    "telegram": "Telegram",
+    "site": "Сайт",
+    "vk": "ВКонтакте",
+    "youtube": "YouTube",
+    "tiktok": "TikTok",
+    "x": "X (Twitter)",
+    "instagram": "Instagram",
+    "facebook": "Facebook"
+  },
+  "post": {
+    "title": "Публикация",
+    "titlePlural": "Публикации",
+    "postTitle": "Заголовок",
+    "content": "Содержимое",
+    "description": "Описание",
+    "authorComment": "Комментарий автора",
+    "tags": "Теги",
+    "postDate": "Дата публикации",
+    "postType": "Тип публикации",
+    "status": "Статус",
+    "scheduledAt": "Запланировано на",
+    "publishedAt": "Опубликовано",
+    "author": "Автор",
+    "createPost": "Создать публикацию",
+    "editPost": "Редактировать публикацию",
+    "deletePost": "Удалить публикацию",
+    "deleteConfirm": "Вы уверены, что хотите удалить эту публикацию?",
+    "noPostsFound": "Публикации не найдены"
+  },
+  "postType": {
+    "post": "Пост",
+    "article": "Статья",
+    "news": "Новость",
+    "video": "Видео",
+    "short": "Короткое видео"
+  },
+  "postStatus": {
+    "draft": "Черновик",
+    "scheduled": "Запланировано",
+    "published": "Опубликовано",
+    "failed": "Ошибка"
+  },
+  "settings": {
+    "title": "Настройки",
+    "language": "Язык",
+    "theme": "Тема",
+    "notifications": "Уведомления",
+    "account": "Аккаунт",
+    "saveSettings": "Сохранить настройки"
+  },
+  "validation": {
+    "required": "Это поле обязательно для заполнения",
+    "minLength": "Минимальная длина: {min} символов",
+    "maxLength": "Максимальная длина: {max} символов",
+    "email": "Введите корректный email",
+    "url": "Введите корректный URL",
+    "number": "Введите число",
+    "positive": "Число должно быть положительным",
+    "integer": "Введите целое число"
+  },
+  "errors": {
+    "generic": "Произошла ошибка. Попробуйте ещё раз.",
+    "notFound": "Не найдено",
+    "unauthorized": "Необходима авторизация",
+    "forbidden": "Доступ запрещён",
+    "serverError": "Ошибка сервера",
+    "networkError": "Ошибка сети. Проверьте подключение к интернету."
+  },
+  "dashboard": {
+    "title": "Панель управления",
+    "welcome": "Добро пожаловать",
+    "recentPosts": "Последние публикации",
+    "quickActions": "Быстрые действия",
+    "statistics": "Статистика"
+  }
+}
