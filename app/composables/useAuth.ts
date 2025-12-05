@@ -1,38 +1,28 @@
 import type { TelegramWebAppUser } from '~/types/telegram'
 import type { Database } from '~/types/database.types'
+import { useAuthStore } from '~/stores/auth'
 
 type User = Database['public']['Tables']['users']['Row']
-
-interface AuthState {
-  user: User | null
-  telegramUser: TelegramWebAppUser | null
-  isLoading: boolean
-  error: string | null
-}
-
-const authState = reactive<AuthState>({
-  user: null,
-  telegramUser: null,
-  isLoading: false,
-  error: null,
-})
 
 /**
  * Authentication composable for Telegram Mini App
  * Handles both production (Telegram WebApp) and development (mock) modes
+ * Uses Pinia store for state management
  */
 export function useAuth() {
   const config = useRuntimeConfig()
   const supabase = useSupabaseClient<Database>()
+  const authStore = useAuthStore()
 
   const isDevMode = computed(() => {
     return String(config.public.devMode) === 'true'
   })
 
-  const isAuthenticated = computed(() => !!authState.user)
-  const isAdmin = computed(() => authState.user?.is_admin === true)
-  const currentUser = computed(() => authState.user)
-  const telegramUser = computed(() => authState.telegramUser)
+  // Computed from store
+  const isAuthenticated = computed(() => authStore.isAuthenticated)
+  const isAdmin = computed(() => authStore.isAdmin)
+  const currentUser = computed(() => authStore.user)
+  const telegramUser = computed(() => authStore.telegramUser)
 
   /**
    * Get Telegram user data from WebApp or dev environment
@@ -66,22 +56,22 @@ export function useAuth() {
    * Fetches or creates user based on Telegram ID
    */
   async function initialize(): Promise<User | null> {
-    if (authState.isLoading) {
-      return authState.user
+    if (authStore.isLoading || authStore.isInitialized) {
+      return authStore.user
     }
 
-    authState.isLoading = true
-    authState.error = null
+    authStore.setLoading(true)
+    authStore.setError(null)
 
     try {
       const tgUser = getTelegramUser()
 
       if (!tgUser) {
-        authState.error = 'Telegram user not found'
+        authStore.setError('Telegram user not found')
         return null
       }
 
-      authState.telegramUser = tgUser
+      authStore.setTelegramUser(tgUser)
 
       // Call Supabase function to find or create user
       const { data, error } = await supabase.rpc('find_or_create_telegram_user', {
@@ -93,23 +83,24 @@ export function useAuth() {
 
       if (error) {
         console.error('[Auth] Failed to find/create user:', error)
-        authState.error = error.message
+        authStore.setError(error.message)
         return null
       }
 
-      authState.user = data as User
-      console.log('[Auth] User authenticated:', authState.user.id)
+      authStore.setUser(data as User)
+      authStore.setInitialized(true)
+      console.log('[Auth] User authenticated:', authStore.user?.id)
 
-      return authState.user
+      return authStore.user
     }
     catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error'
       console.error('[Auth] Initialization error:', message)
-      authState.error = message
+      authStore.setError(message)
       return null
     }
     finally {
-      authState.isLoading = false
+      authStore.setLoading(false)
     }
   }
 
@@ -117,14 +108,14 @@ export function useAuth() {
    * Refresh current user data from database
    */
   async function refreshUser(): Promise<User | null> {
-    if (!authState.user?.id) {
+    if (!authStore.user?.id) {
       return null
     }
 
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('id', authState.user.id)
+      .eq('id', authStore.user.id)
       .single()
 
     if (error) {
@@ -132,7 +123,7 @@ export function useAuth() {
       return null
     }
 
-    authState.user = data
+    authStore.setUser(data)
     return data
   }
 
@@ -140,29 +131,29 @@ export function useAuth() {
    * Clear authentication state
    */
   function logout() {
-    authState.user = null
-    authState.telegramUser = null
-    authState.error = null
+    authStore.reset()
   }
 
   /**
    * Get current user (alias for currentUser.value)
    */
   function getCurrentUser(): User | null {
-    return authState.user
+    return authStore.user
   }
 
   return {
     // State
     user: currentUser,
     telegramUser,
-    isLoading: computed(() => authState.isLoading),
-    error: computed(() => authState.error),
+    isLoading: computed(() => authStore.isLoading),
+    error: computed(() => authStore.error),
+    isInitialized: computed(() => authStore.isInitialized),
 
     // Computed
     isAuthenticated,
     isAdmin,
     isDevMode,
+    displayName: computed(() => authStore.displayName),
 
     // Methods
     initialize,
