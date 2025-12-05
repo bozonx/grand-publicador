@@ -35,10 +35,16 @@ ALTER TYPE blog_role RENAME TO blog_role_old;
 
 CREATE TYPE blog_role AS ENUM ('owner', 'admin', 'editor', 'viewer');
 
+-- Drop default before changing type to avoid cast issues
+ALTER TABLE public.blog_members ALTER COLUMN role DROP DEFAULT;
+
 -- Update blog_members to use new enum
 ALTER TABLE public.blog_members 
     ALTER COLUMN role TYPE blog_role 
     USING role::text::blog_role;
+
+-- Restore default value
+ALTER TABLE public.blog_members ALTER COLUMN role SET DEFAULT 'viewer'::blog_role;
 
 DROP TYPE blog_role_old;
 
