@@ -3,19 +3,36 @@ import type { Database } from '~/types/database.types'
 import { useAuthStore } from '~/stores/auth'
 
 type User = Database['public']['Tables']['users']['Row']
+type AuthMode = 'telegram' | 'browser' | 'dev'
 
 /**
- * Authentication composable for Telegram Mini App
- * Handles both production (Telegram WebApp) and development (mock) modes
- * Uses Pinia store for state management
+ * Hybrid authentication composable
+ * Supports:
+ * - Telegram Mini App authentication
+ * - Browser authentication via Supabase Auth (email/password, OAuth)
+ * - Development mode with mock Telegram user
  */
 export function useAuth() {
   const config = useRuntimeConfig()
   const supabase = useSupabaseClient<Database>()
+  const supabaseUser = useSupabaseUser()
   const authStore = useAuthStore()
 
   const isDevMode = computed(() => {
     return String(config.public.devMode) === 'true'
+  })
+
+  // Detect if running inside Telegram WebApp
+  const isTelegramWebApp = computed(() => {
+    if (import.meta.server) return false
+    return !!(window.Telegram?.WebApp?.initDataUnsafe?.user)
+  })
+
+  // Determine auth mode
+  const authMode = computed<AuthMode>(() => {
+    if (isDevMode.value) return 'dev'
+    if (isTelegramWebApp.value) return 'telegram'
+    return 'browser'
   })
 
   // Computed from store
@@ -39,7 +56,6 @@ export function useAuth() {
           username: 'dev_user',
         }
       }
-      console.warn('[Auth] Dev mode enabled but VITE_DEV_TELEGRAM_ID not set')
       return null
     }
 
@@ -52,8 +68,71 @@ export function useAuth() {
   }
 
   /**
-   * Initialize authentication
-   * Fetches or creates user based on Telegram ID
+   * Initialize Telegram authentication
+   * Creates or finds user based on Telegram ID
+   */
+  async function initializeTelegram(): Promise<User | null> {
+    const tgUser = getTelegramUser()
+
+    if (!tgUser) {
+      authStore.setError('Telegram user not found')
+      return null
+    }
+
+    authStore.setTelegramUser(tgUser)
+
+    // Call Supabase function to find or create user
+    const { data, error } = await supabase.rpc('find_or_create_telegram_user', {
+      p_telegram_id: tgUser.id,
+      p_username: tgUser.username || undefined,
+      p_first_name: tgUser.first_name || undefined,
+      p_last_name: tgUser.last_name || undefined,
+    })
+
+    if (error) {
+      console.error('[Auth] Failed to find/create Telegram user:', error)
+      authStore.setError(error.message)
+      return null
+    }
+
+    authStore.setUser(data as User)
+    console.log('[Auth] Telegram user authenticated:', authStore.user?.id)
+    return authStore.user
+  }
+
+  /**
+   * Initialize browser authentication
+   * Uses Supabase Auth session
+   */
+  async function initializeBrowser(): Promise<User | null> {
+    // Wait for Supabase auth to be ready
+    const { data: { session } } = await supabase.auth.getSession()
+
+    if (!session?.user) {
+      // Not authenticated via browser
+      return null
+    }
+
+    // Fetch user from public.users table
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', session.user.id)
+      .single()
+
+    if (error) {
+      console.error('[Auth] Failed to fetch browser user:', error)
+      authStore.setError(error.message)
+      return null
+    }
+
+    authStore.setUser(data)
+    console.log('[Auth] Browser user authenticated:', authStore.user?.id)
+    return authStore.user
+  }
+
+  /**
+   * Initialize authentication based on detected mode
    */
   async function initialize(): Promise<User | null> {
     if (authStore.isLoading || authStore.isInitialized) {
@@ -64,40 +143,128 @@ export function useAuth() {
     authStore.setError(null)
 
     try {
-      const tgUser = getTelegramUser()
+      let user: User | null = null
 
-      if (!tgUser) {
-        authStore.setError('Telegram user not found')
-        return null
+      switch (authMode.value) {
+        case 'dev':
+        case 'telegram':
+          user = await initializeTelegram()
+          break
+        case 'browser':
+          user = await initializeBrowser()
+          break
       }
 
-      authStore.setTelegramUser(tgUser)
-
-      // Call Supabase function to find or create user
-      const { data, error } = await supabase.rpc('find_or_create_telegram_user', {
-        p_telegram_id: tgUser.id,
-        p_username: tgUser.username || undefined,
-        p_first_name: tgUser.first_name || undefined,
-        p_last_name: tgUser.last_name || undefined,
-      })
-
-      if (error) {
-        console.error('[Auth] Failed to find/create user:', error)
-        authStore.setError(error.message)
-        return null
-      }
-
-      authStore.setUser(data as User)
       authStore.setInitialized(true)
-      console.log('[Auth] User authenticated:', authStore.user?.id)
-
-      return authStore.user
+      return user
     }
     catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error'
       console.error('[Auth] Initialization error:', message)
       authStore.setError(message)
       return null
+    }
+    finally {
+      authStore.setLoading(false)
+    }
+  }
+
+  /**
+   * Sign in with email and password (browser mode)
+   */
+  async function signInWithEmail(email: string, password: string): Promise<User | null> {
+    authStore.setLoading(true)
+    authStore.setError(null)
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) {
+        authStore.setError(error.message)
+        return null
+      }
+
+      if (data.user) {
+        return await initializeBrowser()
+      }
+
+      return null
+    }
+    catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      authStore.setError(message)
+      return null
+    }
+    finally {
+      authStore.setLoading(false)
+    }
+  }
+
+  /**
+   * Sign up with email and password (browser mode)
+   */
+  async function signUpWithEmail(email: string, password: string, fullName?: string): Promise<User | null> {
+    authStore.setLoading(true)
+    authStore.setError(null)
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+          },
+        },
+      })
+
+      if (error) {
+        authStore.setError(error.message)
+        return null
+      }
+
+      if (data.user) {
+        // User created, trigger will create public.users record
+        return await initializeBrowser()
+      }
+
+      return null
+    }
+    catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      authStore.setError(message)
+      return null
+    }
+    finally {
+      authStore.setLoading(false)
+    }
+  }
+
+  /**
+   * Sign in with OAuth provider (browser mode)
+   */
+  async function signInWithOAuth(provider: 'google' | 'github'): Promise<void> {
+    authStore.setLoading(true)
+    authStore.setError(null)
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: window.location.origin,
+        },
+      })
+
+      if (error) {
+        authStore.setError(error.message)
+      }
+    }
+    catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      authStore.setError(message)
     }
     finally {
       authStore.setLoading(false)
@@ -128,9 +295,12 @@ export function useAuth() {
   }
 
   /**
-   * Clear authentication state
+   * Sign out (browser mode)
    */
-  function logout() {
+  async function signOut(): Promise<void> {
+    if (authMode.value === 'browser') {
+      await supabase.auth.signOut()
+    }
     authStore.reset()
   }
 
@@ -141,10 +311,25 @@ export function useAuth() {
     return authStore.user
   }
 
+  // Watch for Supabase auth state changes (browser mode)
+  if (import.meta.client) {
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (authMode.value !== 'browser') return
+
+      if (event === 'SIGNED_IN' && session?.user) {
+        await initializeBrowser()
+      }
+      else if (event === 'SIGNED_OUT') {
+        authStore.reset()
+      }
+    })
+  }
+
   return {
     // State
     user: currentUser,
     telegramUser,
+    supabaseUser,
     isLoading: computed(() => authStore.isLoading),
     error: computed(() => authStore.error),
     isInitialized: computed(() => authStore.isInitialized),
@@ -153,13 +338,20 @@ export function useAuth() {
     isAuthenticated,
     isAdmin,
     isDevMode,
+    isTelegramWebApp,
+    authMode,
     displayName: computed(() => authStore.displayName),
 
     // Methods
     initialize,
     refreshUser,
-    logout,
+    signOut,
     getCurrentUser,
     getTelegramUser,
+
+    // Browser auth methods
+    signInWithEmail,
+    signUpWithEmail,
+    signInWithOAuth,
   }
 }

@@ -85,10 +85,11 @@ Grand Publicador — веб-приложение для управления п�
   - Модульная архитектура
 
 ### 2.6 Telegram Integration
-- **Telegram Mini Apps SDK** (`@telegram-apps/sdk-vue`)
+- **Telegram Mini Apps SDK** (`@tma.js/sdk-vue`)
   - Интеграция с Telegram WebApp API
   - Получение user_id и данных пользователя
   - Доступ к функциям Telegram (haptic feedback, theme, etc.)
+  - Примечание: `@telegram-apps/sdk-vue` deprecated, используется `@tma.js/sdk-vue`
 
 ### 2.7 Интернационализация (i18n)
 **Рекомендуемая библиотека: @nuxtjs/i18n**
@@ -211,16 +212,20 @@ grand-publicador/
 ```sql
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  telegram_id BIGINT UNIQUE NOT NULL,
+  telegram_id BIGINT UNIQUE,           -- NULL для browser-only пользователей
+  email TEXT,                           -- NULL для telegram-only пользователей
   username VARCHAR(255),
-  first_name VARCHAR(255),
-  last_name VARCHAR(255),
+  full_name VARCHAR(255),
+  avatar_url TEXT,
   is_admin BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX idx_users_telegram_id ON users(telegram_id);
+
+-- Примечание: id может ссылаться на auth.users для browser auth,
+-- или быть независимым UUID для telegram-only пользователей
 ```
 
 ### 4.2 Таблица: blogs
@@ -246,6 +251,10 @@ CREATE INDEX idx_blogs_owner_id ON blogs(owner_id);
 
 ```sql
 CREATE TYPE blog_role AS ENUM ('owner', 'admin', 'editor', 'viewer');
+-- owner: полный доступ, удаление блога, передача прав
+-- admin: управление участниками, каналами, постами
+-- editor: создание и редактирование постов и каналов
+-- viewer: только просмотр
 
 CREATE TABLE blog_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -274,13 +283,13 @@ CREATE INDEX idx_blog_members_user_id ON blog_members(user_id);
 ```sql
 CREATE TYPE social_media_enum AS ENUM (
   'telegram',
-  'site',
+  'instagram',
   'vk',
   'youtube',
   'tiktok',
   'x',
-  'instagram',
-  'facebook'
+  'facebook',
+  'site'
 );
 
 CREATE TABLE channels (
@@ -305,11 +314,18 @@ CREATE INDEX idx_channels_social_media ON channels(social_media);
 
 ```sql
 CREATE TYPE post_type_enum AS ENUM ('post', 'article', 'news', 'video', 'short');
+-- post: обычный пост
+-- article: длинная статья
+-- news: новость
+-- video: видео контент
+-- short: короткое видео (reels, shorts, stories)
+
+CREATE TYPE post_status_enum AS ENUM ('draft', 'scheduled', 'published', 'failed');
 
 CREATE TABLE posts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   channel_id UUID NOT NULL REFERENCES channels(id) ON DELETE CASCADE,
-  author_id UUID NOT NULL REFERENCES users(id),
+  author_id UUID REFERENCES users(id) ON DELETE SET NULL,
   
   -- Обязательные поля
   content TEXT NOT NULL,
@@ -317,16 +333,19 @@ CREATE TABLE posts (
   post_type post_type_enum NOT NULL,
   
   -- Необязательные поля
-  title VARCHAR(500),
+  title TEXT,
   description TEXT,
   author_comment TEXT,
-  tags TEXT[], -- Массив тегов
-  post_date TIMESTAMPTZ, -- Дата из контента (например, дата новости)
+  tags TEXT[],
+  post_date TIMESTAMPTZ,
   
-  -- Метаданные
-  status VARCHAR(50) DEFAULT 'draft', -- draft, scheduled, published, failed
+  -- Статус и планирование
+  status post_status_enum DEFAULT 'draft',
   scheduled_at TIMESTAMPTZ,
   published_at TIMESTAMPTZ,
+  
+  -- Метаданные
+  meta JSONB DEFAULT '{}',
   
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -372,18 +391,36 @@ Supabase RLS обеспечит безопасность данных на ур�
 
 ## 5. Функциональные требования
 
-### 5.1 Аутентификация
+### 5.1 Аутентификация (Гибридный режим)
 
-#### 5.1.1 Telegram Auth
+Приложение поддерживает три режима аутентификации:
+
+#### 5.1.1 Telegram Auth (Mini App)
 - При запуске приложения из Telegram Mini App получаем `telegram_id` пользователя
-- Проверяем наличие пользователя в БД
-- Если пользователь новый — создаем запись в таблице `users`
-- Если существует — загружаем данные профиля
+- Проверяем наличие пользователя в БД через функцию `find_or_create_telegram_user`
+- Если пользователь новый — создаем запись в таблице `users` с `telegram_id`
+- Если существует — загружаем данные профиля и обновляем имя/username
+- Пользователь автоматически аутентифицирован без ввода пароля
 
-#### 5.1.2 Dev Mode Auth
+#### 5.1.2 Browser Auth (Email/Password, OAuth)
+- При открытии приложения в обычном браузере используется Supabase Auth
+- Поддерживаемые методы:
+  - Email + Password (регистрация и вход)
+  - OAuth провайдеры (Google, GitHub)
+- При регистрации триггер `on_auth_user_created` автоматически создает запись в `public.users`
+- Неаутентифицированные пользователи перенаправляются на `/auth/login`
+
+#### 5.1.3 Dev Mode Auth
 - В `.env.development` указывается `VITE_DEV_TELEGRAM_ID`
-- При локальной разработке используется этот ID для эмуляции авторизации
-- Режим определяется автоматически через `process.env.NODE_ENV`
+- При локальной разработке используется этот ID для эмуляции Telegram авторизации
+- Режим определяется автоматически через `VITE_DEV_MODE=true`
+- Позволяет тестировать Telegram-функционал без запуска в Telegram
+
+#### 5.1.4 Определение режима аутентификации
+Режим определяется автоматически в следующем порядке:
+1. Если `VITE_DEV_MODE=true` → Dev Mode (эмуляция Telegram)
+2. Если `window.Telegram.WebApp` доступен → Telegram Mode
+3. Иначе → Browser Mode (Supabase Auth)
 
 ### 5.2 Управление пользователями (Admin)
 
@@ -1157,35 +1194,45 @@ pnpm add @nuxtjs/i18n
 
 ---
 
-### Шаг 6: Аутентификация через Telegram
+### Шаг 6: Гибридная аутентификация (Telegram + Browser)
 
-**Цель:** Реализовать вход через Telegram Mini App + dev режим
+**Цель:** Реализовать гибридную аутентификацию с поддержкой Telegram Mini App и браузера
 
 **Действия:**
-1. Установить `@telegram-apps/sdk-vue`
+1. Установить `@tma.js/sdk-vue` (актуальный пакет для Telegram Mini Apps)
 2. Создать composable `useAuth()` для работы с аутентификацией
-3. Реализовать получение `telegram_id` из Telegram WebApp API
-4. Реализовать dev режим с mock `telegram_id` из `.env.development`
-5. Создать middleware `auth.ts` для защиты роутов
-6. Создать функцию автоматического создания пользователя при первом входе
+3. Реализовать три режима аутентификации:
+   - **Telegram Mode**: получение `telegram_id` из Telegram WebApp API
+   - **Browser Mode**: Supabase Auth (email/password, OAuth)
+   - **Dev Mode**: mock `telegram_id` из `.env.development`
+4. Создать middleware `auth.ts` для защиты роутов с редиректом на `/auth/login` для браузера
+5. Создать функцию `find_or_create_telegram_user` в БД
+6. Настроить триггер `on_auth_user_created` для Browser Auth
 
 **Команды:**
 ```bash
-# Установка Telegram SDK
-pnpm add @telegram-apps/sdk-vue
+# Установка Telegram SDK (актуальный пакет)
+pnpm add @tma.js/sdk-vue
 ```
 
 **Критерии завершения:**
 - ✅ В dev режиме используется `VITE_DEV_TELEGRAM_ID`
-- ✅ Создан composable `useAuth()` с методами: `getCurrentUser()`, `isAuthenticated()`, `isAdmin()`
+- ✅ В Telegram режиме используется `window.Telegram.WebApp`
+- ✅ В браузере работает Supabase Auth (email/password)
+- ✅ Создан composable `useAuth()` с методами:
+  - `initialize()` — автоопределение режима и инициализация
+  - `signInWithEmail()`, `signUpWithEmail()` — для браузера
+  - `signInWithOAuth()` — OAuth провайдеры
+  - `signOut()` — выход
+  - `isAuthenticated`, `isAdmin`, `authMode` — computed свойства
 - ✅ Middleware `auth.ts` защищает приватные роуты
 - ✅ При первом входе создается запись в таблице `users`
-- ✅ Можно получить данные текущего пользователя
 
 **Артефакты:**
 - `app/composables/useAuth.ts`
 - `app/middleware/auth.ts`
 - `app/plugins/telegram.client.ts` (инициализация Telegram SDK)
+- `supabase/migrations/XXXXXX_fix_schema.sql` (функции для гибридной auth)
 
 ---
 

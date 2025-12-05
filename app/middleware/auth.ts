@@ -1,9 +1,10 @@
 /**
  * Authentication middleware
  * Protects routes that require authentication
+ * Supports hybrid auth: Telegram + Browser
  */
-export default defineNuxtRouteMiddleware(async () => {
-  const { isAuthenticated, initialize, isLoading } = useAuth()
+export default defineNuxtRouteMiddleware(async (to) => {
+  const { isAuthenticated, initialize, isLoading, authMode } = useAuth()
 
   // Wait for auth initialization if still loading
   if (isLoading.value) {
@@ -15,7 +16,15 @@ export default defineNuxtRouteMiddleware(async () => {
     const user = await initialize()
 
     if (!user) {
-      // Redirect to error page or show message
+      // For browser mode, redirect to login page
+      if (authMode.value === 'browser') {
+        return navigateTo('/auth/login', {
+          redirectCode: 302,
+          replace: true,
+        })
+      }
+
+      // For Telegram/dev mode, show error
       return abortNavigation({
         statusCode: 401,
         message: 'Authentication required',

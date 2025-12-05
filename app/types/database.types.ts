@@ -75,30 +75,27 @@ export type Database = {
       }
       blogs: {
         Row: {
-          created_at: string | null
-          description: string | null
           id: string
           name: string
+          description: string | null
           owner_id: string
-          slug: string
+          created_at: string | null
           updated_at: string | null
         }
         Insert: {
-          created_at?: string | null
-          description?: string | null
           id?: string
           name: string
+          description?: string | null
           owner_id: string
-          slug: string
+          created_at?: string | null
           updated_at?: string | null
         }
         Update: {
-          created_at?: string | null
-          description?: string | null
           id?: string
           name?: string
+          description?: string | null
           owner_id?: string
-          slug?: string
+          created_at?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -117,10 +114,10 @@ export type Database = {
           created_at: string | null
           credentials: Json | null
           id: string
-          identifier: string
+          channel_identifier: string
           is_active: boolean | null
           name: string
-          platform: Database["public"]["Enums"]["social_media_enum"]
+          social_media: Database["public"]["Enums"]["social_media_enum"]
           updated_at: string | null
         }
         Insert: {
@@ -128,10 +125,10 @@ export type Database = {
           created_at?: string | null
           credentials?: Json | null
           id?: string
-          identifier: string
+          channel_identifier: string
           is_active?: boolean | null
           name: string
-          platform: Database["public"]["Enums"]["social_media_enum"]
+          social_media: Database["public"]["Enums"]["social_media_enum"]
           updated_at?: string | null
         }
         Update: {
@@ -139,10 +136,10 @@ export type Database = {
           created_at?: string | null
           credentials?: Json | null
           id?: string
-          identifier?: string
+          channel_identifier?: string
           is_active?: boolean | null
           name?: string
-          platform?: Database["public"]["Enums"]["social_media_enum"]
+          social_media?: Database["public"]["Enums"]["social_media_enum"]
           updated_at?: string | null
         }
         Relationships: [
@@ -157,45 +154,60 @@ export type Database = {
       }
       posts: {
         Row: {
-          author_id: string | null
-          blog_id: string
-          content: string | null
-          created_at: string | null
           id: string
-          media_files: Json | null
-          meta: Json | null
-          published_at: string | null
-          scheduled_at: string | null
-          status: Database["public"]["Enums"]["post_status_enum"] | null
+          channel_id: string
+          author_id: string | null
+          content: string
+          social_media: Database["public"]["Enums"]["social_media_enum"]
+          post_type: Database["public"]["Enums"]["post_type_enum"]
           title: string | null
+          description: string | null
+          author_comment: string | null
+          tags: string[] | null
+          post_date: string | null
+          status: Database["public"]["Enums"]["post_status_enum"] | null
+          scheduled_at: string | null
+          published_at: string | null
+          meta: Json | null
+          created_at: string | null
           updated_at: string | null
         }
         Insert: {
-          author_id?: string | null
-          blog_id: string
-          content?: string | null
-          created_at?: string | null
           id?: string
-          media_files?: Json | null
-          meta?: Json | null
-          published_at?: string | null
-          scheduled_at?: string | null
-          status?: Database["public"]["Enums"]["post_status_enum"] | null
+          channel_id: string
+          author_id?: string | null
+          content: string
+          social_media: Database["public"]["Enums"]["social_media_enum"]
+          post_type: Database["public"]["Enums"]["post_type_enum"]
           title?: string | null
+          description?: string | null
+          author_comment?: string | null
+          tags?: string[] | null
+          post_date?: string | null
+          status?: Database["public"]["Enums"]["post_status_enum"] | null
+          scheduled_at?: string | null
+          published_at?: string | null
+          meta?: Json | null
+          created_at?: string | null
           updated_at?: string | null
         }
         Update: {
-          author_id?: string | null
-          blog_id?: string
-          content?: string | null
-          created_at?: string | null
           id?: string
-          media_files?: Json | null
-          meta?: Json | null
-          published_at?: string | null
-          scheduled_at?: string | null
-          status?: Database["public"]["Enums"]["post_status_enum"] | null
+          channel_id?: string
+          author_id?: string | null
+          content?: string
+          social_media?: Database["public"]["Enums"]["social_media_enum"]
+          post_type?: Database["public"]["Enums"]["post_type_enum"]
           title?: string | null
+          description?: string | null
+          author_comment?: string | null
+          tags?: string[] | null
+          post_date?: string | null
+          status?: Database["public"]["Enums"]["post_status_enum"] | null
+          scheduled_at?: string | null
+          published_at?: string | null
+          meta?: Json | null
+          created_at?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -207,43 +219,46 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "posts_blog_id_fkey"
-            columns: ["blog_id"]
+            foreignKeyName: "posts_channel_id_fkey"
+            columns: ["channel_id"]
             isOneToOne: false
-            referencedRelation: "blogs"
+            referencedRelation: "channels"
             referencedColumns: ["id"]
           },
         ]
       }
       users: {
         Row: {
-          avatar_url: string | null
-          created_at: string | null
-          email: string
-          full_name: string | null
           id: string
-          is_admin: boolean | null
           telegram_id: number | null
+          email: string | null
+          username: string | null
+          full_name: string | null
+          avatar_url: string | null
+          is_admin: boolean | null
+          created_at: string | null
           updated_at: string | null
         }
         Insert: {
-          avatar_url?: string | null
-          created_at?: string | null
-          email: string
-          full_name?: string | null
-          id: string
-          is_admin?: boolean | null
+          id?: string
           telegram_id?: number | null
+          email?: string | null
+          username?: string | null
+          full_name?: string | null
+          avatar_url?: string | null
+          is_admin?: boolean | null
+          created_at?: string | null
           updated_at?: string | null
         }
         Update: {
-          avatar_url?: string | null
-          created_at?: string | null
-          email?: string
-          full_name?: string | null
           id?: string
-          is_admin?: boolean | null
           telegram_id?: number | null
+          email?: string | null
+          username?: string | null
+          full_name?: string | null
+          avatar_url?: string | null
+          is_admin?: boolean | null
+          created_at?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -255,19 +270,20 @@ export type Database = {
     Functions: {
       find_or_create_telegram_user: {
         Args: {
-          p_first_name?: string
-          p_last_name?: string
           p_telegram_id: number
           p_username?: string
+          p_first_name?: string
+          p_last_name?: string
         }
         Returns: {
-          avatar_url: string | null
-          created_at: string | null
-          email: string
-          full_name: string | null
           id: string
-          is_admin: boolean | null
           telegram_id: number | null
+          email: string | null
+          username: string | null
+          full_name: string | null
+          avatar_url: string | null
+          is_admin: boolean | null
+          created_at: string | null
           updated_at: string | null
         }
         SetofOptions: {
@@ -279,16 +295,15 @@ export type Database = {
       }
     }
     Enums: {
-      blog_role: "owner" | "editor" | "viewer"
+      blog_role: "owner" | "admin" | "editor" | "viewer"
       post_status_enum: "draft" | "scheduled" | "published" | "failed"
       post_type_enum:
-        | "text"
-        | "photo"
+        | "post"
+        | "article"
+        | "news"
         | "video"
-        | "audio"
-        | "document"
-        | "album"
-      social_media_enum: "telegram" | "instagram" | "vk"
+        | "short"
+      social_media_enum: "telegram" | "instagram" | "vk" | "youtube" | "tiktok" | "x" | "facebook" | "site"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -419,10 +434,10 @@ export const Constants = {
   },
   public: {
     Enums: {
-      blog_role: ["owner", "editor", "viewer"],
+      blog_role: ["owner", "admin", "editor", "viewer"],
       post_status_enum: ["draft", "scheduled", "published", "failed"],
-      post_type_enum: ["text", "photo", "video", "audio", "document", "album"],
-      social_media_enum: ["telegram", "instagram", "vk"],
+      post_type_enum: ["post", "article", "news", "video", "short"],
+      social_media_enum: ["telegram", "instagram", "vk", "youtube", "tiktok", "x", "facebook", "site"],
     },
   },
 } as const

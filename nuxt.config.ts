@@ -13,11 +13,11 @@ export default defineNuxtConfig({
 
   i18n: {
     locales: [
-      { code: 'ru', name: 'Русский', file: 'ru.json' },
-      { code: 'en', name: 'English', file: 'en.json' },
+      { code: 'ru', name: 'Русский', file: 'ru.json', iso: 'ru-RU' },
+      { code: 'en', name: 'English', file: 'en.json', iso: 'en-US' },
     ],
     defaultLocale: 'ru',
-    // Path to locale files relative to srcDir (app/)
+    // Path to locale files (i18n module looks in i18n/locales by default)
     langDir: 'locales',
     // URL without language prefix for Mini App
     strategy: 'no_prefix',
@@ -25,6 +25,10 @@ export default defineNuxtConfig({
       useCookie: true,
       cookieKey: 'i18n_locale',
       fallbackLocale: 'ru',
+      // Redirect only on first visit, then use cookie
+      redirectOn: 'root',
+      // Detect from browser Accept-Language header
+      alwaysRedirect: false,
     },
   },
 
