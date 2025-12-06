@@ -95,7 +95,7 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
 </script>
 
 <template>
-  <div>
+  <div class="max-w-4xl mx-auto">
     <!-- Page header -->
     <div class="flex items-center justify-between mb-6">
       <div>

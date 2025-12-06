@@ -197,7 +197,7 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
     </div>
 
     <!-- Edit mode -->
-    <div v-else-if="isEditMode && canEdit(currentBlog)">
+    <div v-else-if="isEditMode && canEdit(currentBlog)" class="max-w-4xl mx-auto">
       <FormsBlogForm
         :blog="currentBlog"
         :is-loading="isSaving"

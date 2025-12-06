@@ -105,7 +105,7 @@ function formatDate(date: string | null | undefined): string {
 </script>
 
 <template>
-  <div>
+  <div class="max-w-4xl mx-auto">
     <!-- Page header -->
     <div class="mb-6">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">

@@ -31,10 +31,16 @@ function handleCancel() {
 </script>
 
 <template>
-  <div>
+  <div class="max-w-4xl mx-auto">
     <!-- Back button -->
     <div class="mb-6">
-      <UButton variant="ghost" color="neutral" icon="i-heroicons-arrow-left" @click="handleCancel">
+      <UButton
+        variant="ghost"
+        color="neutral"
+        icon="i-heroicons-arrow-left"
+        class="-ml-2.5"
+        @click="handleCancel"
+      >
         {{ t('common.back') }}
       </UButton>
     </div>

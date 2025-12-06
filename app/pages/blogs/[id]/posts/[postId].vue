@@ -179,7 +179,7 @@ function formatDateTime(date: string | null): string {
     </div>
 
     <!-- Edit mode -->
-    <div v-else-if="isEditMode && canEdit(currentPost)">
+    <div v-else-if="isEditMode && canEdit(currentPost)" class="max-w-4xl mx-auto">
       <FormsPostForm
         :blog-id="blogId"
         :post="currentPost"

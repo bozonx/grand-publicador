@@ -360,7 +360,10 @@ const activeStatusOptions = [
             :blog-id="blogId"
             :channel="channelToEdit"
             @success="handleUpdateSuccess"
-            @cancel="isEditModalOpen = false; channelToEdit = null"
+            @cancel="
+              isEditModalOpen = false
+              channelToEdit = null
+            "
           />
         </div>
       </template>
@@ -399,7 +402,10 @@ const activeStatusOptions = [
               color="neutral"
               variant="ghost"
               :disabled="isDeleting"
-              @click="isDeleteModalOpen = false; channelToDelete = null"
+              @click="
+                isDeleteModalOpen = false
+                channelToDelete = null
+              "
             >
               {{ t('common.cancel') }}
             </UButton>

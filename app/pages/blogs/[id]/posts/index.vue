@@ -463,7 +463,10 @@ const hasActiveFilters = computed(() => {
               color="neutral"
               variant="ghost"
               :disabled="isDeleting"
-              @click="showDeleteModal = false; postToDelete = null"
+              @click="
+                showDeleteModal = false
+                postToDelete = null
+              "
             >
               {{ t('common.cancel') }}
             </UButton>
