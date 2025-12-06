@@ -86,6 +86,14 @@ async function handleToggleAdmin() {
 }
 
 /**
+ * Cancel admin toggle
+ */
+function cancelToggle() {
+  showConfirmModal.value = false
+  userToToggle.value = null
+}
+
+/**
  * Reset all filters
  */
 function resetFilters() {
@@ -429,10 +437,7 @@ const hasActiveFilters = computed(() => {
               color="neutral"
               variant="ghost"
               :disabled="isToggling"
-              @click="
-                showConfirmModal = false
-                userToToggle = null
-              "
+              @click="cancelToggle"
             >
               {{ t('common.cancel') }}
             </UButton>
