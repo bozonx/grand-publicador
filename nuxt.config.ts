@@ -1,3 +1,5 @@
+import tailwindcss from '@tailwindcss/vite'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   // Включаем поддержку новой структуры папок Nuxt 4 (app/ вместо корня)
@@ -69,5 +71,10 @@ export default defineNuxtConfig({
       devTelegramId: process.env.VITE_DEV_TELEGRAM_ID || '',
       appName: process.env.VITE_APP_NAME || 'Grand Publicador',
     },
+  },
+  vite: {
+    plugins: [
+      tailwindcss(),
+    ],
   },
 })
