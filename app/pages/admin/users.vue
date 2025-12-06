@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { UserWithStats } from '~/composables/useUsers'
+import type { UserWithStats } from '~/stores/users'
 
 definePageMeta({
   middleware: ['auth', 'admin'],

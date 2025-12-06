@@ -1,4 +1,4 @@
-import { storeToRefs } from 'pinia'
+
 import type { Database } from '~/types/database.types'
 import { useBlogsStore } from '~/stores/blogs'
 import type { BlogWithRole, BlogMemberWithUser, BlogWithOwner } from '~/stores/blogs'
@@ -7,6 +7,7 @@ import { formatError } from '~/utils/error'
 type Blog = Database['public']['Tables']['blogs']['Row']
 type BlogInsert = Database['public']['Tables']['blogs']['Insert']
 type BlogUpdate = Database['public']['Tables']['blogs']['Update']
+type BlogRole = Database['public']['Enums']['blog_role']
 
 
 /**

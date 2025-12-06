@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+
 import type { Database } from '~/types/database.types'
 
 type Blog = Database['public']['Tables']['blogs']['Row']

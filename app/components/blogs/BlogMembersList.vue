@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
-import type { BlogMemberWithUser } from '~/composables/useBlogs'
+import type { BlogMemberWithUser } from '~/stores/blogs'
 import type { TableColumn } from '@nuxt/ui'
 
 // Re-defining BadgeColor locally as it matches UBadge prop type

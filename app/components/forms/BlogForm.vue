@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { BlogWithRole } from '~/composables/useBlogs'
+import type { BlogWithRole } from '~/stores/blogs'
 
 interface Props {
   /** Blog data for editing, null for creating new */
