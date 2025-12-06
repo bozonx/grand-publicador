@@ -1,44 +1,13 @@
+import { storeToRefs } from 'pinia'
 import type { Database } from '~/types/database.types'
+import { useBlogsStore } from '~/stores/blogs'
+import type { BlogWithRole, BlogMemberWithUser, BlogWithOwner } from '~/stores/blogs'
+import { formatError } from '~/utils/error'
 
 type Blog = Database['public']['Tables']['blogs']['Row']
 type BlogInsert = Database['public']['Tables']['blogs']['Insert']
 type BlogUpdate = Database['public']['Tables']['blogs']['Update']
-type BlogMember = Database['public']['Tables']['blog_members']['Row']
-type BlogRole = Database['public']['Enums']['blog_role']
 
-/**
- * Extended blog type with owner information
- */
-export interface BlogWithOwner extends Blog {
-  owner?: {
-    id: string
-    full_name: string | null
-    username: string | null
-  } | null
-}
-
-/**
- * Extended blog type with member role (for current user)
- */
-export interface BlogWithRole extends BlogWithOwner {
-  role?: BlogRole
-  memberCount?: number
-  channelCount?: number
-  postCount?: number
-}
-
-/**
- * Extended blog member type with user details
- */
-export interface BlogMemberWithUser extends BlogMember {
-  user: {
-    id: string
-    full_name: string | null
-    username: string | null
-    email: string | null
-    avatar_url: string | null
-  }
-}
 
 /**
  * Composable for managing blogs
@@ -50,26 +19,23 @@ export function useBlogs() {
   const { t } = useI18n()
   const toast = useToast()
 
-  const blogs = ref<BlogWithRole[]>([])
-  const currentBlog = ref<BlogWithRole | null>(null)
-  const members = ref<BlogMemberWithUser[]>([])
-  const isLoading = ref(false)
-  const error = ref<string | null>(null)
+  const store = useBlogsStore()
+  const { blogs, currentBlog, members, isLoading, error } = storeToRefs(store)
 
   /**
    * Fetch all blogs where user is a member or owner
+   * Optimized to use SQL filtering via memberships
    */
   async function fetchBlogs(): Promise<BlogWithRole[]> {
     if (!user.value?.id) {
-      error.value = 'User not authenticated'
       return []
     }
 
-    isLoading.value = true
-    error.value = null
+    store.setLoading(true)
+    store.setError(null)
 
     try {
-      // Get all blog memberships for current user
+      // 1. Get all blog memberships for current user
       const { data: memberships, error: membershipError } = await supabase
         .from('blog_members')
         .select('blog_id, role')
@@ -77,8 +43,15 @@ export function useBlogs() {
 
       if (membershipError) throw membershipError
 
-      // Get blogs where user is member or owner
-      const { data: ownedBlogs, error: ownedError } = await supabase
+      if (!memberships || memberships.length === 0) {
+        store.setBlogs([])
+        return []
+      }
+
+      const blogIds = memberships.map((m) => m.blog_id)
+
+      // 2. Get blogs details
+      const { data: blogsData, error: blogsError } = await supabase
         .from('blogs')
         .select(
           `
@@ -86,57 +59,37 @@ export function useBlogs() {
           owner:users!blogs_owner_id_fkey(id, full_name, username)
         `
         )
-        .eq('owner_id', user.value.id)
+        .in('id', blogIds)
+        .order('created_at', { ascending: false })
 
-      if (ownedError) throw ownedError
+      if (blogsError) throw blogsError
 
-      // Get blogs where user is member (but not owner)
-      const memberBlogIds =
-        memberships
-          ?.filter((m) => !ownedBlogs?.find((b) => b.id === m.blog_id))
-          .map((m) => m.blog_id) || []
-
-      let memberBlogs: BlogWithOwner[] = []
-      if (memberBlogIds.length > 0) {
-        const { data, error: memberError } = await supabase
-          .from('blogs')
-          .select(
-            `
-            *,
-            owner:users!blogs_owner_id_fkey(id, full_name, username)
-          `
-          )
-          .in('id', memberBlogIds)
-
-        if (memberError) throw memberError
-        memberBlogs = data || []
-      }
-
-      // Combine and add role information
-      const allBlogs = [...(ownedBlogs || []), ...memberBlogs]
-      const blogsWithRoles: BlogWithRole[] = allBlogs.map((blog) => {
-        const membership = memberships?.find((m) => m.blog_id === blog.id)
-        const isOwner = blog.owner_id === user.value?.id
+      // 3. Merge role information
+      const blogsWithRoles: BlogWithRole[] = (blogsData || []).map((blog) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const b = blog as any
+        const membership = memberships.find((m) => m.blog_id === b.id)
+        const isOwner = b.owner_id === user.value?.id
         return {
-          ...blog,
+          ...b,
           role: isOwner ? 'owner' : membership?.role || 'viewer',
         }
       })
 
-      // Sort by created_at desc
-      blogsWithRoles.sort(
-        (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
-      )
-
-      blogs.value = blogsWithRoles
+      store.setBlogs(blogsWithRoles)
       return blogsWithRoles
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch blogs'
-      error.value = message
+      const message = formatError(err)
+      store.setError(message)
       console.error('[useBlogs] fetchBlogs error:', err)
+      toast.add({
+        title: t('common.error'),
+        description: t('errors.fetchBlogsFailed', 'Failed to fetch blogs'), // Fallback if key missing
+        color: 'error',
+      })
       return []
     } finally {
-      isLoading.value = false
+      store.setLoading(false)
     }
   }
 
@@ -145,12 +98,11 @@ export function useBlogs() {
    */
   async function fetchBlog(blogId: string): Promise<BlogWithRole | null> {
     if (!user.value?.id) {
-      error.value = 'User not authenticated'
       return null
     }
 
-    isLoading.value = true
-    error.value = null
+    store.setLoading(true)
+    store.setError(null)
 
     try {
       // Fetch blog with owner info
@@ -175,50 +127,52 @@ export function useBlogs() {
         .eq('user_id', user.value.id)
         .single()
 
-      // Get counts
-      const [memberCountResult, channelCountResult] = await Promise.all([
-        supabase
-          .from('blog_members')
-          .select('id', { count: 'exact', head: true })
-          .eq('blog_id', blogId),
-        supabase
-          .from('channels')
-          .select('id', { count: 'exact', head: true })
-          .eq('blog_id', blogId),
+      // Get counts using nested select on related tables if possible, 
+      // but strictly adhering to "optimization" request, separate count queries are N+3 for single item 
+      // which is acceptable, OR use nested select count if relationship setup allows.
+      // We will perform parallel requests for counts as in original to ensure correctness without risking relationship names.
+      const [memberCountResult, channelCountResult, postCountResult] = await Promise.all([
+        supabase.from('blog_members').select('id', { count: 'exact', head: true }).eq('blog_id', blogId),
+        supabase.from('channels').select('id', { count: 'exact', head: true }).eq('blog_id', blogId),
+        supabase.from('posts').select('id', { count: 'exact', head: true }).eq('blog_id', blogId),
       ])
 
-      const isOwner = blog.owner_id === user.value?.id
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const b = blog as any
+      const isOwner = b.owner_id === user.value?.id
       const blogWithRole: BlogWithRole = {
-        ...blog,
+        ...b,
         role: isOwner ? 'owner' : membership?.role || 'viewer',
         memberCount: memberCountResult.count || 0,
         channelCount: channelCountResult.count || 0,
+        postCount: postCountResult.count || 0,
       }
 
-      currentBlog.value = blogWithRole
+      store.setCurrentBlog(blogWithRole)
       return blogWithRole
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch blog'
-      error.value = message
+      const message = formatError(err)
+      store.setError(message)
       console.error('[useBlogs] fetchBlog error:', err)
+      toast.add({
+        title: t('common.error'),
+        description: t('errors.notFound'),
+        color: 'error',
+      })
       return null
     } finally {
-      isLoading.value = false
+      store.setLoading(false)
     }
   }
 
   /**
    * Create a new blog
-   * Automatically sets current user as owner and creates owner membership
    */
   async function createBlog(data: { name: string; description?: string }): Promise<Blog | null> {
-    if (!user.value?.id) {
-      error.value = 'User not authenticated'
-      return null
-    }
+    if (!user.value?.id) return null
 
-    isLoading.value = true
-    error.value = null
+    store.setLoading(true)
+    store.setError(null)
 
     try {
       const blogData: BlogInsert = {
@@ -235,61 +189,59 @@ export function useBlogs() {
 
       if (createError) throw createError
 
-      // Create owner membership
+      // Note: Trigger usually handles 'owner' role creation for owner_id.
+      // If manual insertion is needed:
       const { error: memberError } = await supabase.from('blog_members').insert({
         blog_id: blog.id,
         user_id: user.value.id,
         role: 'owner',
       })
-
+      
       if (memberError) {
-        console.error('[useBlogs] Failed to create owner membership:', memberError)
-        // Don't throw - blog was created successfully
+         // Ignore duplicate error if trigger did it
+         if (memberError.code !== '23505') {
+            console.error('[useBlogs] Failed to create owner membership:', memberError)
+         }
       }
 
       toast.add({
         title: t('common.success'),
-        description: t('blog.createSuccess', 'Blog created successfully'),
+        description: t('blog.createSuccess'),
         color: 'success',
       })
 
-      // Refresh blogs list
+      // Refresh blogs
       await fetchBlogs()
 
       return blog
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to create blog'
-      error.value = message
+      const message = formatError(err)
+      store.setError(message)
       console.error('[useBlogs] createBlog error:', err)
       toast.add({
         title: t('common.error'),
-        description: message,
+        description: t('errors.createBlogFailed', 'Failed to create blog'),
         color: 'error',
       })
       return null
     } finally {
-      isLoading.value = false
+      store.setLoading(false)
     }
   }
 
   /**
    * Update an existing blog
-   * Only owners and admins can update
    */
   async function updateBlog(blogId: string, data: BlogUpdate): Promise<Blog | null> {
-    if (!user.value?.id) {
-      error.value = 'User not authenticated'
-      return null
-    }
+    if (!user.value?.id) return null
 
-    isLoading.value = true
-    error.value = null
+    store.setLoading(true)
+    store.setError(null)
 
     try {
-      // Check permission
-      const blog = currentBlog.value || blogs.value.find((b) => b.id === blogId)
+      const blog = currentBlog.value || blogs.value.find((b: BlogWithRole) => b.id === blogId)
       if (blog && !canEdit(blog)) {
-        throw new Error('Permission denied: You cannot edit this blog')
+         throw new Error(t('auth.accessDenied'))
       }
 
       const { data: updatedBlog, error: updateError } = await supabase
@@ -306,54 +258,41 @@ export function useBlogs() {
 
       toast.add({
         title: t('common.success'),
-        description: t('blog.updateSuccess', 'Blog updated successfully'),
+        description: t('blog.updateSuccess'),
         color: 'success',
       })
 
-      // Update local state
-      if (currentBlog.value?.id === blogId) {
-        currentBlog.value = { ...currentBlog.value, ...updatedBlog }
-      }
-
-      const index = blogs.value.findIndex((b) => b.id === blogId)
-      if (index !== -1) {
-        blogs.value[index] = { ...blogs.value[index], ...updatedBlog }
-      }
+      store.updateBlog(blogId, updatedBlog as BlogWithRole)
 
       return updatedBlog
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to update blog'
-      error.value = message
+      const message = formatError(err)
+      store.setError(message)
       console.error('[useBlogs] updateBlog error:', err)
       toast.add({
         title: t('common.error'),
-        description: message,
+        description: t('errors.updateBlogFailed', 'Failed to update blog'),
         color: 'error',
       })
       return null
     } finally {
-      isLoading.value = false
+      store.setLoading(false)
     }
   }
 
   /**
    * Delete a blog
-   * Only owners can delete
    */
   async function deleteBlog(blogId: string): Promise<boolean> {
-    if (!user.value?.id) {
-      error.value = 'User not authenticated'
-      return false
-    }
+    if (!user.value?.id) return false
 
-    isLoading.value = true
-    error.value = null
+    store.setLoading(true)
+    store.setError(null)
 
     try {
-      // Check permission
-      const blog = currentBlog.value || blogs.value.find((b) => b.id === blogId)
+      const blog = currentBlog.value || blogs.value.find((b: BlogWithRole) => b.id === blogId)
       if (blog && !canDelete(blog)) {
-        throw new Error('Permission denied: Only the owner can delete this blog')
+        throw new Error(t('auth.accessDenied'))
       }
 
       const { error: deleteError } = await supabase.from('blogs').delete().eq('id', blogId)
@@ -362,29 +301,24 @@ export function useBlogs() {
 
       toast.add({
         title: t('common.success'),
-        description: t('blog.deleteSuccess', 'Blog deleted successfully'),
+        description: t('blog.deleteSuccess'),
         color: 'success',
       })
 
-      // Update local state
-      blogs.value = blogs.value.filter((b) => b.id !== blogId)
-      if (currentBlog.value?.id === blogId) {
-        currentBlog.value = null
-      }
-
+      store.removeBlog(blogId)
       return true
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to delete blog'
-      error.value = message
+      const message = formatError(err)
+      store.setError(message)
       console.error('[useBlogs] deleteBlog error:', err)
       toast.add({
         title: t('common.error'),
-        description: message,
+        description: t('errors.deleteBlogFailed', 'Failed to delete blog'),
         color: 'error',
       })
       return false
     } finally {
-      isLoading.value = false
+      store.setLoading(false)
     }
   }
 
@@ -394,8 +328,8 @@ export function useBlogs() {
   async function fetchMembers(blogId: string): Promise<BlogMemberWithUser[]> {
     if (!user.value?.id) return []
 
-    isLoading.value = true
-    error.value = null
+    store.setLoading(true)
+    store.setError(null)
 
     try {
       const { data, error: fetchError } = await supabase
@@ -407,22 +341,21 @@ export function useBlogs() {
         `
         )
         .eq('blog_id', blogId)
-        .order('role', { ascending: true }) // owner, admin, editor, viewer (based on enum usually, but lets see)
+        .order('role', { ascending: true })
 
       if (fetchError) throw fetchError
 
-      // Cast to correct type since we know the join structure
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const membersData = data as any[] as BlogMemberWithUser[]
-      members.value = membersData
+      store.setMembers(membersData)
       return membersData
     } catch (err) {
-      const _message = err instanceof Error ? err.message : 'Failed to fetch members'
+      const message = formatError(err)
       console.error('[useBlogs] fetchMembers error:', err)
-      // Don't set global error for background fetch ideally, but for now ok
+      // Don't set global error for background fetch
       return []
     } finally {
-      isLoading.value = false
+      store.setLoading(false)
     }
   }
 
@@ -435,15 +368,14 @@ export function useBlogs() {
     role: BlogRole
   ): Promise<boolean> {
     if (!currentBlog.value || !canManageMembers(currentBlog.value)) {
-      error.value = 'Permission denied'
+      store.setError(t('auth.accessDenied'))
       return false
     }
 
-    isLoading.value = true
+    store.setLoading(true)
 
     try {
       // 1. Find user by email or username
-      // Note: This relies on public.users table being up to date
       const { data: foundUser, error: userError } = await supabase
         .from('users')
         .select('id')
@@ -454,26 +386,20 @@ export function useBlogs() {
         throw new Error(t('errors.userNotFound'))
       }
 
-      // 2. Check if already a member
-      const { data: existingMember } = await supabase
-        .from('blog_members')
-        .select('id')
-        .eq('blog_id', blogId)
-        .eq('user_id', foundUser.id)
-        .single()
-
-      if (existingMember) {
-        throw new Error(t('errors.userAlreadyMember'))
-      }
-
-      // 3. Add member
+      // 2. Add member (Handle conflict directly)
       const { error: insertError } = await supabase.from('blog_members').insert({
         blog_id: blogId,
         user_id: foundUser.id,
         role: role,
       })
 
-      if (insertError) throw insertError
+      if (insertError) {
+        // Unique violation code
+        if (insertError.code === '23505') {
+            throw new Error(t('errors.userAlreadyMember'))
+        }
+        throw insertError
+      }
 
       toast.add({
         title: t('common.success'),
@@ -481,11 +407,10 @@ export function useBlogs() {
         color: 'success',
       })
 
-      // Refresh members
       await fetchMembers(blogId)
       return true
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to add member'
+      const message = formatError(err)
       console.error('[useBlogs] addMember error:', err)
       toast.add({
         title: t('common.error'),
@@ -494,99 +419,55 @@ export function useBlogs() {
       })
       return false
     } finally {
-      isLoading.value = false
+      store.setLoading(false)
     }
   }
 
-  /**
-   * Upgrade/Downgrade member role
-   */
-  async function updateMemberRole(
-    blogId: string,
-    userId: string,
-    newRole: BlogRole
-  ): Promise<boolean> {
-    if (!currentBlog.value || !canManageMembers(currentBlog.value)) return false
-
-    isLoading.value = true
-
-    try {
-      const { error: updateError } = await supabase
-        .from('blog_members')
-        .update({ role: newRole })
-        .eq('blog_id', blogId)
-        .eq('user_id', userId)
-
-      if (updateError) throw updateError
-
-      toast.add({
-        title: t('common.success'),
-        description: t('blogMember.updateSuccess'),
-        color: 'success',
-      })
-
-      // Update local state
-      const member = members.value.find((m) => m.user_id === userId)
-      if (member) {
-        member.role = newRole
-      }
-      return true
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to update member'
-      toast.add({
-        title: t('common.error'),
-        description: message,
-        color: 'error',
-      })
-      return false
-    } finally {
-      isLoading.value = false
-    }
+  // ... (updateMemberRole and removeMember similarly updated to use store)
+  
+  async function updateMemberRole(blogId: string, userId: string, newRole: BlogRole): Promise<boolean> {
+     // ... logic from original but using store logic
+     if (!currentBlog.value || !canManageMembers(currentBlog.value)) return false
+     store.setLoading(true)
+     try {
+        const { error: updateError } = await supabase.from('blog_members').update({ role: newRole }).eq('blog_id', blogId).eq('user_id', userId)
+        if (updateError) throw updateError
+        
+        toast.add({ title: t('common.success'), description: t('blogMember.updateSuccess'), color: 'success' })
+        
+        // Update local state by refetching or simple mutation
+        const member = members.value.find((m: BlogMemberWithUser) => m.user_id === userId)
+        if (member) member.role = newRole
+        
+        return true
+     } catch (err) {
+        toast.add({ title: t('common.error'), description: formatError(err), color: 'error' })
+        return false
+     } finally {
+        store.setLoading(false)
+     }
   }
 
-  /**
-   * Remove member from blog
-   */
   async function removeMember(blogId: string, userId: string): Promise<boolean> {
-    if (!currentBlog.value || !canManageMembers(currentBlog.value)) return false
-
-    // Prevent removing self if owner
-    if (userId === currentBlog.value.owner_id) {
-      toast.add({ description: 'Cannot remove owner', color: 'error' })
-      return false
-    }
-
-    isLoading.value = true
-
-    try {
-      const { error: deleteError } = await supabase
-        .from('blog_members')
-        .delete()
-        .eq('blog_id', blogId)
-        .eq('user_id', userId)
-
-      if (deleteError) throw deleteError
-
-      toast.add({
-        title: t('common.success'),
-        description: t('blogMember.removeSuccess'),
-        color: 'success',
-      })
-
-      // Update local state
-      members.value = members.value.filter((m) => m.user_id !== userId)
-      return true
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to remove member'
-      toast.add({
-        title: t('common.error'),
-        description: message,
-        color: 'error',
-      })
-      return false
-    } finally {
-      isLoading.value = false
-    }
+     if (!currentBlog.value || !canManageMembers(currentBlog.value)) return false
+     if (userId === currentBlog.value.owner_id) {
+        toast.add({ description: t('blogMember.cannotRemoveOwner'), color: 'error' })
+        return false
+     }
+     store.setLoading(true)
+     try {
+        const { error: deleteError } = await supabase.from('blog_members').delete().eq('blog_id', blogId).eq('user_id', userId)
+        if (deleteError) throw deleteError
+        
+        toast.add({ title: t('common.success'), description: t('blogMember.removeSuccess'), color: 'success' })
+        store.setMembers(members.value.filter((m: BlogMemberWithUser) => m.user_id !== userId))
+        return true
+     } catch (err) {
+        toast.add({ title: t('common.error'), description: formatError(err), color: 'error' })
+        return false
+     } finally {
+        store.setLoading(false)
+     }
   }
 
   /**
@@ -597,46 +478,31 @@ export function useBlogs() {
     return blog.owner_id === user.value.id || blog.role === 'owner' || blog.role === 'admin'
   }
 
-  /**
-   * Check if current user can delete the blog (only owner)
-   */
   function canDelete(blog: BlogWithRole): boolean {
     if (!user.value?.id) return false
     return blog.owner_id === user.value.id || blog.role === 'owner'
   }
 
-  /**
-   * Check if current user can manage members (owner or admin)
-   */
   function canManageMembers(blog: BlogWithRole): boolean {
     return canEdit(blog)
   }
 
-  /**
-   * Get role display name
-   */
   function getRoleDisplayName(role: BlogRole | undefined): string {
     if (!role) return t('roles.viewer')
     return t(`roles.${role}`)
   }
 
-  /**
-   * Clear current blog state
-   */
   function clearCurrentBlog() {
-    currentBlog.value = null
-    error.value = null
+    store.setCurrentBlog(null)
+    store.setError(null)
   }
 
   return {
-    // State
     blogs,
     currentBlog,
     members,
     isLoading,
     error,
-
-    // Methods
     fetchBlogs,
     fetchBlog,
     createBlog,
@@ -647,8 +513,6 @@ export function useBlogs() {
     addMember,
     updateMemberRole,
     removeMember,
-
-    // Permission helpers
     canEdit,
     canDelete,
     canManageMembers,

@@ -3,7 +3,7 @@ definePageMeta({
   middleware: 'auth',
 })
 
-const { t } = useI18n()
+const { t, d } = useI18n()
 const router = useRouter()
 const route = useRoute()
 
@@ -114,13 +114,7 @@ function cancelDelete() {
   showDeleteModal.value = false
 }
 
-/**
- * Format date for display
- */
-function formatDate(date: string | null): string {
-  if (!date) return '-'
-  return new Date(date).toLocaleDateString()
-}
+
 
 /**
  * Get role badge color based on role
@@ -244,7 +238,7 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
                 </span>
                 <span class="flex items-center gap-1">
                   <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
-                  {{ formatDate(currentBlog.created_at) }}
+                  {{ d(new Date(currentBlog.created_at || ''), 'long') }}
                 </span>
               </div>
             </div>
@@ -417,13 +411,13 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
                 {{ t('user.createdAt') }}
               </dt>
               <dd class="text-sm text-gray-900 dark:text-white">
-                {{ formatDate(currentBlog.created_at) }}
+                {{ d(new Date(currentBlog.created_at || ''), 'long') }}
               </dd>
             </div>
             <div v-if="currentBlog.updated_at" class="flex flex-col sm:flex-row sm:gap-4">
               <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:w-40">Updated</dt>
               <dd class="text-sm text-gray-900 dark:text-white">
-                {{ formatDate(currentBlog.updated_at) }}
+                {{ d(new Date(currentBlog.updated_at), 'long') }}
               </dd>
             </div>
           </dl>

@@ -5,7 +5,16 @@ definePageMeta({
   middleware: ['auth', 'admin'],
 })
 
-const { t } = useI18n()
+const { t, d } = useI18n()
+
+const columns = [
+  { key: 'user', label: t('user.username') },
+  { key: 'email', label: t('auth.email') },
+  { key: 'role', label: t('user.role') },
+  { key: 'stats', label: t('admin.statistics') },
+  { key: 'created_at', label: t('user.createdAt') },
+  { key: 'actions', label: t('common.actions') }
+]
 
 const {
   users,
@@ -103,13 +112,7 @@ function resetFilters() {
   fetchUsers()
 }
 
-/**
- * Format date
- */
-function formatDate(date: string | null): string {
-  if (!date) return '-'
-  return new Date(date).toLocaleDateString()
-}
+
 
 /**
  * Check if any filter is active
@@ -117,6 +120,8 @@ function formatDate(date: string | null): string {
 const hasActiveFilters = computed(() => {
   return selectedAdminFilter.value !== null || searchQuery.value
 })
+
+const rows = computed<UserWithStats[]>(() => users.value)
 </script>
 
 <template>
@@ -216,126 +221,77 @@ const hasActiveFilters = computed(() => {
 
     <!-- Users table -->
     <div v-else class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead class="bg-gray-50 dark:bg-gray-700/50">
-            <tr>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-              >
-                {{ t('user.username') }}
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-              >
-                {{ t('auth.email') }}
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-              >
-                {{ t('user.role') }}
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-              >
-                {{ t('admin.statistics', 'Statistics') }}
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-              >
-                {{ t('user.createdAt') }}
-              </th>
-              <th
-                class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-              >
-                {{ t('common.actions') }}
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-            <tr
-              v-for="user in users"
-              :key="user.id"
-              class="hover:bg-gray-50 dark:hover:bg-gray-700/30"
+      <UTable
+        :rows="rows"
+        :columns="columns"
+        :loading="isLoading"
+      >
+        <!-- User info column -->
+        <template #user-data="{ row }">
+          <div class="flex items-center gap-3">
+            <UAvatar
+              :src="row.avatar_url ?? undefined"
+              :alt="getUserDisplayName(row)"
+              size="sm"
             >
-              <!-- User info -->
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center gap-3">
-                  <UAvatar
-                    :src="user.avatar_url ?? undefined"
-                    :alt="getUserDisplayName(user)"
-                    size="sm"
-                  >
-                    <template #fallback>
-                      <span class="text-xs">{{ getUserInitials(user) }}</span>
-                    </template>
-                  </UAvatar>
-                  <div>
-                    <div class="font-medium text-gray-900 dark:text-white">
-                      {{ user.full_name || '-' }}
-                    </div>
-                    <div class="text-sm text-gray-500">@{{ user.username || 'no-username' }}</div>
-                  </div>
-                </div>
-              </td>
+              <template #fallback>
+                <span class="text-xs">{{ getUserInitials(row) }}</span>
+              </template>
+            </UAvatar>
+            <div>
+              <div class="font-medium text-gray-900 dark:text-white">
+                {{ row.full_name || '-' }}
+              </div>
+              <div class="text-sm text-gray-500">@{{ row.username || 'no-username' }}</div>
+            </div>
+          </div>
+        </template>
 
-              <!-- Email -->
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                {{ user.email || '-' }}
-              </td>
+        <!-- Role column -->
+        <template #role-data="{ row }">
+          <UBadge
+            :color="row.is_admin ? 'primary' : 'neutral'"
+            :variant="row.is_admin ? 'solid' : 'outline'"
+            size="sm"
+          >
+            {{ row.is_admin ? t('user.isAdmin') : t('admin.regularUser') }}
+          </UBadge>
+        </template>
 
-              <!-- Role -->
-              <td class="px-6 py-4 whitespace-nowrap">
-                <UBadge
-                  :color="user.is_admin ? 'primary' : 'neutral'"
-                  :variant="user.is_admin ? 'solid' : 'outline'"
-                  size="sm"
-                >
-                  {{ user.is_admin ? t('user.isAdmin') : t('admin.regularUser', 'User') }}
-                </UBadge>
-              </td>
+        <!-- Statistics column -->
+        <template #stats-data="{ row }">
+          <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+            <span class="flex items-center gap-1">
+              <UIcon name="i-heroicons-book-open" class="w-4 h-4" />
+              {{ row.blogsCount || 0 }} {{ t('blog.titlePlural').toLowerCase() }}
+            </span>
+            <span class="flex items-center gap-1">
+              <UIcon name="i-heroicons-document-text" class="w-4 h-4" />
+              {{ row.postsCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
+            </span>
+          </div>
+        </template>
 
-              <!-- Statistics -->
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                  <span class="flex items-center gap-1">
-                    <UIcon name="i-heroicons-book-open" class="w-4 h-4" />
-                    {{ user.blogsCount || 0 }} {{ t('blog.titlePlural').toLowerCase() }}
-                  </span>
-                  <span class="flex items-center gap-1">
-                    <UIcon name="i-heroicons-document-text" class="w-4 h-4" />
-                    {{ user.postsCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
-                  </span>
-                </div>
-              </td>
+        <!-- Created at column -->
+        <template #created_at-data="{ row }">
+          {{ d(new Date(row.created_at), 'long') }}
+        </template>
 
-              <!-- Created at -->
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                {{ formatDate(user.created_at) }}
-              </td>
-
-              <!-- Actions -->
-              <td class="px-6 py-4 whitespace-nowrap text-right">
-                <UButton
-                  :color="user.is_admin ? 'warning' : 'success'"
-                  variant="ghost"
-                  size="sm"
-                  :icon="
-                    user.is_admin ? 'i-heroicons-shield-exclamation' : 'i-heroicons-shield-check'
-                  "
-                  @click="confirmToggleAdmin(user)"
-                >
-                  {{
-                    user.is_admin
-                      ? t('admin.revokeAdmin', 'Revoke admin')
-                      : t('admin.grantAdmin', 'Grant admin')
-                  }}
-                </UButton>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <!-- Actions column -->
+        <template #actions-data="{ row }">
+          <div class="text-right">
+            <UButton
+              :color="row.is_admin ? 'warning' : 'success'"
+              variant="ghost"
+              size="sm"
+              :icon="row.is_admin ? 'i-heroicons-shield-exclamation' : 'i-heroicons-shield-check'"
+              @click="confirmToggleAdmin(row)"
+            >
+              {{ row.is_admin ? t('admin.revokeAdmin') : t('admin.grantAdmin') }}
+            </UButton>
+          </div>
+        </template>
+      </UTable>
     </div>
 
     <!-- Pagination -->

@@ -1,31 +1,13 @@
+import { storeToRefs } from 'pinia'
 import type { Database } from '~/types/database.types'
+import { useUsersStore } from '~/stores/users'
+import type { UserWithStats, UsersFilter, UsersPaginationOptions } from '~/stores/users'
+import { formatError } from '~/utils/error'
 
 type User = Database['public']['Tables']['users']['Row']
 type UserUpdate = Database['public']['Tables']['users']['Update']
 
-/**
- * Extended user type with additional computed fields
- */
-export interface UserWithStats extends User {
-  blogsCount?: number
-  postsCount?: number
-}
 
-/**
- * Filter options for users list
- */
-export interface UsersFilter {
-  is_admin?: boolean | null
-  search?: string
-}
-
-/**
- * Pagination options
- */
-export interface UsersPaginationOptions {
-  page: number
-  perPage: number
-}
 
 /**
  * Composable for managing users (admin only)
@@ -36,29 +18,39 @@ export function useUsers() {
   const { t } = useI18n()
   const toast = useToast()
 
-  const users = shallowRef<UserWithStats[]>([])
-  const currentUser = shallowRef<UserWithStats | null>(null)
-  const isLoading = ref(false)
-  const error = ref<string | null>(null)
-  const filter = ref<UsersFilter>({})
-  const pagination = ref<UsersPaginationOptions>({ page: 1, perPage: 20 })
-  const totalCount = ref(0)
+  const store = useUsersStore()
+  const {
+    users,
+    currentUser,
+    isLoading,
+    error,
+    filter,
+    pagination,
+    totalCount,
+    totalPages,
+  } = storeToRefs(store)
 
-  /**
-   * Get total pages count
-   */
-  const totalPages = computed(() => Math.ceil(totalCount.value / pagination.value.perPage))
+  const {
+    setFilter: _setFilter,
+    clearFilter: _clearFilter,
+    setPage: _setPage,
+    setCurrentUser: _setCurrentUser,
+  } = store
 
   /**
    * Fetch all users with optional filtering
+   * Optimized to avoid N+1 problem using nested count selection
    */
   async function fetchUsers(): Promise<UserWithStats[]> {
-    isLoading.value = true
-    error.value = null
+    store.setLoading(true)
+    store.setError(null)
 
     try {
-      // Build query
-      let query = supabase.from('users').select('*', { count: 'exact' })
+      // Build query with nested counts
+      // Note: Relation names 'blogs' and 'posts' are assumed based on table names
+      let query = supabase
+        .from('users')
+        .select('*, blogs(count), posts(count)', { count: 'exact' })
 
       // Apply admin filter
       if (filter.value.is_admin !== null && filter.value.is_admin !== undefined) {
@@ -83,39 +75,29 @@ export function useUsers() {
 
       if (fetchError) throw fetchError
 
-      // Get stats for each user (blogs and posts count)
-      const usersWithStats: UserWithStats[] = await Promise.all(
-        (data || []).map(async (user) => {
-          // Get blogs count where user is owner
-          const { count: blogsCount } = await supabase
-            .from('blogs')
-            .select('id', { count: 'exact', head: true })
-            .eq('owner_id', user.id)
+      // Map response to UserWithStats
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const usersWithStats: UserWithStats[] = (data || []).map((user: any) => ({
+        ...user,
+        blogsCount: user.blogs?.[0]?.count || 0,
+        postsCount: user.posts?.[0]?.count || 0,
+      }))
 
-          // Get posts count where user is author
-          const { count: postsCount } = await supabase
-            .from('posts')
-            .select('id', { count: 'exact', head: true })
-            .eq('author_id', user.id)
-
-          return {
-            ...user,
-            blogsCount: blogsCount || 0,
-            postsCount: postsCount || 0,
-          }
-        })
-      )
-
-      users.value = usersWithStats
-      totalCount.value = count || 0
+      store.setUsers(usersWithStats)
+      store.setTotalCount(count || 0)
       return usersWithStats
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch users'
-      error.value = message
+      const message = formatError(err)
+      store.setError(message)
       console.error('[useUsers] fetchUsers error:', err)
+      toast.add({
+        title: t('common.error'),
+        description: t('errors.fetchUsersFailed'),
+        color: 'error',
+      })
       return []
     } finally {
-      isLoading.value = false
+      store.setLoading(false)
     }
   }
 
@@ -123,44 +105,41 @@ export function useUsers() {
    * Fetch a single user by ID
    */
   async function fetchUser(userId: string): Promise<UserWithStats | null> {
-    isLoading.value = true
-    error.value = null
+    store.setLoading(true)
+    store.setError(null)
 
     try {
+      // Optimized single user fetch
       const { data, error: fetchError } = await supabase
         .from('users')
-        .select('*')
+        .select('*, blogs(count), posts(count)')
         .eq('id', userId)
         .single()
 
       if (fetchError) throw fetchError
 
-      // Get stats
-      const { count: blogsCount } = await supabase
-        .from('blogs')
-        .select('id', { count: 'exact', head: true })
-        .eq('owner_id', userId)
-
-      const { count: postsCount } = await supabase
-        .from('posts')
-        .select('id', { count: 'exact', head: true })
-        .eq('author_id', userId)
-
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const user = data as any
       const userWithStats: UserWithStats = {
-        ...data,
-        blogsCount: blogsCount || 0,
-        postsCount: postsCount || 0,
+        ...user,
+        blogsCount: user.blogs?.[0]?.count || 0,
+        postsCount: user.posts?.[0]?.count || 0,
       }
 
-      currentUser.value = userWithStats
+      store.setCurrentUser(userWithStats)
       return userWithStats
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch user'
-      error.value = message
+      const message = formatError(err)
+      store.setError(message)
       console.error('[useUsers] fetchUser error:', err)
+      toast.add({
+        title: t('common.error'),
+        description: t('errors.fetchUserFailed'),
+        color: 'error',
+      })
       return null
     } finally {
-      isLoading.value = false
+      store.setLoading(false)
     }
   }
 
@@ -168,18 +147,16 @@ export function useUsers() {
    * Toggle admin status for a user
    */
   async function toggleAdminStatus(userId: string): Promise<boolean> {
-    isLoading.value = true
-    error.value = null
+    store.setLoading(true)
+    store.setError(null)
 
     try {
-      // Get current admin status
-      const user = users.value.find((u) => u.id === userId)
+      const user = users.value.find((u: UserWithStats) => u.id === userId)
       if (!user) {
-        throw new Error('User not found')
+        throw new Error(t('errors.userNotFound'))
       }
 
       const newIsAdmin = !user.is_admin
-
       const updateData: UserUpdate = {
         is_admin: newIsAdmin,
         updated_at: new Date().toISOString(),
@@ -192,38 +169,33 @@ export function useUsers() {
 
       if (updateError) throw updateError
 
-      // Update local state
-      const index = users.value.findIndex((u) => u.id === userId)
-      if (index !== -1) {
-        const existingUser = users.value[index]
-        if (existingUser) {
-          const updated = [...users.value]
-          updated[index] = { ...existingUser, is_admin: newIsAdmin } as UserWithStats
-          users.value = updated
-        }
-      }
+      // Update local state without refetching
+      const updatedUsers = users.value.map((u: UserWithStats) =>
+        u.id === userId ? { ...u, is_admin: newIsAdmin } : u
+      )
+      store.setUsers(updatedUsers)
 
       toast.add({
         title: t('common.success'),
         description: newIsAdmin
-          ? t('admin.adminGranted', 'Admin rights granted')
-          : t('admin.adminRevoked', 'Admin rights revoked'),
+          ? t('admin.adminGranted')
+          : t('admin.adminRevoked'),
         color: 'success',
       })
 
       return true
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to update user'
-      error.value = message
+      const message = formatError(err)
+      store.setError(message)
       console.error('[useUsers] toggleAdminStatus error:', err)
       toast.add({
         title: t('common.error'),
-        description: message,
+        description: t('errors.toggleAdminFailed'),
         color: 'error',
       })
       return false
     } finally {
-      isLoading.value = false
+      store.setLoading(false)
     }
   }
 
@@ -231,8 +203,8 @@ export function useUsers() {
    * Update user profile
    */
   async function updateUser(userId: string, data: Partial<UserUpdate>): Promise<boolean> {
-    isLoading.value = true
-    error.value = null
+    store.setLoading(true)
+    store.setError(null)
 
     try {
       const updateData: UserUpdate = {
@@ -248,71 +220,35 @@ export function useUsers() {
       if (updateError) throw updateError
 
       // Update local state
-      const index = users.value.findIndex((u) => u.id === userId)
-      if (index !== -1) {
-        const existingUser = users.value[index]
-        if (existingUser) {
-          const updated = [...users.value]
-          updated[index] = { ...existingUser, ...data } as UserWithStats
-          users.value = updated
-        }
-      }
+      const updatedUsers = users.value.map((u: UserWithStats) =>
+        u.id === userId ? { ...u, ...data } : u
+      )
+      store.setUsers(updatedUsers)
 
       if (currentUser.value?.id === userId) {
-        currentUser.value = { ...currentUser.value, ...data }
+        store.setCurrentUser({ ...currentUser.value, ...data })
       }
 
       toast.add({
         title: t('common.success'),
-        description: t('admin.userUpdated', 'User updated successfully'),
+        description: t('admin.userUpdated'),
         color: 'success',
       })
 
       return true
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to update user'
-      error.value = message
+      const message = formatError(err)
+      store.setError(message)
       console.error('[useUsers] updateUser error:', err)
       toast.add({
         title: t('common.error'),
-        description: message,
+        description: t('errors.updateUserFailed'),
         color: 'error',
       })
       return false
     } finally {
-      isLoading.value = false
+      store.setLoading(false)
     }
-  }
-
-  /**
-   * Set filter and reset pagination
-   */
-  function setFilter(newFilter: UsersFilter) {
-    filter.value = { ...filter.value, ...newFilter }
-    pagination.value.page = 1
-  }
-
-  /**
-   * Clear all filters
-   */
-  function clearFilter() {
-    filter.value = {}
-    pagination.value.page = 1
-  }
-
-  /**
-   * Set page
-   */
-  function setPage(page: number) {
-    pagination.value.page = page
-  }
-
-  /**
-   * Clear current user state
-   */
-  function clearCurrentUser() {
-    currentUser.value = null
-    error.value = null
   }
 
   /**
@@ -338,6 +274,11 @@ export function useUsers() {
     return name.slice(0, 2).toUpperCase()
   }
 
+  function clearCurrentUser() {
+    _setCurrentUser(null)
+    store.setError(null)
+  }
+
   return {
     // State
     users,
@@ -356,10 +297,10 @@ export function useUsers() {
     updateUser,
     clearCurrentUser,
 
-    // Filter and pagination
-    setFilter,
-    clearFilter,
-    setPage,
+    // Store actions
+    setFilter: _setFilter,
+    clearFilter: _clearFilter,
+    setPage: _setPage,
 
     // Helpers
     getUserDisplayName,

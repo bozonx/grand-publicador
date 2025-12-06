@@ -258,7 +258,11 @@
     "serverError": "Server error",
     "networkError": "Network error. Check your internet connection.",
     "userNotFound": "User not found",
-    "userAlreadyMember": "User is already a member"
+    "userAlreadyMember": "User is already a member",
+    "fetchUsersFailed": "Failed to fetch users",
+    "fetchUserFailed": "Failed to fetch user",
+    "updateUserFailed": "Failed to update user",
+    "toggleAdminFailed": "Failed to toggle admin rights"
   },
   "dashboard": {
     "title": "Dashboard",
