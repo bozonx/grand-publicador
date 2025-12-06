@@ -429,10 +429,7 @@ const hasActiveFilters = computed(() => {
               color="neutral"
               variant="ghost"
               :disabled="isToggling"
-              @click="
-                showConfirmModal = false
-                userToToggle = null
-              "
+              @click="showConfirmModal = false; userToToggle = null"
             >
               {{ t('common.cancel') }}
             </UButton>
