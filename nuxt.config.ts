@@ -1,5 +1,10 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  // Включаем поддержку новой структуры папок Nuxt 4 (app/ вместо корня)
+  future: {
+    compatibilityVersion: 4,
+  },
+
   compatibilityDate: '2025-07-15',
 
   devtools: { enabled: true },
