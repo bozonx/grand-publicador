@@ -87,10 +87,12 @@ export function useChannels() {
     try {
       let query = supabase
         .from('channels')
-        .select(`
+        .select(
+          `
           *,
           blog:blogs!channels_blog_id_fkey(id, name)
-        `)
+        `
+        )
         .eq('blog_id', blogId)
         .order('created_at', { ascending: false })
 
@@ -118,7 +120,7 @@ export function useChannels() {
 
           return {
             ...channel,
-            postsCount: count || 0
+            postsCount: count || 0,
           }
         })
       )
@@ -136,14 +138,12 @@ export function useChannels() {
 
       channels.value = result
       return result
-    }
-    catch (err) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch channels'
       error.value = message
       console.error('[useChannels] fetchChannels error:', err)
       return []
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -158,10 +158,12 @@ export function useChannels() {
     try {
       const { data, error: fetchError } = await supabase
         .from('channels')
-        .select(`
+        .select(
+          `
           *,
           blog:blogs!channels_blog_id_fkey(id, name)
-        `)
+        `
+        )
         .eq('id', channelId)
         .single()
 
@@ -175,19 +177,17 @@ export function useChannels() {
 
       const channelWithCount: ChannelWithBlog = {
         ...data,
-        postsCount: count || 0
+        postsCount: count || 0,
       }
 
       currentChannel.value = channelWithCount
       return channelWithCount
-    }
-    catch (err) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch channel'
       error.value = message
       console.error('[useChannels] fetchChannel error:', err)
       return null
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -195,10 +195,7 @@ export function useChannels() {
   /**
    * Create a new channel
    */
-  async function createChannel(
-    blogId: string,
-    data: ChannelCreateInput
-  ): Promise<Channel | null> {
+  async function createChannel(blogId: string, data: ChannelCreateInput): Promise<Channel | null> {
     isLoading.value = true
     error.value = null
 
@@ -208,7 +205,7 @@ export function useChannels() {
         name: data.name,
         social_media: data.social_media,
         channel_identifier: data.channel_identifier,
-        is_active: data.is_active ?? true
+        is_active: data.is_active ?? true,
       }
 
       const { data: channel, error: createError } = await supabase
@@ -222,26 +219,24 @@ export function useChannels() {
       toast.add({
         title: t('common.success'),
         description: t('channel.createSuccess'),
-        color: 'success'
+        color: 'success',
       })
 
       // Refresh channels list
       await fetchChannels(blogId)
 
       return channel
-    }
-    catch (err) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create channel'
       error.value = message
       console.error('[useChannels] createChannel error:', err)
       toast.add({
         title: t('common.error'),
         description: message,
-        color: 'error'
+        color: 'error',
       })
       return null
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -259,7 +254,7 @@ export function useChannels() {
     try {
       const updateData: ChannelUpdate = {
         ...data,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       }
 
       const { data: channel, error: updateError } = await supabase
@@ -274,7 +269,7 @@ export function useChannels() {
       toast.add({
         title: t('common.success'),
         description: t('channel.updateSuccess'),
-        color: 'success'
+        color: 'success',
       })
 
       // Update local state (shallowRef requires full replacement)
@@ -284,7 +279,7 @@ export function useChannels() {
           name: channel.name,
           channel_identifier: channel.channel_identifier,
           is_active: channel.is_active,
-          updated_at: channel.updated_at
+          updated_at: channel.updated_at,
         }
         currentChannel.value = updatedCurrent
       }
@@ -298,7 +293,7 @@ export function useChannels() {
             name: channel.name,
             channel_identifier: channel.channel_identifier,
             is_active: channel.is_active,
-            updated_at: channel.updated_at
+            updated_at: channel.updated_at,
           }
           const updated = [...channels.value]
           updated[index] = updatedChannel
@@ -307,19 +302,17 @@ export function useChannels() {
       }
 
       return channel
-    }
-    catch (err) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update channel'
       error.value = message
       console.error('[useChannels] updateChannel error:', err)
       toast.add({
         title: t('common.error'),
         description: message,
-        color: 'error'
+        color: 'error',
       })
       return null
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -340,25 +333,20 @@ export function useChannels() {
         .eq('channel_id', channelId)
 
       if (postsCount && postsCount > 0) {
-        const confirmed = window.confirm(
-          t('channel.deleteWithPostsConfirm', { count: postsCount })
-        )
+        const confirmed = window.confirm(t('channel.deleteWithPostsConfirm', { count: postsCount }))
         if (!confirmed) {
           return false
         }
       }
 
-      const { error: deleteError } = await supabase
-        .from('channels')
-        .delete()
-        .eq('id', channelId)
+      const { error: deleteError } = await supabase.from('channels').delete().eq('id', channelId)
 
       if (deleteError) throw deleteError
 
       toast.add({
         title: t('common.success'),
         description: t('channel.deleteSuccess'),
-        color: 'success'
+        color: 'success',
       })
 
       // Update local state
@@ -372,19 +360,17 @@ export function useChannels() {
       await fetchChannels(blogId)
 
       return true
-    }
-    catch (err) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to delete channel'
       error.value = message
       console.error('[useChannels] deleteChannel error:', err)
       toast.add({
         title: t('common.error'),
         description: message,
-        color: 'error'
+        color: 'error',
       })
       return false
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -397,7 +383,7 @@ export function useChannels() {
     if (!channel) return false
 
     const result = await updateChannel(channelId, {
-      is_active: !channel.is_active
+      is_active: !channel.is_active,
     })
 
     return !!result
@@ -444,7 +430,7 @@ export function useChannels() {
       tiktok: 'i-simple-icons-tiktok',
       x: 'i-simple-icons-x',
       facebook: 'i-simple-icons-facebook',
-      site: 'i-heroicons-globe-alt'
+      site: 'i-heroicons-globe-alt',
     }
     return icons[socialMedia] || 'i-heroicons-signal'
   }
@@ -461,7 +447,7 @@ export function useChannels() {
       tiktok: '#000000',
       x: '#000000',
       facebook: '#1877F2',
-      site: '#6B7280'
+      site: '#6B7280',
     }
     return colors[socialMedia] || '#6B7280'
   }
@@ -491,6 +477,6 @@ export function useChannels() {
     // Helper methods
     getSocialMediaDisplayName,
     getSocialMediaIcon,
-    getSocialMediaColor
+    getSocialMediaColor,
   }
 }

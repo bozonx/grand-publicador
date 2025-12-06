@@ -3,7 +3,7 @@
  * Protects routes that require authentication
  * Supports hybrid auth: Telegram + Browser
  */
-export default defineNuxtRouteMiddleware(async (to) => {
+export default defineNuxtRouteMiddleware(async (_to) => {
   const { isAuthenticated, initialize, isLoading, authMode } = useAuth()
 
   // Wait for auth initialization if still loading

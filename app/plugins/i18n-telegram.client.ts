@@ -7,9 +7,9 @@
  */
 export default defineNuxtPlugin(() => {
   const { setLocale, locale, locales } = useI18n()
-  
+
   // Get available locale codes
-  const availableLocales = locales.value.map(l => 
+  const availableLocales = locales.value.map((l) =>
     typeof l === 'string' ? l : l.code
   ) as string[]
 
@@ -24,13 +24,13 @@ export default defineNuxtPlugin(() => {
     if (availableLocales.includes(langCode)) {
       return langCode as SupportedLocale
     }
-    
+
     // Try base language (e.g., 'en-US' -> 'en')
     const baseLang = langCode.split('-')[0]
     if (baseLang && availableLocales.includes(baseLang)) {
       return baseLang as SupportedLocale
     }
-    
+
     return null
   }
 
@@ -39,7 +39,7 @@ export default defineNuxtPlugin(() => {
    */
   function getTelegramLanguage(): SupportedLocale | null {
     if (typeof window === 'undefined') return null
-    
+
     const tgWebApp = window.Telegram?.WebApp
     if (!tgWebApp) return null
 
@@ -55,9 +55,10 @@ export default defineNuxtPlugin(() => {
   // Only run on client
   if (import.meta.client) {
     const telegramLang = getTelegramLanguage()
-    
+
     if (telegramLang && telegramLang !== locale.value) {
-      console.log(`[i18n] Setting locale from Telegram: ${telegramLang}`)
+      // eslint-disable-next-line no-console
+      console.info(`[i18n] Setting locale from Telegram: ${telegramLang}`)
       setLocale(telegramLang)
     }
   }

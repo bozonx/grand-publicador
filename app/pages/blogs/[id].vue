@@ -7,7 +7,19 @@ const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
 
-const { currentBlog, isLoading, error, fetchBlog, updateBlog, deleteBlog, clearCurrentBlog, canEdit, canDelete, canManageMembers, getRoleDisplayName } = useBlogs()
+const {
+  currentBlog,
+  isLoading,
+  error,
+  fetchBlog,
+  updateBlog,
+  deleteBlog,
+  clearCurrentBlog,
+  canEdit,
+  canDelete,
+  canManageMembers,
+  getRoleDisplayName,
+} = useBlogs()
 
 const blogId = computed(() => route.params.id as string)
 const isEditMode = computed(() => route.query.edit === 'true')
@@ -41,7 +53,7 @@ function goBack() {
  */
 function toggleEditMode() {
   router.replace({
-    query: { ...route.query, edit: isEditMode.value ? undefined : 'true' }
+    query: { ...route.query, edit: isEditMode.value ? undefined : 'true' },
   })
 }
 
@@ -50,7 +62,7 @@ function toggleEditMode() {
  */
 function cancelEdit() {
   router.replace({
-    query: { ...route.query, edit: undefined }
+    query: { ...route.query, edit: undefined },
   })
 }
 
@@ -59,14 +71,14 @@ function cancelEdit() {
  */
 async function handleUpdate(data: { name: string; description: string }) {
   if (!blogId.value) return
-  
+
   isSaving.value = true
   const result = await updateBlog(blogId.value, {
     name: data.name,
-    description: data.description || null
+    description: data.description || null,
   })
   isSaving.value = false
-  
+
   if (result) {
     cancelEdit()
   }
@@ -84,11 +96,11 @@ function confirmDelete() {
  */
 async function handleDelete() {
   if (!blogId.value) return
-  
+
   isDeleting.value = true
   const success = await deleteBlog(blogId.value)
   isDeleting.value = false
-  
+
   if (success) {
     showDeleteModal.value = false
     router.push('/blogs')
@@ -119,7 +131,7 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
     owner: 'primary',
     admin: 'secondary',
     editor: 'info',
-    viewer: 'neutral'
+    viewer: 'neutral',
   }
   return colors[role || 'viewer'] || 'neutral'
 }
@@ -129,20 +141,21 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
   <div>
     <!-- Back button and breadcrumb -->
     <div class="mb-6">
-      <UButton
-        variant="ghost"
-        color="neutral"
-        icon="i-heroicons-arrow-left"
-        @click="goBack"
-      >
+      <UButton variant="ghost" color="neutral" icon="i-heroicons-arrow-left" @click="goBack">
         {{ t('common.back') }}
       </UButton>
     </div>
 
     <!-- Error state -->
-    <div v-if="error" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+    <div
+      v-if="error"
+      class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
+    >
       <div class="flex items-center gap-3">
-        <UIcon name="i-heroicons-exclamation-circle" class="w-5 h-5 text-red-600 dark:text-red-400" />
+        <UIcon
+          name="i-heroicons-exclamation-circle"
+          class="w-5 h-5 text-red-600 dark:text-red-400"
+        />
         <p class="text-red-700 dark:text-red-300">{{ error }}</p>
       </div>
       <div class="mt-4">
@@ -155,14 +168,23 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
     <!-- Loading state -->
     <div v-else-if="isLoading" class="flex items-center justify-center py-12">
       <div class="text-center">
-        <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-gray-400 animate-spin mx-auto mb-3" />
+        <UIcon
+          name="i-heroicons-arrow-path"
+          class="w-8 h-8 text-gray-400 animate-spin mx-auto mb-3"
+        />
         <p class="text-gray-500 dark:text-gray-400">{{ t('common.loading') }}</p>
       </div>
     </div>
 
     <!-- Blog not found -->
-    <div v-else-if="!currentBlog" class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
-      <UIcon name="i-heroicons-document-magnifying-glass" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+    <div
+      v-else-if="!currentBlog"
+      class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center"
+    >
+      <UIcon
+        name="i-heroicons-document-magnifying-glass"
+        class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4"
+      />
       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
         {{ t('errors.notFound') }}
       </h3>
@@ -195,25 +217,22 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white truncate">
                   {{ currentBlog.name }}
                 </h1>
-                <UBadge 
-                  :color="getRoleBadgeColor(currentBlog.role)" 
-                  variant="subtle"
-                >
+                <UBadge :color="getRoleBadgeColor(currentBlog.role)" variant="subtle">
                   {{ getRoleDisplayName(currentBlog.role) }}
                 </UBadge>
               </div>
-              
-              <p 
-                v-if="currentBlog.description" 
-                class="text-gray-600 dark:text-gray-400 mb-4"
-              >
+
+              <p v-if="currentBlog.description" class="text-gray-600 dark:text-gray-400 mb-4">
                 {{ currentBlog.description }}
               </p>
-              
-              <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+
+              <div
+                class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400"
+              >
                 <span v-if="currentBlog.owner" class="flex items-center gap-1">
                   <UIcon name="i-heroicons-user" class="w-4 h-4" />
-                  {{ t('blog.owner') }}: {{ currentBlog.owner.full_name || currentBlog.owner.username || 'Unknown' }}
+                  {{ t('blog.owner') }}:
+                  {{ currentBlog.owner.full_name || currentBlog.owner.username || 'Unknown' }}
                 </span>
                 <span class="flex items-center gap-1">
                   <UIcon name="i-heroicons-users" class="w-4 h-4" />
@@ -229,7 +248,7 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
                 </span>
               </div>
             </div>
-            
+
             <!-- Actions -->
             <div class="flex items-center gap-2 ml-4">
               <UButton
@@ -272,8 +291,8 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
               </p>
             </div>
           </div>
-          <UButton 
-            icon="i-heroicons-arrow-down" 
+          <UButton
+            icon="i-heroicons-arrow-down"
             class="w-full"
             variant="outline"
             @click="$el?.querySelector('#channels-section')?.scrollIntoView({ behavior: 'smooth' })"
@@ -286,7 +305,10 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div class="flex items-center gap-3 mb-4">
             <div class="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-              <UIcon name="i-heroicons-users" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              <UIcon
+                name="i-heroicons-users"
+                class="w-6 h-6 text-purple-600 dark:text-purple-400"
+              />
             </div>
             <div>
               <h3 class="text-lg font-medium text-gray-900 dark:text-white">
@@ -297,17 +319,17 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
               </p>
             </div>
           </div>
-          <UButton 
+          <UButton
             v-if="canManageMembers(currentBlog)"
-            icon="i-heroicons-user-plus" 
+            icon="i-heroicons-user-plus"
             class="w-full"
             disabled
           >
             {{ t('blogMember.invite') }}
           </UButton>
-          <UButton 
+          <UButton
             v-else
-            icon="i-heroicons-eye" 
+            icon="i-heroicons-eye"
             color="neutral"
             variant="outline"
             class="w-full"
@@ -321,7 +343,10 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div class="flex items-center gap-3 mb-4">
             <div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <UIcon name="i-heroicons-document-text" class="w-6 h-6 text-green-600 dark:text-green-400" />
+              <UIcon
+                name="i-heroicons-document-text"
+                class="w-6 h-6 text-green-600 dark:text-green-400"
+              />
             </div>
             <div>
               <h3 class="text-lg font-medium text-gray-900 dark:text-white">
@@ -333,16 +358,16 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
             </div>
           </div>
           <div class="flex gap-2">
-            <UButton 
-              icon="i-heroicons-arrow-right" 
+            <UButton
+              icon="i-heroicons-arrow-right"
               class="flex-1"
               variant="outline"
               :to="`/blogs/${currentBlog.id}/posts`"
             >
               {{ t('common.view') }}
             </UButton>
-            <UButton 
-              icon="i-heroicons-plus" 
+            <UButton
+              icon="i-heroicons-plus"
               color="primary"
               :to="`/blogs/${currentBlog.id}/posts/new`"
             >
@@ -396,9 +421,7 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
               </dd>
             </div>
             <div v-if="currentBlog.updated_at" class="flex flex-col sm:flex-row sm:gap-4">
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:w-40">
-                Updated
-              </dt>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:w-40">Updated</dt>
               <dd class="text-sm text-gray-900 dark:text-white">
                 {{ formatDate(currentBlog.updated_at) }}
               </dd>
@@ -416,7 +439,6 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
       <div id="channels-section" class="bg-white dark:bg-gray-800 rounded-lg shadow mt-6 p-6">
         <FeaturesChannelsList :blog-id="currentBlog.id" />
       </div>
-
     </div>
 
     <!-- Delete confirmation modal -->
@@ -425,31 +447,25 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
         <div class="p-6">
           <div class="flex items-center gap-4 mb-4">
             <div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
-              <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 text-red-600 dark:text-red-400" />
+              <UIcon
+                name="i-heroicons-exclamation-triangle"
+                class="w-6 h-6 text-red-600 dark:text-red-400"
+              />
             </div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{ t('blog.deleteBlog') }}
             </h3>
           </div>
-          
+
           <p class="text-gray-600 dark:text-gray-400 mb-6">
             {{ t('blog.deleteConfirm') }}
           </p>
-          
+
           <div class="flex justify-end gap-3">
-            <UButton 
-              color="neutral" 
-              variant="ghost" 
-              :disabled="isDeleting"
-              @click="cancelDelete"
-            >
+            <UButton color="neutral" variant="ghost" :disabled="isDeleting" @click="cancelDelete">
               {{ t('common.cancel') }}
             </UButton>
-            <UButton 
-              color="error" 
-              :loading="isDeleting"
-              @click="handleDelete"
-            >
+            <UButton color="error" :loading="isDeleting" @click="handleDelete">
               {{ t('common.delete') }}
             </UButton>
           </div>

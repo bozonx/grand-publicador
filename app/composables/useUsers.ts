@@ -47,9 +47,7 @@ export function useUsers() {
   /**
    * Get total pages count
    */
-  const totalPages = computed(() =>
-    Math.ceil(totalCount.value / pagination.value.perPage)
-  )
+  const totalPages = computed(() => Math.ceil(totalCount.value / pagination.value.perPage))
 
   /**
    * Fetch all users with optional filtering
@@ -60,9 +58,7 @@ export function useUsers() {
 
     try {
       // Build query
-      let query = supabase
-        .from('users')
-        .select('*', { count: 'exact' })
+      let query = supabase.from('users').select('*', { count: 'exact' })
 
       // Apply admin filter
       if (filter.value.is_admin !== null && filter.value.is_admin !== undefined) {
@@ -72,16 +68,16 @@ export function useUsers() {
       // Apply search filter (server-side for username and full_name)
       if (filter.value.search) {
         const searchTerm = `%${filter.value.search}%`
-        query = query.or(`username.ilike.${searchTerm},full_name.ilike.${searchTerm},email.ilike.${searchTerm}`)
+        query = query.or(
+          `username.ilike.${searchTerm},full_name.ilike.${searchTerm},email.ilike.${searchTerm}`
+        )
       }
 
       // Apply pagination
       const from = (pagination.value.page - 1) * pagination.value.perPage
       const to = from + pagination.value.perPage - 1
 
-      query = query
-        .order('created_at', { ascending: false })
-        .range(from, to)
+      query = query.order('created_at', { ascending: false }).range(from, to)
 
       const { data, count, error: fetchError } = await query
 
@@ -105,7 +101,7 @@ export function useUsers() {
           return {
             ...user,
             blogsCount: blogsCount || 0,
-            postsCount: postsCount || 0
+            postsCount: postsCount || 0,
           }
         })
       )
@@ -113,14 +109,12 @@ export function useUsers() {
       users.value = usersWithStats
       totalCount.value = count || 0
       return usersWithStats
-    }
-    catch (err) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch users'
       error.value = message
       console.error('[useUsers] fetchUsers error:', err)
       return []
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -155,19 +149,17 @@ export function useUsers() {
       const userWithStats: UserWithStats = {
         ...data,
         blogsCount: blogsCount || 0,
-        postsCount: postsCount || 0
+        postsCount: postsCount || 0,
       }
 
       currentUser.value = userWithStats
       return userWithStats
-    }
-    catch (err) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch user'
       error.value = message
       console.error('[useUsers] fetchUser error:', err)
       return null
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -181,7 +173,7 @@ export function useUsers() {
 
     try {
       // Get current admin status
-      const user = users.value.find(u => u.id === userId)
+      const user = users.value.find((u) => u.id === userId)
       if (!user) {
         throw new Error('User not found')
       }
@@ -190,7 +182,7 @@ export function useUsers() {
 
       const updateData: UserUpdate = {
         is_admin: newIsAdmin,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       }
 
       const { error: updateError } = await supabase
@@ -201,7 +193,7 @@ export function useUsers() {
       if (updateError) throw updateError
 
       // Update local state
-      const index = users.value.findIndex(u => u.id === userId)
+      const index = users.value.findIndex((u) => u.id === userId)
       if (index !== -1) {
         const existingUser = users.value[index]
         if (existingUser) {
@@ -213,26 +205,24 @@ export function useUsers() {
 
       toast.add({
         title: t('common.success'),
-        description: newIsAdmin 
-          ? t('admin.adminGranted', 'Admin rights granted') 
+        description: newIsAdmin
+          ? t('admin.adminGranted', 'Admin rights granted')
           : t('admin.adminRevoked', 'Admin rights revoked'),
-        color: 'success'
+        color: 'success',
       })
 
       return true
-    }
-    catch (err) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update user'
       error.value = message
       console.error('[useUsers] toggleAdminStatus error:', err)
       toast.add({
         title: t('common.error'),
         description: message,
-        color: 'error'
+        color: 'error',
       })
       return false
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -247,7 +237,7 @@ export function useUsers() {
     try {
       const updateData: UserUpdate = {
         ...data,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       }
 
       const { error: updateError } = await supabase
@@ -258,7 +248,7 @@ export function useUsers() {
       if (updateError) throw updateError
 
       // Update local state
-      const index = users.value.findIndex(u => u.id === userId)
+      const index = users.value.findIndex((u) => u.id === userId)
       if (index !== -1) {
         const existingUser = users.value[index]
         if (existingUser) {
@@ -275,23 +265,21 @@ export function useUsers() {
       toast.add({
         title: t('common.success'),
         description: t('admin.userUpdated', 'User updated successfully'),
-        color: 'success'
+        color: 'success',
       })
 
       return true
-    }
-    catch (err) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update user'
       error.value = message
       console.error('[useUsers] updateUser error:', err)
       toast.add({
         title: t('common.error'),
         description: message,
-        color: 'error'
+        color: 'error',
       })
       return false
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -375,6 +363,6 @@ export function useUsers() {
 
     // Helpers
     getUserDisplayName,
-    getUserInitials
+    getUserInitials,
   }
 }

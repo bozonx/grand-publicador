@@ -2,7 +2,7 @@
  * Admin middleware
  * Protects routes that require admin privileges
  */
-export default defineNuxtRouteMiddleware((to, from) => {
+export default defineNuxtRouteMiddleware((_to, _from) => {
   const { isAdmin, isAuthenticated } = useAuth()
 
   // First check if user is authenticated

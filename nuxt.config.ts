@@ -6,10 +6,12 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxt/ui',
+    '@nuxt/eslint',
     '@nuxtjs/supabase',
     '@nuxtjs/i18n',
     '@pinia/nuxt',
     '@formkit/nuxt',
+    '@vueuse/nuxt',
   ],
 
   i18n: {
@@ -33,9 +35,7 @@ export default defineNuxtConfig({
     },
   },
 
-  css: [
-    '~/assets/css/main.css',
-  ],
+  css: ['~/assets/css/main.css'],
 
   supabase: {
     redirect: false, // Отключаем редирект, т.к. auth через Telegram
@@ -43,16 +43,14 @@ export default defineNuxtConfig({
 
   typescript: {
     strict: true,
-    typeCheck: false,
+    typeCheck: true,
   },
 
   app: {
     head: {
       title: 'Grand Publicador',
       viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
-      meta: [
-        { name: 'theme-color', content: '#000000' },
-      ],
+      meta: [{ name: 'theme-color', content: '#000000' }],
     },
   },
 

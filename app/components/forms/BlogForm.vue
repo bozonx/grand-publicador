@@ -15,7 +15,7 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
   blog: null,
-  isLoading: false
+  isLoading: false,
 })
 
 const emit = defineEmits<Emits>()
@@ -34,7 +34,7 @@ function handleSubmit(data: Record<string, unknown>) {
   console.log('[BlogForm] handleSubmit called with:', data)
   emit('submit', {
     name: data.name as string,
-    description: (data.description as string) || ''
+    description: (data.description as string) || '',
   })
 }
 
@@ -57,19 +57,15 @@ function submitForm() {
         {{ isEditMode ? t('blog.editBlog') : t('blog.createBlog') }}
       </h2>
       <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-        {{ isEditMode 
-          ? 'Update your blog information below'
-          : 'Fill in the details to create a new blog'
+        {{
+          isEditMode
+            ? 'Update your blog information below'
+            : 'Fill in the details to create a new blog'
         }}
       </p>
     </div>
 
-    <FormKit
-      ref="form"
-      type="form"
-      :actions="false"
-      @submit="handleSubmit"
-    >
+    <FormKit ref="form" type="form" :actions="false" @submit="handleSubmit">
       <div class="space-y-6">
         <!-- Blog name -->
         <FormKit
@@ -81,7 +77,10 @@ function submitForm() {
           validation="required|length:2,100"
           :validation-messages="{
             required: t('validation.required'),
-            length: t('validation.minLength', { min: 2 }) + ' / ' + t('validation.maxLength', { max: 100 })
+            length:
+              t('validation.minLength', { min: 2 }) +
+              ' / ' +
+              t('validation.maxLength', { max: 100 }),
           }"
         />
 
@@ -94,13 +93,15 @@ function submitForm() {
           :value="blog?.description || ''"
           validation="length:0,500"
           :validation-messages="{
-            length: t('validation.maxLength', { max: 500 })
+            length: t('validation.maxLength', { max: 500 }),
           }"
           :help="`${t('common.optional')} — ${t('validation.maxLength', { max: 500 })}`"
         />
 
         <!-- Form actions -->
-        <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div
+          class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700"
+        >
           <UButton
             type="button"
             color="neutral"
@@ -110,12 +111,7 @@ function submitForm() {
           >
             {{ t('common.cancel') }}
           </UButton>
-          <UButton
-            type="button"
-            color="primary"
-            :loading="isLoading"
-            @click="submitForm"
-          >
+          <UButton type="button" color="primary" :loading="isLoading" @click="submitForm">
             {{ isEditMode ? t('common.save') : t('common.create') }}
           </UButton>
         </div>

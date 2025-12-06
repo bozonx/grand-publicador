@@ -47,15 +47,18 @@ interface TelegramWebApp {
   setBackgroundColor: (color: string) => void
   showAlert: (message: string, callback?: () => void) => void
   showConfirm: (message: string, callback?: (confirmed: boolean) => void) => void
-  showPopup: (params: {
-    title?: string
-    message: string
-    buttons?: Array<{
-      id?: string
-      type?: 'default' | 'ok' | 'close' | 'cancel' | 'destructive'
-      text?: string
-    }>
-  }, callback?: (buttonId: string) => void) => void
+  showPopup: (
+    params: {
+      title?: string
+      message: string
+      buttons?: Array<{
+        id?: string
+        type?: 'default' | 'ok' | 'close' | 'cancel' | 'destructive'
+        text?: string
+      }>
+    },
+    callback?: (buttonId: string) => void
+  ) => void
   HapticFeedback: {
     impactOccurred: (style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft') => void
     notificationOccurred: (type: 'error' | 'success' | 'warning') => void
@@ -73,9 +76,4 @@ declare global {
   }
 }
 
-export type {
-  TelegramWebApp,
-  TelegramWebAppUser,
-  TelegramWebAppInitData,
-  Telegram,
-}
+export type { TelegramWebApp, TelegramWebAppUser, TelegramWebAppInitData, Telegram }

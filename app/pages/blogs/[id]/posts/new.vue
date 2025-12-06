@@ -28,21 +28,12 @@ function handleCancel() {
   <div>
     <!-- Back button -->
     <div class="mb-6">
-      <UButton
-        variant="ghost"
-        color="neutral"
-        icon="i-heroicons-arrow-left"
-        @click="handleCancel"
-      >
+      <UButton variant="ghost" color="neutral" icon="i-heroicons-arrow-left" @click="handleCancel">
         {{ t('common.back') }}
       </UButton>
     </div>
 
     <!-- Post form -->
-    <FormsPostForm
-      :blog-id="blogId"
-      @success="handleSuccess"
-      @cancel="handleCancel"
-    />
+    <FormsPostForm :blog-id="blogId" @success="handleSuccess" @cancel="handleCancel" />
   </div>
 </template>

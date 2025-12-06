@@ -117,9 +117,7 @@ export function usePosts() {
   /**
    * Get total pages count
    */
-  const totalPages = computed(() => 
-    Math.ceil(totalCount.value / pagination.value.perPage)
-  )
+  const totalPages = computed(() => Math.ceil(totalCount.value / pagination.value.perPage))
 
   /**
    * Fetch posts for a specific blog (via channels)
@@ -141,16 +139,19 @@ export function usePosts() {
         return []
       }
 
-      const channelIds = channelsData.map(c => c.id)
+      const channelIds = channelsData.map((c) => c.id)
 
       // Build query
       let query = supabase
         .from('posts')
-        .select(`
+        .select(
+          `
           *,
           channel:channels!posts_channel_id_fkey(id, name, blog_id, social_media),
           author:users!posts_author_id_fkey(id, full_name, username, avatar_url)
-        `, { count: 'exact' })
+        `,
+          { count: 'exact' }
+        )
         .in('channel_id', channelIds)
 
       // Apply filters
@@ -171,9 +172,7 @@ export function usePosts() {
       const from = (pagination.value.page - 1) * pagination.value.perPage
       const to = from + pagination.value.perPage - 1
 
-      query = query
-        .order('created_at', { ascending: false })
-        .range(from, to)
+      query = query.order('created_at', { ascending: false }).range(from, to)
 
       const { data, count, error: fetchError } = await query
 
@@ -187,21 +186,19 @@ export function usePosts() {
           (post) =>
             post.title?.toLowerCase().includes(searchLower) ||
             post.content.toLowerCase().includes(searchLower) ||
-            post.tags?.some(tag => tag.toLowerCase().includes(searchLower))
+            post.tags?.some((tag) => tag.toLowerCase().includes(searchLower))
         )
       }
 
       posts.value = result
       totalCount.value = count || 0
       return result
-    }
-    catch (err) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch posts'
       error.value = message
       console.error('[usePosts] fetchPostsByBlog error:', err)
       return []
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -216,11 +213,14 @@ export function usePosts() {
     try {
       let query = supabase
         .from('posts')
-        .select(`
+        .select(
+          `
           *,
           channel:channels!posts_channel_id_fkey(id, name, blog_id, social_media),
           author:users!posts_author_id_fkey(id, full_name, username, avatar_url)
-        `, { count: 'exact' })
+        `,
+          { count: 'exact' }
+        )
         .eq('channel_id', channelId)
 
       // Apply filters
@@ -238,9 +238,7 @@ export function usePosts() {
       const from = (pagination.value.page - 1) * pagination.value.perPage
       const to = from + pagination.value.perPage - 1
 
-      query = query
-        .order('created_at', { ascending: false })
-        .range(from, to)
+      query = query.order('created_at', { ascending: false }).range(from, to)
 
       const { data, count, error: fetchError } = await query
 
@@ -249,14 +247,12 @@ export function usePosts() {
       posts.value = (data || []) as PostWithRelations[]
       totalCount.value = count || 0
       return posts.value
-    }
-    catch (err) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch posts'
       error.value = message
       console.error('[usePosts] fetchPostsByChannel error:', err)
       return []
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -271,11 +267,13 @@ export function usePosts() {
     try {
       const { data, error: fetchError } = await supabase
         .from('posts')
-        .select(`
+        .select(
+          `
           *,
           channel:channels!posts_channel_id_fkey(id, name, blog_id, social_media),
           author:users!posts_author_id_fkey(id, full_name, username, avatar_url)
-        `)
+        `
+        )
         .eq('id', postId)
         .single()
 
@@ -283,14 +281,12 @@ export function usePosts() {
 
       currentPost.value = data as PostWithRelations
       return currentPost.value
-    }
-    catch (err) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch post'
       error.value = message
       console.error('[usePosts] fetchPost error:', err)
       return null
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -345,23 +341,21 @@ export function usePosts() {
       toast.add({
         title: t('common.success'),
         description: t('post.createSuccess'),
-        color: 'success'
+        color: 'success',
       })
 
       return post
-    }
-    catch (err) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create post'
       error.value = message
       console.error('[usePosts] createPost error:', err)
       toast.add({
         title: t('common.error'),
         description: message,
-        color: 'error'
+        color: 'error',
       })
       return null
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -376,7 +370,7 @@ export function usePosts() {
     try {
       const updateData: PostUpdate = {
         ...data,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       }
 
       const { data: post, error: updateError } = await supabase
@@ -391,31 +385,29 @@ export function usePosts() {
       toast.add({
         title: t('common.success'),
         description: t('post.updateSuccess'),
-        color: 'success'
+        color: 'success',
       })
 
       // Update local state
       if (currentPost.value?.id === postId) {
         currentPost.value = {
           ...currentPost.value,
-          ...post
+          ...post,
         }
       }
 
       return post
-    }
-    catch (err) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update post'
       error.value = message
       console.error('[usePosts] updatePost error:', err)
       toast.add({
         title: t('common.error'),
         description: message,
-        color: 'error'
+        color: 'error',
       })
       return null
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -428,41 +420,36 @@ export function usePosts() {
     error.value = null
 
     try {
-      const { error: deleteError } = await supabase
-        .from('posts')
-        .delete()
-        .eq('id', postId)
+      const { error: deleteError } = await supabase.from('posts').delete().eq('id', postId)
 
       if (deleteError) throw deleteError
 
       toast.add({
         title: t('common.success'),
         description: t('post.deleteSuccess'),
-        color: 'success'
+        color: 'success',
       })
 
       // Update local state
       const filtered = posts.value.filter((p) => p.id !== postId)
       posts.value = filtered
-      
+
       if (currentPost.value?.id === postId) {
         currentPost.value = null
       }
 
       return true
-    }
-    catch (err) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to delete post'
       error.value = message
       console.error('[usePosts] deletePost error:', err)
       toast.add({
         title: t('common.error'),
         description: message,
-        color: 'error'
+        color: 'error',
       })
       return false
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -516,12 +503,14 @@ export function usePosts() {
   /**
    * Get status badge color
    */
-  function getStatusColor(status: PostStatusEnum | null | undefined): 'success' | 'warning' | 'error' | 'info' | 'neutral' {
+  function getStatusColor(
+    status: PostStatusEnum | null | undefined
+  ): 'success' | 'warning' | 'error' | 'info' | 'neutral' {
     const colors: Record<PostStatusEnum, 'success' | 'warning' | 'error' | 'info' | 'neutral'> = {
       draft: 'neutral',
       scheduled: 'warning',
       published: 'success',
-      failed: 'error'
+      failed: 'error',
     }
     return status ? colors[status] : 'neutral'
   }
@@ -576,6 +565,6 @@ export function usePosts() {
     getTypeDisplayName,
     getStatusColor,
     canEdit,
-    canDelete
+    canDelete,
   }
 }

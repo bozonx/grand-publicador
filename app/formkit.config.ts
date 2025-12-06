@@ -5,7 +5,7 @@ import { ru, en } from '@formkit/i18n'
 
 export default defineFormKitConfig({
   config: {
-    classes: generateClasses(rootClasses)
+    classes: generateClasses(rootClasses),
   },
   locales: { ru, en },
   locale: 'ru', // Default locale

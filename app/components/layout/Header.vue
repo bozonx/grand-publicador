@@ -51,9 +51,7 @@ const userMenuItems = computed<UserMenuItem[]>(() => {
 
         <!-- Logo -->
         <NuxtLink to="/" class="flex items-center gap-2">
-          <span class="text-xl font-bold text-gray-900 dark:text-white">
-            Grand Publicador
-          </span>
+          <span class="text-xl font-bold text-gray-900 dark:text-white"> Grand Publicador </span>
         </NuxtLink>
       </div>
 
@@ -67,7 +65,10 @@ const userMenuItems = computed<UserMenuItem[]>(() => {
             <UAvatar
               :alt="displayName"
               size="sm"
-              :ui="{ fallback: 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300' }"
+              :ui="{
+                fallback:
+                  'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300',
+              }"
             />
             <span class="hidden sm:inline text-sm font-medium text-gray-700 dark:text-gray-300">
               {{ displayName }}
@@ -86,7 +87,10 @@ const userMenuItems = computed<UserMenuItem[]>(() => {
       <div class="flex items-center gap-2 text-xs text-yellow-700 dark:text-yellow-400">
         <UIcon name="i-heroicons-exclamation-triangle" class="w-4 h-4" />
         <span>{{ t('auth.devMode') }} — Telegram ID: {{ user?.telegram_id }}</span>
-        <span v-if="isAdmin" class="ml-2 px-1.5 py-0.5 rounded bg-yellow-200 dark:bg-yellow-800 font-medium">
+        <span
+          v-if="isAdmin"
+          class="ml-2 px-1.5 py-0.5 rounded bg-yellow-200 dark:bg-yellow-800 font-medium"
+        >
           {{ t('user.isAdmin') }}
         </span>
       </div>

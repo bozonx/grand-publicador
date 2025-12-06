@@ -25,11 +25,13 @@ async function switchLocale(code: 'ru' | 'en') {
 
 <template>
   <UDropdownMenu
-    :items="availableLocales.map((l) => ({
-      label: l.name,
-      click: () => switchLocale(l.code as 'ru' | 'en'),
-      active: l.code === locale,
-    }))"
+    :items="
+      availableLocales.map((l) => ({
+        label: l.name,
+        click: () => switchLocale(l.code as 'ru' | 'en'),
+        active: l.code === locale,
+      }))
+    "
   >
     <UButton
       variant="ghost"

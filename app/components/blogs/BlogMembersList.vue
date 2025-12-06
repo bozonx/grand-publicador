@@ -11,14 +11,14 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
-const { 
-  fetchMembers, 
-  members, 
-  isLoading, 
-  removeMember, 
-  updateMemberRole, 
-  currentBlog, 
-  canManageMembers 
+const {
+  fetchMembers,
+  members,
+  isLoading,
+  removeMember,
+  updateMemberRole,
+  currentBlog,
+  canManageMembers,
 } = useBlogs()
 
 const isInviteModalOpen = ref(false)
@@ -36,7 +36,7 @@ const canManage = computed(() => currentBlog.value && canManageMembers(currentBl
 const columns = computed<TableColumn<BlogMemberWithUser>[]>(() => [
   { accessorKey: 'user', header: t('user.username') },
   { accessorKey: 'role', header: t('user.role') },
-  { accessorKey: 'actions', header: '' }
+  { accessorKey: 'actions', header: '' },
 ])
 
 function getRoleBadgeColor(role: string | undefined): BadgeColor {
@@ -44,7 +44,7 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
     owner: 'primary',
     admin: 'secondary',
     editor: 'info',
-    viewer: 'neutral'
+    viewer: 'neutral',
   }
   return colors[role || 'viewer'] || 'neutral'
 }
@@ -56,11 +56,11 @@ function getActionItems(row: any) {
   // Role change actions
   const roles: Database['public']['Enums']['blog_role'][] = ['admin', 'editor', 'viewer']
   const roleActions = roles
-    .filter(r => r !== row.role)
-    .map(role => ({
+    .filter((r) => r !== row.role)
+    .map((role) => ({
       label: t(`roles.${role}`),
       icon: 'i-heroicons-arrow-path',
-      click: () => updateMemberRole(props.blogId, row.user.id, role)
+      click: () => updateMemberRole(props.blogId, row.user.id, role),
     }))
 
   if (roleActions.length > 0) {
@@ -68,12 +68,14 @@ function getActionItems(row: any) {
   }
 
   // Remove action
-  actions.push([{
-    label: t('blogMember.remove'),
-    icon: 'i-heroicons-trash-20-solid',
-    click: () => handleRemove(row),
-    class: 'text-red-500 dark:text-red-400'
-  }])
+  actions.push([
+    {
+      label: t('blogMember.remove'),
+      icon: 'i-heroicons-trash-20-solid',
+      click: () => handleRemove(row),
+      class: 'text-red-500 dark:text-red-400',
+    },
+  ])
 
   return actions
 }
@@ -129,7 +131,11 @@ async function handleRemove(row: any) {
       </template>
 
       <template #role-cell="{ row }">
-        <UBadge :color="getRoleBadgeColor(row.original.role ?? undefined)" size="xs" variant="subtle">
+        <UBadge
+          :color="getRoleBadgeColor(row.original.role ?? undefined)"
+          size="xs"
+          variant="subtle"
+        >
           {{ t(`roles.${row.original.role ?? 'viewer'}`) }}
         </UBadge>
       </template>

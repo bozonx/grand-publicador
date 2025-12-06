@@ -7,11 +7,11 @@
         </h3>
       </slot>
     </div>
-    
+
     <div :class="bodyClasses">
       <slot />
     </div>
-    
+
     <div v-if="$slots.footer" class="px-6 py-4 border-t border-gray-200 bg-gray-50">
       <slot name="footer" />
     </div>
@@ -34,13 +34,13 @@ const props = withDefaults(defineProps<Props>(), {
 
 const cardClasses = computed(() => {
   const baseClasses = 'bg-white rounded-telegram overflow-hidden'
-  
+
   const variantClasses = {
     default: 'border border-gray-200',
     bordered: 'border-2 border-gray-300',
     elevated: 'shadow-lg',
   }
-  
+
   return [baseClasses, variantClasses[props.variant]].join(' ')
 })
 

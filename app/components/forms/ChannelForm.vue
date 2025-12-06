@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
-import type { ChannelWithBlog, ChannelCreateInput, ChannelUpdateInput } from '~/composables/useChannels'
+import type {
+  ChannelWithBlog,
+  ChannelCreateInput,
+  ChannelUpdateInput,
+} from '~/composables/useChannels'
 
 type SocialMediaEnum = Database['public']['Enums']['social_media_enum']
 
@@ -12,24 +16,23 @@ interface Props {
 }
 
 interface Emits {
-  (e: 'success'): void
-  (e: 'cancel'): void
+  (e: 'success' | 'cancel'): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  channel: null
+  channel: null,
 })
 
 const emit = defineEmits<Emits>()
 
 const { t } = useI18n()
-const { 
-  createChannel, 
-  updateChannel, 
-  socialMediaOptions, 
+const {
+  createChannel,
+  updateChannel,
+  socialMediaOptions,
   isLoading,
   getSocialMediaIcon,
-  getSocialMediaColor 
+  getSocialMediaColor,
 } = useChannels()
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,9 +49,9 @@ async function handleSubmit(data: Record<string, unknown>) {
     const updateData: ChannelUpdateInput = {
       name: data.name as string,
       channel_identifier: data.channel_identifier as string,
-      is_active: data.is_active as boolean
+      is_active: data.is_active as boolean,
     }
-    
+
     const result = await updateChannel(props.channel.id, updateData)
     if (result) {
       emit('success')
@@ -59,9 +62,9 @@ async function handleSubmit(data: Record<string, unknown>) {
       name: data.name as string,
       social_media: data.social_media as SocialMediaEnum,
       channel_identifier: data.channel_identifier as string,
-      is_active: data.is_active as boolean
+      is_active: data.is_active as boolean,
     }
-    
+
     const result = await createChannel(props.blogId, createData)
     if (result) {
       emit('success')
@@ -92,7 +95,7 @@ function getIdentifierPlaceholder(socialMedia: SocialMediaEnum | undefined): str
     tiktok: '@username',
     x: '@username',
     facebook: 'page_username',
-    site: 'https://example.com'
+    site: 'https://example.com',
   }
   return socialMedia ? placeholders[socialMedia] : t('channel.identifierPlaceholder')
 }
@@ -109,7 +112,7 @@ function getIdentifierHelp(socialMedia: SocialMediaEnum | undefined): string {
     tiktok: t('channel.identifierHelpTiktok'),
     x: t('channel.identifierHelpX'),
     facebook: t('channel.identifierHelpFacebook'),
-    site: t('channel.identifierHelpSite')
+    site: t('channel.identifierHelpSite'),
   }
   return socialMedia ? helps[socialMedia] : t('channel.identifierHelp')
 }
@@ -132,19 +135,11 @@ function onSocialMediaChange(value: string | undefined) {
         {{ isEditMode ? t('channel.editChannel') : t('channel.createChannel') }}
       </h2>
       <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-        {{ isEditMode 
-          ? t('channel.editDescription') 
-          : t('channel.createDescription') 
-        }}
+        {{ isEditMode ? t('channel.editDescription') : t('channel.createDescription') }}
       </p>
     </div>
 
-    <FormKit
-      ref="form"
-      type="form"
-      :actions="false"
-      @submit="handleSubmit"
-    >
+    <FormKit ref="form" type="form" :actions="false" @submit="handleSubmit">
       <div class="space-y-6">
         <!-- Channel name -->
         <FormKit
@@ -156,7 +151,10 @@ function onSocialMediaChange(value: string | undefined) {
           validation="required|length:2,100"
           :validation-messages="{
             required: t('validation.required'),
-            length: t('validation.minLength', { min: 2 }) + ' / ' + t('validation.maxLength', { max: 100 })
+            length:
+              t('validation.minLength', { min: 2 }) +
+              ' / ' +
+              t('validation.maxLength', { max: 100 }),
           }"
         />
 
@@ -166,32 +164,40 @@ function onSocialMediaChange(value: string | undefined) {
             type="select"
             name="social_media"
             :label="t('channel.socialMedia')"
-            :options="socialMediaOptions.map((opt: { label: string; value: string }) => ({ label: opt.label, value: opt.value }))"
+            :options="
+              socialMediaOptions.map((opt: { label: string; value: string }) => ({
+                label: opt.label,
+                value: opt.value,
+              }))
+            "
             :value="channel?.social_media || 'telegram'"
             validation="required"
             :validation-messages="{
-              required: t('validation.required')
+              required: t('validation.required'),
             }"
             @input="onSocialMediaChange"
           />
-          
+
           <!-- Social media preview -->
-          <div 
+          <div
             v-if="selectedSocialMedia"
             class="mt-2 flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700/50 rounded"
           >
-            <div 
+            <div
               class="p-1.5 rounded"
               :style="{ backgroundColor: getSocialMediaColor(selectedSocialMedia) + '20' }"
             >
-              <UIcon 
-                :name="getSocialMediaIcon(selectedSocialMedia)" 
+              <UIcon
+                :name="getSocialMediaIcon(selectedSocialMedia)"
                 class="w-4 h-4"
                 :style="{ color: getSocialMediaColor(selectedSocialMedia) }"
               />
             </div>
             <span class="text-sm text-gray-600 dark:text-gray-300">
-              {{ socialMediaOptions.find((o: { value: string }) => o.value === selectedSocialMedia)?.label }}
+              {{
+                socialMediaOptions.find((o: { value: string }) => o.value === selectedSocialMedia)
+                  ?.label
+              }}
             </span>
           </div>
         </div>
@@ -201,21 +207,26 @@ function onSocialMediaChange(value: string | undefined) {
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
             {{ t('channel.socialMedia') }}
           </label>
-          <div 
+          <div
             class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600"
           >
-            <div 
+            <div
               class="p-2 rounded"
-              :style="{ backgroundColor: getSocialMediaColor(channel?.social_media || 'telegram') + '20' }"
+              :style="{
+                backgroundColor: getSocialMediaColor(channel?.social_media || 'telegram') + '20',
+              }"
             >
-              <UIcon 
-                :name="getSocialMediaIcon(channel?.social_media || 'telegram')" 
+              <UIcon
+                :name="getSocialMediaIcon(channel?.social_media || 'telegram')"
                 class="w-5 h-5"
                 :style="{ color: getSocialMediaColor(channel?.social_media || 'telegram') }"
               />
             </div>
             <span class="font-medium text-gray-900 dark:text-white">
-              {{ socialMediaOptions.find((o: { value: string }) => o.value === channel?.social_media)?.label }}
+              {{
+                socialMediaOptions.find((o: { value: string }) => o.value === channel?.social_media)
+                  ?.label
+              }}
             </span>
           </div>
           <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -228,12 +239,17 @@ function onSocialMediaChange(value: string | undefined) {
           type="text"
           name="channel_identifier"
           :label="t('channel.identifier')"
-          :placeholder="getIdentifierPlaceholder(isEditMode ? channel?.social_media : selectedSocialMedia)"
+          :placeholder="
+            getIdentifierPlaceholder(isEditMode ? channel?.social_media : selectedSocialMedia)
+          "
           :value="channel?.channel_identifier || ''"
           validation="required|length:1,500"
           :validation-messages="{
             required: t('validation.required'),
-            length: t('validation.minLength', { min: 1 }) + ' / ' + t('validation.maxLength', { max: 500 })
+            length:
+              t('validation.minLength', { min: 1 }) +
+              ' / ' +
+              t('validation.maxLength', { max: 500 }),
           }"
           :help="getIdentifierHelp(isEditMode ? channel?.social_media : selectedSocialMedia)"
         />
@@ -249,7 +265,9 @@ function onSocialMediaChange(value: string | undefined) {
         />
 
         <!-- Form actions -->
-        <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div
+          class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700"
+        >
           <UButton
             type="button"
             color="neutral"
@@ -259,12 +277,7 @@ function onSocialMediaChange(value: string | undefined) {
           >
             {{ t('common.cancel') }}
           </UButton>
-          <UButton
-            type="button"
-            color="primary"
-            :loading="isLoading"
-            @click="submitForm"
-          >
+          <UButton type="button" color="primary" :loading="isLoading" @click="submitForm">
             {{ isEditMode ? t('common.save') : t('common.create') }}
           </UButton>
         </div>

@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import type { PostWithRelations } from '~/composables/usePosts'
+import type { Database } from '~/types/database.types'
+
+type PostStatusEnum = Database['public']['Enums']['post_status_enum']
+type PostTypeEnum = Database['public']['Enums']['post_type_enum']
 
 definePageMeta({
   middleware: 'auth',
@@ -15,7 +19,6 @@ const {
   posts,
   isLoading,
   error,
-  filter,
   pagination,
   totalCount,
   totalPages,
@@ -29,14 +32,14 @@ const {
   getStatusDisplayName,
   getTypeDisplayName,
   getStatusColor,
-  canDelete
+  canDelete,
 } = usePosts()
 
 const { channels, fetchChannels } = useChannels()
 
 // Filter state
-const selectedStatus = ref<string | null>(null)
-const selectedType = ref<string | null>(null)
+const selectedStatus = ref<PostStatusEnum | null>(null)
+const selectedType = ref<PostTypeEnum | null>(null)
 const selectedChannel = ref<string | null>(null)
 const searchQuery = ref('')
 
@@ -48,48 +51,48 @@ const isDeleting = ref(false)
 // Fetch data on mount
 onMounted(async () => {
   if (blogId.value) {
-    await Promise.all([
-      fetchChannels(blogId.value),
-      fetchPostsByBlog(blogId.value)
-    ])
+    await Promise.all([fetchChannels(blogId.value), fetchPostsByBlog(blogId.value)])
   }
 })
 
 // Watch for filter changes
 watch([selectedStatus, selectedType, selectedChannel, searchQuery], () => {
   setFilter({
-    status: selectedStatus.value as any || null,
-    post_type: selectedType.value as any || null,
+    status: selectedStatus.value || null,
+    post_type: selectedType.value || null,
     channel_id: selectedChannel.value || null,
-    search: searchQuery.value || undefined
+    search: searchQuery.value || undefined,
   })
   fetchPostsByBlog(blogId.value)
 })
 
 // Watch for page changes
-watch(() => pagination.value.page, () => {
-  fetchPostsByBlog(blogId.value)
-})
+watch(
+  () => pagination.value.page,
+  () => {
+    fetchPostsByBlog(blogId.value)
+  }
+)
 
 // Channel options for filter
 const channelOptions = computed(() => [
   { value: null, label: t('common.all') },
-  ...channels.value.map(ch => ({
+  ...channels.value.map((ch) => ({
     value: ch.id,
-    label: ch.name
-  }))
+    label: ch.name,
+  })),
 ])
 
 // Status options with "All" option
 const statusFilterOptions = computed(() => [
   { value: null, label: t('common.all') },
-  ...statusOptions.value
+  ...statusOptions.value,
 ])
 
-// Type options with "All" option  
+// Type options with "All" option
 const typeFilterOptions = computed(() => [
   { value: null, label: t('common.all') },
-  ...typeOptions.value
+  ...typeOptions.value,
 ])
 
 /**
@@ -126,11 +129,11 @@ function confirmDelete(post: PostWithRelations) {
  */
 async function handleDelete() {
   if (!postToDelete.value) return
-  
+
   isDeleting.value = true
   const success = await deletePost(postToDelete.value.id)
   isDeleting.value = false
-  
+
   if (success) {
     showDeleteModal.value = false
     postToDelete.value = null
@@ -188,12 +191,7 @@ const hasActiveFilters = computed(() => {
   <div>
     <!-- Back button -->
     <div class="mb-6">
-      <UButton
-        variant="ghost"
-        color="neutral"
-        icon="i-heroicons-arrow-left"
-        @click="goBack"
-      >
+      <UButton variant="ghost" color="neutral" icon="i-heroicons-arrow-left" @click="goBack">
         {{ t('common.back') }}
       </UButton>
     </div>
@@ -208,11 +206,7 @@ const hasActiveFilters = computed(() => {
           {{ totalCount }} {{ t('post.titlePlural').toLowerCase() }}
         </p>
       </div>
-      <UButton
-        icon="i-heroicons-plus"
-        color="primary"
-        @click="goToCreatePost"
-      >
+      <UButton icon="i-heroicons-plus" color="primary" @click="goToCreatePost">
         {{ t('post.createPost') }}
       </UButton>
     </div>
@@ -227,7 +221,7 @@ const hasActiveFilters = computed(() => {
           icon="i-heroicons-magnifying-glass"
           class="lg:col-span-2"
         />
-        
+
         <!-- Status filter -->
         <USelect
           v-model="selectedStatus"
@@ -236,7 +230,7 @@ const hasActiveFilters = computed(() => {
           value-attribute="value"
           :placeholder="t('post.status')"
         />
-        
+
         <!-- Type filter -->
         <USelect
           v-model="selectedType"
@@ -245,7 +239,7 @@ const hasActiveFilters = computed(() => {
           value-attribute="value"
           :placeholder="t('post.postType')"
         />
-        
+
         <!-- Channel filter -->
         <USelect
           v-model="selectedChannel"
@@ -255,7 +249,7 @@ const hasActiveFilters = computed(() => {
           :placeholder="t('channel.title')"
         />
       </div>
-      
+
       <!-- Reset filters button -->
       <div v-if="hasActiveFilters" class="mt-4">
         <UButton
@@ -271,9 +265,15 @@ const hasActiveFilters = computed(() => {
     </div>
 
     <!-- Error state -->
-    <div v-if="error" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+    <div
+      v-if="error"
+      class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
+    >
       <div class="flex items-center gap-3">
-        <UIcon name="i-heroicons-exclamation-circle" class="w-5 h-5 text-red-600 dark:text-red-400" />
+        <UIcon
+          name="i-heroicons-exclamation-circle"
+          class="w-5 h-5 text-red-600 dark:text-red-400"
+        />
         <p class="text-red-700 dark:text-red-300">{{ error }}</p>
       </div>
     </div>
@@ -281,34 +281,34 @@ const hasActiveFilters = computed(() => {
     <!-- Loading state -->
     <div v-else-if="isLoading" class="flex items-center justify-center py-12">
       <div class="text-center">
-        <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-gray-400 animate-spin mx-auto mb-3" />
+        <UIcon
+          name="i-heroicons-arrow-path"
+          class="w-8 h-8 text-gray-400 animate-spin mx-auto mb-3"
+        />
         <p class="text-gray-500 dark:text-gray-400">{{ t('common.loading') }}</p>
       </div>
     </div>
 
     <!-- Empty state -->
-    <div 
-      v-else-if="posts.length === 0" 
+    <div
+      v-else-if="posts.length === 0"
       class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center"
     >
-      <UIcon 
-        name="i-heroicons-document-text" 
-        class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" 
+      <UIcon
+        name="i-heroicons-document-text"
+        class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4"
       />
       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
         {{ t('post.noPostsFound') }}
       </h3>
       <p class="text-gray-500 dark:text-gray-400 mb-6">
-        {{ hasActiveFilters 
-          ? t('post.noPostsFiltered', 'No posts match your filters')
-          : t('post.noPostsDescription', 'Create your first post to get started')
+        {{
+          hasActiveFilters
+            ? t('post.noPostsFiltered', 'No posts match your filters')
+            : t('post.noPostsDescription', 'Create your first post to get started')
         }}
       </p>
-      <UButton 
-        v-if="!hasActiveFilters"
-        icon="i-heroicons-plus" 
-        @click="goToCreatePost"
-      >
+      <UButton v-if="!hasActiveFilters" icon="i-heroicons-plus" @click="goToCreatePost">
         {{ t('post.createPost') }}
       </UButton>
     </div>
@@ -329,18 +329,10 @@ const hasActiveFilters = computed(() => {
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white truncate">
                   {{ post.title || t('post.untitled', 'Untitled') }}
                 </h3>
-                <UBadge 
-                  :color="getStatusColor(post.status)" 
-                  size="xs"
-                  variant="subtle"
-                >
+                <UBadge :color="getStatusColor(post.status)" size="xs" variant="subtle">
                   {{ getStatusDisplayName(post.status) }}
                 </UBadge>
-                <UBadge 
-                  color="neutral" 
-                  size="xs"
-                  variant="outline"
-                >
+                <UBadge color="neutral" size="xs" variant="outline">
                   {{ getTypeDisplayName(post.post_type) }}
                 </UBadge>
               </div>
@@ -351,19 +343,21 @@ const hasActiveFilters = computed(() => {
               </p>
 
               <!-- Meta info -->
-              <div class="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+              <div
+                class="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400"
+              >
                 <!-- Channel -->
                 <span v-if="post.channel" class="flex items-center gap-1">
                   <UIcon name="i-heroicons-signal" class="w-3.5 h-3.5" />
                   {{ post.channel.name }}
                 </span>
-                
+
                 <!-- Author -->
                 <span v-if="post.author" class="flex items-center gap-1">
                   <UIcon name="i-heroicons-user" class="w-3.5 h-3.5" />
                   {{ post.author.full_name || post.author.username }}
                 </span>
-                
+
                 <!-- Created date -->
                 <span class="flex items-center gap-1">
                   <UIcon name="i-heroicons-calendar" class="w-3.5 h-3.5" />
@@ -371,8 +365,8 @@ const hasActiveFilters = computed(() => {
                 </span>
 
                 <!-- Scheduled date -->
-                <span 
-                  v-if="post.status === 'scheduled' && post.scheduled_at" 
+                <span
+                  v-if="post.status === 'scheduled' && post.scheduled_at"
                   class="flex items-center gap-1 text-amber-600 dark:text-amber-400"
                 >
                   <UIcon name="i-heroicons-clock" class="w-3.5 h-3.5" />
@@ -382,8 +376,8 @@ const hasActiveFilters = computed(() => {
                 <!-- Tags -->
                 <div v-if="post.tags && post.tags.length > 0" class="flex items-center gap-1">
                   <UIcon name="i-heroicons-tag" class="w-3.5 h-3.5" />
-                  <span 
-                    v-for="(tag, i) in post.tags.slice(0, 3)" 
+                  <span
+                    v-for="(tag, i) in post.tags.slice(0, 3)"
                     :key="tag"
                     class="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs"
                   >
@@ -420,10 +414,7 @@ const hasActiveFilters = computed(() => {
     </div>
 
     <!-- Pagination -->
-    <div 
-      v-if="totalPages > 1" 
-      class="flex items-center justify-center gap-2 mt-6"
-    >
+    <div v-if="totalPages > 1" class="flex items-center justify-center gap-2 mt-6">
       <UButton
         :disabled="pagination.page <= 1"
         variant="outline"
@@ -432,11 +423,11 @@ const hasActiveFilters = computed(() => {
         size="sm"
         @click="setPage(pagination.page - 1)"
       />
-      
+
       <span class="text-sm text-gray-600 dark:text-gray-400 px-4">
         {{ pagination.page }} / {{ totalPages }}
       </span>
-      
+
       <UButton
         :disabled="pagination.page >= totalPages"
         variant="outline"
@@ -453,31 +444,33 @@ const hasActiveFilters = computed(() => {
         <div class="p-6">
           <div class="flex items-center gap-4 mb-4">
             <div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
-              <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 text-red-600 dark:text-red-400" />
+              <UIcon
+                name="i-heroicons-exclamation-triangle"
+                class="w-6 h-6 text-red-600 dark:text-red-400"
+              />
             </div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{ t('post.deletePost') }}
             </h3>
           </div>
-          
+
           <p class="text-gray-600 dark:text-gray-400 mb-6">
             {{ t('post.deleteConfirm') }}
           </p>
-          
+
           <div class="flex justify-end gap-3">
-            <UButton 
-              color="neutral" 
-              variant="ghost" 
+            <UButton
+              color="neutral"
+              variant="ghost"
               :disabled="isDeleting"
-              @click="showDeleteModal = false; postToDelete = null"
+              @click="
+                showDeleteModal = false
+                postToDelete = null
+              "
             >
               {{ t('common.cancel') }}
             </UButton>
-            <UButton 
-              color="error" 
-              :loading="isDeleting"
-              @click="handleDelete"
-            >
+            <UButton color="error" :loading="isDeleting" @click="handleDelete">
               {{ t('common.delete') }}
             </UButton>
           </div>

@@ -1,15 +1,7 @@
 <script setup lang="ts">
 const { t } = useI18n()
-const {
-  user,
-  telegramUser,
-  isAuthenticated,
-  isAdmin,
-  isDevMode,
-  isLoading,
-  error,
-  initialize,
-} = useAuth()
+const { user, telegramUser, isAuthenticated, isAdmin, isDevMode, isLoading, error, initialize } =
+  useAuth()
 
 // Initialize auth on mount
 onMounted(async () => {
@@ -40,10 +32,16 @@ onMounted(async () => {
           <span class="px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full">
             {{ t('auth.profile') }}
           </span>
-          <span v-if="isAdmin" class="px-2 py-1 text-xs font-medium text-purple-700 bg-purple-100 rounded-full">
+          <span
+            v-if="isAdmin"
+            class="px-2 py-1 text-xs font-medium text-purple-700 bg-purple-100 rounded-full"
+          >
             {{ t('user.isAdmin') }}
           </span>
-          <span v-if="isDevMode" class="px-2 py-1 text-xs font-medium text-yellow-700 bg-yellow-100 rounded-full">
+          <span
+            v-if="isDevMode"
+            class="px-2 py-1 text-xs font-medium text-yellow-700 bg-yellow-100 rounded-full"
+          >
             Dev Mode
           </span>
         </div>
@@ -71,12 +69,7 @@ onMounted(async () => {
       <!-- Not authenticated -->
       <div v-else class="text-gray-500">
         <p>{{ t('auth.notAuthenticated') }}</p>
-        <UiButton
-          variant="primary"
-          size="sm"
-          class="mt-2"
-          @click="initialize"
-        >
+        <UiButton variant="primary" size="sm" class="mt-2" @click="initialize">
           {{ t('auth.login') }}
         </UiButton>
       </div>

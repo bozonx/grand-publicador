@@ -21,7 +21,7 @@ const {
   socialMediaOptions,
   getSocialMediaDisplayName,
   getSocialMediaIcon,
-  getSocialMediaColor
+  getSocialMediaColor,
 } = useChannels()
 
 // Modal states
@@ -45,14 +45,18 @@ onMounted(() => {
 })
 
 // Watch for filter changes
-watch([selectedSocialMedia, selectedActiveStatus, searchQuery], () => {
-  setFilter({
-    social_media: selectedSocialMedia.value,
-    is_active: selectedActiveStatus.value,
-    search: searchQuery.value || undefined
-  })
-  fetchChannels(props.blogId)
-}, { debounce: 300 } as any)
+watch(
+  [selectedSocialMedia, selectedActiveStatus, searchQuery],
+  () => {
+    setFilter({
+      social_media: selectedSocialMedia.value,
+      is_active: selectedActiveStatus.value,
+      search: searchQuery.value || undefined,
+    })
+    fetchChannels(props.blogId)
+  },
+  { debounce: 300 } as any
+)
 
 /**
  * Open edit modal with channel data
@@ -75,11 +79,11 @@ function openDeleteModal(channel: ChannelWithBlog) {
  */
 async function handleDelete() {
   if (!channelToDelete.value) return
-  
+
   isDeleting.value = true
   const success = await deleteChannel(channelToDelete.value.id, props.blogId)
   isDeleting.value = false
-  
+
   if (success) {
     isDeleteModalOpen.value = false
     channelToDelete.value = null
@@ -140,7 +144,7 @@ function formatDate(date: string | null): string {
 const activeStatusOptions = [
   { value: null, label: t('common.all') },
   { value: true, label: t('channel.active') },
-  { value: false, label: t('channel.inactive') }
+  { value: false, label: t('channel.inactive') },
 ]
 </script>
 
@@ -156,11 +160,7 @@ const activeStatusOptions = [
           {{ channels.length }} {{ t('channel.titlePlural').toLowerCase() }}
         </p>
       </div>
-      <UButton
-        icon="i-heroicons-plus"
-        color="primary"
-        @click="isCreateModalOpen = true"
-      >
+      <UButton icon="i-heroicons-plus" color="primary" @click="isCreateModalOpen = true">
         {{ t('channel.createChannel') }}
       </UButton>
     </div>
@@ -175,7 +175,7 @@ const activeStatusOptions = [
           icon="i-heroicons-magnifying-glass"
           class="w-full"
         />
-        
+
         <!-- Social media filter -->
         <USelect
           v-model="selectedSocialMedia"
@@ -185,7 +185,7 @@ const activeStatusOptions = [
           :placeholder="t('channel.socialMedia')"
           class="w-full"
         />
-        
+
         <!-- Active status filter -->
         <USelect
           v-model="selectedActiveStatus"
@@ -195,7 +195,7 @@ const activeStatusOptions = [
           :placeholder="t('channel.isActive')"
           class="w-full"
         />
-        
+
         <!-- Reset filters -->
         <UButton
           v-if="selectedSocialMedia || selectedActiveStatus !== null || searchQuery"
@@ -212,32 +212,36 @@ const activeStatusOptions = [
     <!-- Loading state -->
     <div v-if="isLoading" class="flex items-center justify-center py-12">
       <div class="text-center">
-        <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-gray-400 animate-spin mx-auto mb-3" />
+        <UIcon
+          name="i-heroicons-arrow-path"
+          class="w-8 h-8 text-gray-400 animate-spin mx-auto mb-3"
+        />
         <p class="text-gray-500 dark:text-gray-400">{{ t('common.loading') }}</p>
       </div>
     </div>
 
     <!-- Empty state -->
-    <div 
-      v-else-if="channels.length === 0" 
+    <div
+      v-else-if="channels.length === 0"
       class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center"
     >
-      <UIcon 
-        name="i-heroicons-signal-slash" 
-        class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" 
+      <UIcon
+        name="i-heroicons-signal-slash"
+        class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4"
       />
       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
         {{ t('channel.noChannelsFound') }}
       </h3>
       <p class="text-gray-500 dark:text-gray-400 mb-6">
-        {{ filter.social_media || filter.search 
-          ? t('channel.noChannelsFiltered') 
-          : t('channel.noChannelsDescription') 
+        {{
+          filter.social_media || filter.search
+            ? t('channel.noChannelsFiltered')
+            : t('channel.noChannelsDescription')
         }}
       </p>
-      <UButton 
+      <UButton
         v-if="!filter.social_media && !filter.search"
-        icon="i-heroicons-plus" 
+        icon="i-heroicons-plus"
         @click="isCreateModalOpen = true"
       >
         {{ t('channel.createChannel') }}
@@ -252,20 +256,17 @@ const activeStatusOptions = [
         class="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow overflow-hidden"
       >
         <!-- Card header with social media color bar -->
-        <div 
-          class="h-1" 
-          :style="{ backgroundColor: getSocialMediaColor(channel.social_media) }"
-        />
-        
+        <div class="h-1" :style="{ backgroundColor: getSocialMediaColor(channel.social_media) }" />
+
         <div class="p-4">
           <!-- Channel info -->
           <div class="flex items-start gap-3 mb-4">
-            <div 
+            <div
               class="p-2 rounded-lg"
               :style="{ backgroundColor: getSocialMediaColor(channel.social_media) + '20' }"
             >
-              <UIcon 
-                :name="getSocialMediaIcon(channel.social_media)" 
+              <UIcon
+                :name="getSocialMediaIcon(channel.social_media)"
                 class="w-6 h-6"
                 :style="{ color: getSocialMediaColor(channel.social_media) }"
               />
@@ -278,11 +279,7 @@ const activeStatusOptions = [
                 {{ getSocialMediaDisplayName(channel.social_media) }}
               </p>
             </div>
-            <UBadge 
-              :color="getStatusColor(channel.is_active)" 
-              size="xs"
-              variant="subtle"
-            >
+            <UBadge :color="getStatusColor(channel.is_active)" size="xs" variant="subtle">
               {{ channel.is_active ? t('channel.active') : t('channel.inactive') }}
             </UBadge>
           </div>
@@ -290,7 +287,9 @@ const activeStatusOptions = [
           <!-- Channel identifier -->
           <div class="mb-4 p-2 bg-gray-50 dark:bg-gray-700/50 rounded text-sm">
             <span class="text-gray-500 dark:text-gray-400">ID: </span>
-            <span class="font-mono text-gray-900 dark:text-white">{{ channel.channel_identifier }}</span>
+            <span class="font-mono text-gray-900 dark:text-white">{{
+              channel.channel_identifier
+            }}</span>
           </div>
 
           <!-- Stats -->
@@ -361,7 +360,10 @@ const activeStatusOptions = [
             :blog-id="blogId"
             :channel="channelToEdit"
             @success="handleUpdateSuccess"
-            @cancel="isEditModalOpen = false; channelToEdit = null"
+            @cancel="
+              isEditModalOpen = false
+              channelToEdit = null
+            "
           />
         </div>
       </template>
@@ -373,39 +375,41 @@ const activeStatusOptions = [
         <div class="p-6">
           <div class="flex items-center gap-4 mb-4">
             <div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
-              <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 text-red-600 dark:text-red-400" />
+              <UIcon
+                name="i-heroicons-exclamation-triangle"
+                class="w-6 h-6 text-red-600 dark:text-red-400"
+              />
             </div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{ t('channel.deleteChannel') }}
             </h3>
           </div>
-          
+
           <p class="text-gray-600 dark:text-gray-400 mb-2">
             {{ t('channel.deleteConfirm') }}
           </p>
-          
-          <p 
-            v-if="channelToDelete?.postsCount && channelToDelete.postsCount > 0" 
+
+          <p
+            v-if="channelToDelete?.postsCount && channelToDelete.postsCount > 0"
             class="text-amber-600 dark:text-amber-400 text-sm mb-6"
           >
             <UIcon name="i-heroicons-exclamation-triangle" class="w-4 h-4 inline mr-1" />
             {{ t('channel.deleteWithPostsWarning', { count: channelToDelete.postsCount }) }}
           </p>
-          
+
           <div class="flex justify-end gap-3">
-            <UButton 
-              color="neutral" 
-              variant="ghost" 
+            <UButton
+              color="neutral"
+              variant="ghost"
               :disabled="isDeleting"
-              @click="isDeleteModalOpen = false; channelToDelete = null"
+              @click="
+                isDeleteModalOpen = false
+                channelToDelete = null
+              "
             >
               {{ t('common.cancel') }}
             </UButton>
-            <UButton 
-              color="error" 
-              :loading="isDeleting"
-              @click="handleDelete"
-            >
+            <UButton color="error" :loading="isDeleting" @click="handleDelete">
               {{ t('common.delete') }}
             </UButton>
           </div>

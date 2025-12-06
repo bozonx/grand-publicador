@@ -18,7 +18,7 @@ const { addMember } = useBlogs()
 
 const isOpen = computed({
   get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
+  set: (value) => emit('update:modelValue', value),
 })
 
 const isLoading = ref(false)
@@ -28,7 +28,7 @@ const selectedRole = ref<BlogRole>('viewer')
 const roleOptions = computed(() => [
   { label: t('roles.admin'), value: 'admin' },
   { label: t('roles.editor'), value: 'editor' },
-  { label: t('roles.viewer'), value: 'viewer' }
+  { label: t('roles.viewer'), value: 'viewer' },
 ])
 
 async function handleInvite() {
@@ -67,7 +67,7 @@ function closeModal() {
         />
       </div>
 
-      <form @submit.prevent="handleInvite" class="space-y-4">
+      <form class="space-y-4" @submit.prevent="handleInvite">
         <UFormGroup :label="t('blogMember.userEmailOrUsername')" required>
           <UInput
             v-model="emailOrUsername"
@@ -77,27 +77,14 @@ function closeModal() {
         </UFormGroup>
 
         <UFormGroup :label="t('common.role')">
-          <USelect
-            v-model="selectedRole"
-            :options="roleOptions"
-            option-attribute="label"
-          />
+          <USelect v-model="selectedRole" :options="roleOptions" option-attribute="label" />
         </UFormGroup>
 
         <div class="flex justify-end gap-3 mt-6">
-          <UButton
-            color="neutral"
-            variant="ghost"
-            @click="closeModal"
-          >
+          <UButton color="neutral" variant="ghost" @click="closeModal">
             {{ t('common.cancel') }}
           </UButton>
-          <UButton
-            type="submit"
-            color="primary"
-            :loading="isLoading"
-            :disabled="!emailOrUsername"
-          >
+          <UButton type="submit" color="primary" :loading="isLoading" :disabled="!emailOrUsername">
             {{ t('blogMember.invite') }}
           </UButton>
         </div>

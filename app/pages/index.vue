@@ -10,7 +10,7 @@ const { t } = useI18n()
 const { displayName, isAdmin } = useAuth()
 
 const { blogs, fetchBlogs, isLoading: blogsLoading } = useBlogs()
-const { posts, fetchPostsByBlog, isLoading: postsLoading } = usePosts()
+const { posts: _posts, fetchPostsByBlog, isLoading: postsLoading } = usePosts()
 
 // State
 const recentPosts = ref<PostWithRelations[]>([])
@@ -19,11 +19,12 @@ const isLoading = computed(() => blogsLoading.value || postsLoading.value)
 // Fetch data on mount
 onMounted(async () => {
   await fetchBlogs()
-  
+
   // Fetch posts from all user's blogs
   if (blogs.value.length > 0) {
     const allPosts: PostWithRelations[] = []
-    for (const blog of blogs.value.slice(0, 3)) { // Limit to first 3 blogs
+    for (const blog of blogs.value.slice(0, 3)) {
+      // Limit to first 3 blogs
       const blogPosts = await fetchPostsByBlog(blog.id)
       allPosts.push(...blogPosts.slice(0, 5)) // Limit posts per blog
     }
@@ -59,14 +60,14 @@ function getStatusColor(status: string | null): 'success' | 'warning' | 'error' 
     draft: 'neutral',
     scheduled: 'warning',
     published: 'success',
-    failed: 'error'
+    failed: 'error',
   }
   return status ? colors[status] || 'neutral' : 'neutral'
 }
 
 // Quick stats
 const totalBlogs = computed(() => blogs.value.length)
-const totalChannels = computed(() => 
+const totalChannels = computed(() =>
   blogs.value.reduce((sum: number, blog: BlogWithRole) => sum + (blog.channelCount || 0), 0)
 )
 const totalPosts = computed(() =>
@@ -100,7 +101,10 @@ const totalPosts = computed(() =>
             </p>
           </div>
           <div class="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
-            <UIcon name="i-heroicons-book-open" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
+            <UIcon
+              name="i-heroicons-book-open"
+              class="w-6 h-6 text-primary-600 dark:text-primary-400"
+            />
           </div>
         </div>
       </div>
@@ -134,7 +138,10 @@ const totalPosts = computed(() =>
             </p>
           </div>
           <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-            <UIcon name="i-heroicons-document-text" class="w-6 h-6 text-green-600 dark:text-green-400" />
+            <UIcon
+              name="i-heroicons-document-text"
+              class="w-6 h-6 text-green-600 dark:text-green-400"
+            />
           </div>
         </div>
       </div>
@@ -146,11 +153,7 @@ const totalPosts = computed(() =>
         {{ t('dashboard.quickActions') }}
       </h2>
       <div class="flex flex-wrap gap-3">
-        <UButton
-          icon="i-heroicons-plus"
-          color="primary"
-          to="/blogs/new"
-        >
+        <UButton icon="i-heroicons-plus" color="primary" to="/blogs/new">
           {{ t('blog.createBlog') }}
         </UButton>
         <UButton
@@ -162,12 +165,7 @@ const totalPosts = computed(() =>
         >
           {{ t('admin.userManagement') }}
         </UButton>
-        <UButton
-          icon="i-heroicons-cog-6-tooth"
-          color="neutral"
-          variant="outline"
-          to="/settings"
-        >
+        <UButton icon="i-heroicons-cog-6-tooth" color="neutral" variant="outline" to="/settings">
           {{ t('settings.title') }}
         </UButton>
       </div>
@@ -177,16 +175,13 @@ const totalPosts = computed(() =>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- My Blogs -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <div
+          class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between"
+        >
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
             {{ t('blog.titlePlural') }}
           </h2>
-          <UButton
-            variant="ghost"
-            color="primary"
-            size="sm"
-            to="/blogs"
-          >
+          <UButton variant="ghost" color="primary" size="sm" to="/blogs">
             {{ t('common.viewAll') }}
           </UButton>
         </div>
@@ -198,7 +193,10 @@ const totalPosts = computed(() =>
 
           <!-- Empty state -->
           <div v-else-if="blogs.length === 0" class="text-center py-8">
-            <UIcon name="i-heroicons-book-open" class="w-10 h-10 mx-auto text-gray-400 dark:text-gray-500 mb-3" />
+            <UIcon
+              name="i-heroicons-book-open"
+              class="w-10 h-10 mx-auto text-gray-400 dark:text-gray-500 mb-3"
+            />
             <p class="text-gray-500 dark:text-gray-400 mb-4">
               {{ t('blog.noBlogsDescription') }}
             </p>
@@ -221,7 +219,7 @@ const totalPosts = computed(() =>
                     {{ blog.name }}
                   </h3>
                   <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                    {{ blog.channelCount || 0 }} {{ t('channel.titlePlural').toLowerCase() }} · 
+                    {{ blog.channelCount || 0 }} {{ t('channel.titlePlural').toLowerCase() }} ·
                     {{ blog.postCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
                   </p>
                 </div>
@@ -243,13 +241,19 @@ const totalPosts = computed(() =>
         </div>
         <div class="p-6">
           <!-- Loading -->
-          <div v-if="isLoading && recentPosts.length === 0" class="flex items-center justify-center py-8">
+          <div
+            v-if="isLoading && recentPosts.length === 0"
+            class="flex items-center justify-center py-8"
+          >
             <UIcon name="i-heroicons-arrow-path" class="w-6 h-6 text-gray-400 animate-spin" />
           </div>
 
           <!-- Empty state -->
           <div v-else-if="recentPosts.length === 0" class="text-center py-8">
-            <UIcon name="i-heroicons-document-text" class="w-10 h-10 mx-auto text-gray-400 dark:text-gray-500 mb-3" />
+            <UIcon
+              name="i-heroicons-document-text"
+              class="w-10 h-10 mx-auto text-gray-400 dark:text-gray-500 mb-3"
+            />
             <p class="text-gray-500 dark:text-gray-400">
               {{ t('post.noPostsDescription') }}
             </p>

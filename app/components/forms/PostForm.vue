@@ -22,7 +22,7 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
   post: null,
-  channelId: undefined
+  channelId: undefined,
 })
 
 const emit = defineEmits<Emits>()
@@ -42,7 +42,7 @@ const formData = reactive({
   tags: props.post?.tags?.join(', ') || '',
   post_date: props.post?.post_date || '',
   status: (props.post?.status || 'draft') as PostStatusEnum,
-  scheduled_at: props.post?.scheduled_at || ''
+  scheduled_at: props.post?.scheduled_at || '',
 })
 
 const isEditMode = computed(() => !!props.post?.id)
@@ -59,15 +59,13 @@ onMounted(() => {
 const channelOptions = computed(() => {
   return channels.value.map((channel: ChannelWithBlog) => ({
     value: channel.id,
-    label: `${channel.name} (${channel.social_media})`
+    label: `${channel.name} (${channel.social_media})`,
   }))
 })
 
 // Status options for select (only draft and scheduled for creation/editing)
 const availableStatusOptions = computed(() => {
-  return statusOptions.value.filter(opt => 
-    ['draft', 'scheduled'].includes(opt.value)
-  )
+  return statusOptions.value.filter((opt) => ['draft', 'scheduled'].includes(opt.value))
 })
 
 /**
@@ -77,8 +75,8 @@ async function handleSubmit() {
   // Parse tags from comma-separated string
   const tagsArray = formData.tags
     .split(',')
-    .map(tag => tag.trim())
-    .filter(tag => tag.length > 0)
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0)
 
   if (isEditMode.value && props.post) {
     // Update existing post
@@ -91,7 +89,8 @@ async function handleSubmit() {
       tags: tagsArray.length > 0 ? tagsArray : undefined,
       post_date: formData.post_date || undefined,
       status: formData.status,
-      scheduled_at: formData.status === 'scheduled' ? formData.scheduled_at || undefined : undefined
+      scheduled_at:
+        formData.status === 'scheduled' ? formData.scheduled_at || undefined : undefined,
     }
 
     const result = await updatePost(props.post.id, updateData)
@@ -114,7 +113,8 @@ async function handleSubmit() {
       tags: tagsArray.length > 0 ? tagsArray : undefined,
       post_date: formData.post_date || undefined,
       status: formData.status,
-      scheduled_at: formData.status === 'scheduled' ? formData.scheduled_at || undefined : undefined
+      scheduled_at:
+        formData.status === 'scheduled' ? formData.scheduled_at || undefined : undefined,
     }
 
     const result = await createPost(createData)
@@ -163,9 +163,10 @@ const isFormValid = computed(() => {
         {{ isEditMode ? t('post.editPost') : t('post.createPost') }}
       </h2>
       <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-        {{ isEditMode 
-          ? t('post.editDescription', 'Update your post content and settings')
-          : t('post.createDescription', 'Create a new post for your channel')
+        {{
+          isEditMode
+            ? t('post.editDescription', 'Update your post content and settings')
+            : t('post.createDescription', 'Create a new post for your channel')
         }}
       </p>
     </div>
@@ -185,7 +186,10 @@ const isFormValid = computed(() => {
           class="w-full"
           size="lg"
         />
-        <p v-if="channelOptions.length === 0" class="mt-2 text-sm text-amber-600 dark:text-amber-400">
+        <p
+          v-if="channelOptions.length === 0"
+          class="mt-2 text-sm text-amber-600 dark:text-amber-400"
+        >
           <UIcon name="i-heroicons-exclamation-triangle" class="w-4 h-4 inline mr-1" />
           {{ t('post.noChannelsAvailable', 'No channels available. Create a channel first.') }}
         </p>
@@ -268,11 +272,7 @@ const isFormValid = computed(() => {
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             {{ t('post.scheduledAt') }} <span class="text-red-500">*</span>
           </label>
-          <UInput
-            v-model="formData.scheduled_at"
-            type="datetime-local"
-            class="w-full"
-          />
+          <UInput v-model="formData.scheduled_at" type="datetime-local" class="w-full" />
         </div>
       </div>
 
@@ -285,12 +285,19 @@ const isFormValid = computed(() => {
           :icon="showAdvancedFields ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'"
           @click="toggleAdvancedFields"
         >
-          {{ showAdvancedFields ? t('post.hideAdvanced', 'Hide advanced options') : t('post.showAdvanced', 'Show advanced options') }}
+          {{
+            showAdvancedFields
+              ? t('post.hideAdvanced', 'Hide advanced options')
+              : t('post.showAdvanced', 'Show advanced options')
+          }}
         </UButton>
       </div>
 
       <!-- Advanced fields -->
-      <div v-if="showAdvancedFields" class="space-y-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div
+        v-if="showAdvancedFields"
+        class="space-y-6 pt-4 border-t border-gray-200 dark:border-gray-700"
+      >
         <!-- Description -->
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -314,7 +321,12 @@ const isFormValid = computed(() => {
             :rows="2"
           />
           <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {{ t('post.authorCommentHint', 'This comment is for internal use only and will not be published.') }}
+            {{
+              t(
+                'post.authorCommentHint',
+                'This comment is for internal use only and will not be published.'
+              )
+            }}
           </p>
         </div>
 
@@ -337,18 +349,19 @@ const isFormValid = computed(() => {
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             {{ t('post.postDate') }}
           </label>
-          <UInput
-            v-model="formData.post_date"
-            type="date"
-          />
+          <UInput v-model="formData.post_date" type="date" />
           <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {{ t('post.postDateHint', 'The date associated with the content (not publication date)') }}
+            {{
+              t('post.postDateHint', 'The date associated with the content (not publication date)')
+            }}
           </p>
         </div>
       </div>
 
       <!-- Form actions -->
-      <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+      <div
+        class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700"
+      >
         <UButton
           type="button"
           color="neutral"

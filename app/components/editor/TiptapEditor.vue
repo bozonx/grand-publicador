@@ -20,8 +20,7 @@ interface Props {
 
 interface Emits {
   (e: 'update:modelValue', value: string): void
-  (e: 'blur'): void
-  (e: 'focus'): void
+  (e: 'blur' | 'focus'): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -29,7 +28,7 @@ const props = withDefaults(defineProps<Props>(), {
   placeholder: 'Write something...',
   maxLength: undefined,
   disabled: false,
-  minHeight: 200
+  minHeight: 200,
 })
 
 const emit = defineEmits<Emits>()
@@ -42,19 +41,21 @@ const editor = useEditor({
   extensions: [
     StarterKit.configure({
       heading: {
-        levels: [1, 2, 3]
-      }
+        levels: [1, 2, 3],
+      },
     }),
     Link.configure({
       openOnClick: false,
       HTMLAttributes: {
-        class: 'text-primary-600 dark:text-primary-400 underline'
-      }
+        class: 'text-primary-600 dark:text-primary-400 underline',
+      },
     }),
     Placeholder.configure({
-      placeholder: props.placeholder
+      placeholder: props.placeholder,
     }),
-    ...(props.maxLength ? [CharacterCount.configure({ limit: props.maxLength })] : [CharacterCount])
+    ...(props.maxLength
+      ? [CharacterCount.configure({ limit: props.maxLength })]
+      : [CharacterCount]),
   ],
   onUpdate: ({ editor }) => {
     emit('update:modelValue', editor.getHTML())
@@ -64,20 +65,26 @@ const editor = useEditor({
   },
   onFocus: () => {
     emit('focus')
-  }
+  },
 })
 
 // Watch for external content changes
-watch(() => props.modelValue, (newValue) => {
-  if (editor.value && newValue !== editor.value.getHTML()) {
-    editor.value.commands.setContent(newValue, { emitUpdate: false })
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (editor.value && newValue !== editor.value.getHTML()) {
+      editor.value.commands.setContent(newValue, { emitUpdate: false })
+    }
   }
-})
+)
 
 // Watch for disabled changes
-watch(() => props.disabled, (disabled) => {
-  editor.value?.setEditable(!disabled)
-})
+watch(
+  () => props.disabled,
+  (disabled) => {
+    editor.value?.setEditable(!disabled)
+  }
+)
 
 // Cleanup
 onBeforeUnmount(() => {
@@ -90,14 +97,14 @@ onBeforeUnmount(() => {
 function setLink() {
   const previousUrl = editor.value?.getAttributes('link').href
   const url = window.prompt('URL', previousUrl)
-  
+
   if (url === null) return
-  
+
   if (url === '') {
     editor.value?.chain().focus().extendMarkRange('link').unsetLink().run()
     return
   }
-  
+
   editor.value?.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
 }
 
@@ -126,8 +133,8 @@ const isMaxLengthReached = computed(() => {
 <template>
   <div class="tiptap-editor border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
     <!-- Toolbar -->
-    <div 
-      v-if="editor && !disabled" 
+    <div
+      v-if="editor && !disabled"
       class="flex flex-wrap items-center gap-1 p-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800"
     >
       <!-- Text formatting -->
@@ -278,15 +285,15 @@ const isMaxLengthReached = computed(() => {
     </div>
 
     <!-- Editor content -->
-    <EditorContent 
-      :editor="editor" 
+    <EditorContent
+      :editor="editor"
       class="prose prose-sm dark:prose-invert max-w-none p-4"
       :style="{ minHeight: `${minHeight}px` }"
     />
 
     <!-- Footer with character count -->
-    <div 
-      v-if="editor" 
+    <div
+      v-if="editor"
       class="flex items-center justify-between px-4 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-xs text-gray-500 dark:text-gray-400"
     >
       <div class="flex items-center gap-4">

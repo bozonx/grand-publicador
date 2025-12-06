@@ -10,9 +10,7 @@
       <div class="flex items-center justify-between px-4 py-4 sm:px-6">
         <!-- Logo -->
         <NuxtLink to="/" class="flex items-center gap-2">
-          <span class="text-xl font-bold text-gray-900 dark:text-white">
-            Grand Publicador
-          </span>
+          <span class="text-xl font-bold text-gray-900 dark:text-white"> Grand Publicador </span>
         </NuxtLink>
 
         <!-- Language switcher -->

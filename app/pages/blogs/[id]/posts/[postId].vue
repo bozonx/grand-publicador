@@ -10,18 +10,18 @@ const router = useRouter()
 const blogId = computed(() => route.params.id as string)
 const postId = computed(() => route.params.postId as string)
 
-const { 
-  currentPost, 
-  isLoading, 
-  error, 
-  fetchPost, 
+const {
+  currentPost,
+  isLoading,
+  error,
+  fetchPost,
   deletePost,
   clearCurrentPost,
   getStatusDisplayName,
   getStatusColor,
   getTypeDisplayName,
   canEdit,
-  canDelete 
+  canDelete,
 } = usePosts()
 
 // UI state
@@ -53,7 +53,7 @@ function goBack() {
  */
 function toggleEditMode() {
   router.replace({
-    query: { ...route.query, edit: isEditMode.value ? undefined : 'true' }
+    query: { ...route.query, edit: isEditMode.value ? undefined : 'true' },
   })
 }
 
@@ -62,7 +62,7 @@ function toggleEditMode() {
  */
 function handleSuccess() {
   router.replace({
-    query: { ...route.query, edit: undefined }
+    query: { ...route.query, edit: undefined },
   })
   fetchPost(postId.value)
 }
@@ -72,7 +72,7 @@ function handleSuccess() {
  */
 function handleCancel() {
   router.replace({
-    query: { ...route.query, edit: undefined }
+    query: { ...route.query, edit: undefined },
   })
 }
 
@@ -90,7 +90,7 @@ async function handleDelete() {
   isDeleting.value = true
   const success = await deletePost(postId.value)
   isDeleting.value = false
-  
+
   if (success) {
     showDeleteModal.value = false
     router.push(`/blogs/${blogId.value}/posts`)
@@ -118,20 +118,21 @@ function formatDateTime(date: string | null): string {
   <div>
     <!-- Back button -->
     <div class="mb-6">
-      <UButton
-        variant="ghost"
-        color="neutral"
-        icon="i-heroicons-arrow-left"
-        @click="goBack"
-      >
+      <UButton variant="ghost" color="neutral" icon="i-heroicons-arrow-left" @click="goBack">
         {{ t('common.back') }}
       </UButton>
     </div>
 
     <!-- Error state -->
-    <div v-if="error" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+    <div
+      v-if="error"
+      class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
+    >
       <div class="flex items-center gap-3">
-        <UIcon name="i-heroicons-exclamation-circle" class="w-5 h-5 text-red-600 dark:text-red-400" />
+        <UIcon
+          name="i-heroicons-exclamation-circle"
+          class="w-5 h-5 text-red-600 dark:text-red-400"
+        />
         <p class="text-red-700 dark:text-red-300">{{ error }}</p>
       </div>
       <div class="mt-4">
@@ -144,19 +145,33 @@ function formatDateTime(date: string | null): string {
     <!-- Loading state -->
     <div v-else-if="isLoading" class="flex items-center justify-center py-12">
       <div class="text-center">
-        <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-gray-400 animate-spin mx-auto mb-3" />
+        <UIcon
+          name="i-heroicons-arrow-path"
+          class="w-8 h-8 text-gray-400 animate-spin mx-auto mb-3"
+        />
         <p class="text-gray-500 dark:text-gray-400">{{ t('common.loading') }}</p>
       </div>
     </div>
 
     <!-- Post not found -->
-    <div v-else-if="!currentPost" class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
-      <UIcon name="i-heroicons-document-magnifying-glass" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+    <div
+      v-else-if="!currentPost"
+      class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center"
+    >
+      <UIcon
+        name="i-heroicons-document-magnifying-glass"
+        class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4"
+      />
       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
         {{ t('errors.notFound') }}
       </h3>
       <p class="text-gray-500 dark:text-gray-400 mb-6">
-        {{ t('post.notFoundDescription', 'The post you\'re looking for doesn\'t exist or you don\'t have access to it.') }}
+        {{
+          t(
+            'post.notFoundDescription',
+            "The post you're looking for doesn't exist or you don't have access to it."
+          )
+        }}
       </p>
       <UButton @click="goBack">
         {{ t('common.back') }}
@@ -185,34 +200,30 @@ function formatDateTime(date: string | null): string {
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
                   {{ currentPost.title || t('post.untitled', 'Untitled') }}
                 </h1>
-                <UBadge 
-                  :color="getStatusColor(currentPost.status)" 
-                  variant="subtle"
-                >
+                <UBadge :color="getStatusColor(currentPost.status)" variant="subtle">
                   {{ getStatusDisplayName(currentPost.status) }}
                 </UBadge>
-                <UBadge 
-                  color="neutral" 
-                  variant="outline"
-                >
+                <UBadge color="neutral" variant="outline">
                   {{ getTypeDisplayName(currentPost.post_type) }}
                 </UBadge>
               </div>
 
               <!-- Meta info -->
-              <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+              <div
+                class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400"
+              >
                 <!-- Channel -->
                 <span v-if="currentPost.channel" class="flex items-center gap-1">
                   <UIcon name="i-heroicons-signal" class="w-4 h-4" />
                   {{ currentPost.channel.name }}
                 </span>
-                
+
                 <!-- Author -->
                 <span v-if="currentPost.author" class="flex items-center gap-1">
                   <UIcon name="i-heroicons-user" class="w-4 h-4" />
                   {{ currentPost.author.full_name || currentPost.author.username }}
                 </span>
-                
+
                 <!-- Created date -->
                 <span class="flex items-center gap-1">
                   <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
@@ -220,8 +231,8 @@ function formatDateTime(date: string | null): string {
                 </span>
 
                 <!-- Scheduled date -->
-                <span 
-                  v-if="currentPost.status === 'scheduled' && currentPost.scheduled_at" 
+                <span
+                  v-if="currentPost.status === 'scheduled' && currentPost.scheduled_at"
                   class="flex items-center gap-1 text-amber-600 dark:text-amber-400"
                 >
                   <UIcon name="i-heroicons-clock" class="w-4 h-4" />
@@ -229,8 +240,8 @@ function formatDateTime(date: string | null): string {
                 </span>
 
                 <!-- Published date -->
-                <span 
-                  v-if="currentPost.status === 'published' && currentPost.published_at" 
+                <span
+                  v-if="currentPost.status === 'published' && currentPost.published_at"
                   class="flex items-center gap-1 text-green-600 dark:text-green-400"
                 >
                   <UIcon name="i-heroicons-check-circle" class="w-4 h-4" />
@@ -272,10 +283,7 @@ function formatDateTime(date: string | null): string {
           </h2>
         </div>
         <div class="p-6">
-          <div 
-            class="prose prose-sm dark:prose-invert max-w-none"
-            v-html="currentPost.content"
-          />
+          <div class="prose prose-sm dark:prose-invert max-w-none" v-html="currentPost.content" />
         </div>
       </div>
 
@@ -314,8 +322,8 @@ function formatDateTime(date: string | null): string {
                 {{ t('post.tags') }}
               </dt>
               <dd class="flex flex-wrap gap-2">
-                <UBadge 
-                  v-for="tag in currentPost.tags" 
+                <UBadge
+                  v-for="tag in currentPost.tags"
                   :key="tag"
                   color="neutral"
                   variant="subtle"
@@ -366,31 +374,30 @@ function formatDateTime(date: string | null): string {
         <div class="p-6">
           <div class="flex items-center gap-4 mb-4">
             <div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
-              <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 text-red-600 dark:text-red-400" />
+              <UIcon
+                name="i-heroicons-exclamation-triangle"
+                class="w-6 h-6 text-red-600 dark:text-red-400"
+              />
             </div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{ t('post.deletePost') }}
             </h3>
           </div>
-          
+
           <p class="text-gray-600 dark:text-gray-400 mb-6">
             {{ t('post.deleteConfirm') }}
           </p>
-          
+
           <div class="flex justify-end gap-3">
-            <UButton 
-              color="neutral" 
-              variant="ghost" 
+            <UButton
+              color="neutral"
+              variant="ghost"
               :disabled="isDeleting"
               @click="showDeleteModal = false"
             >
               {{ t('common.cancel') }}
             </UButton>
-            <UButton 
-              color="error" 
-              :loading="isDeleting"
-              @click="handleDelete"
-            >
+            <UButton color="error" :loading="isDeleting" @click="handleDelete">
               {{ t('common.delete') }}
             </UButton>
           </div>

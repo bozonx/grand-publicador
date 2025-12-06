@@ -35,7 +35,7 @@ const navItems = computed<NavItem[]>(() => [
 ])
 
 const visibleNavItems = computed(() =>
-  navItems.value.filter(item => !item.adminOnly || isAdmin.value),
+  navItems.value.filter((item) => !item.adminOnly || isAdmin.value)
 )
 
 function isActive(to: string): boolean {

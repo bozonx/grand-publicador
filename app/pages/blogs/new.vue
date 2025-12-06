@@ -13,9 +13,9 @@ const { createBlog, isLoading } = useBlogs()
 async function handleCreate(data: { name: string; description: string }) {
   const blog = await createBlog({
     name: data.name,
-    description: data.description || undefined
+    description: data.description || undefined,
   })
-  
+
   if (blog) {
     // Navigate to the created blog
     router.push(`/blogs/${blog.id}`)
@@ -34,21 +34,12 @@ function handleCancel() {
   <div>
     <!-- Back button -->
     <div class="mb-6">
-      <UButton
-        variant="ghost"
-        color="neutral"
-        icon="i-heroicons-arrow-left"
-        @click="handleCancel"
-      >
+      <UButton variant="ghost" color="neutral" icon="i-heroicons-arrow-left" @click="handleCancel">
         {{ t('common.back') }}
       </UButton>
     </div>
 
     <!-- Create form -->
-    <FormsBlogForm
-      :is-loading="isLoading"
-      @submit="handleCreate"
-      @cancel="handleCancel"
-    />
+    <FormsBlogForm :is-loading="isLoading" @submit="handleCreate" @cancel="handleCancel" />
   </div>
 </template>

@@ -38,7 +38,9 @@ function closeSidebar() {
         :class="isSidebarOpen ? 'translate-x-0' : '-translate-x-full'"
       >
         <!-- Sidebar header (mobile close button) -->
-        <div class="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700 lg:hidden">
+        <div
+          class="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700 lg:hidden"
+        >
           <span class="text-lg font-semibold text-gray-900 dark:text-white">Menu</span>
           <UButton
             variant="ghost"

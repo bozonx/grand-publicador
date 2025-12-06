@@ -16,10 +16,10 @@ const newFullName = ref('')
 const isSaving = ref(false)
 
 // Language options
-const languageOptions = computed(() => 
+const languageOptions = computed(() =>
   availableLocales.map((loc: string) => ({
     value: loc,
-    label: loc === 'ru' ? 'Русский' : 'English'
+    label: loc === 'ru' ? 'Русский' : 'English',
   }))
 )
 
@@ -54,7 +54,7 @@ async function saveFullName() {
       .from('users')
       .update({
         full_name: newFullName.value.trim(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .eq('id', user.value.id)
 
@@ -66,21 +66,19 @@ async function saveFullName() {
     toast.add({
       title: t('common.success'),
       description: t('settings.nameSaved', 'Name saved successfully'),
-      color: 'success'
+      color: 'success',
     })
 
     isEditingName.value = false
     newFullName.value = ''
-  }
-  catch (err) {
+  } catch (err) {
     console.error('Failed to save name:', err)
     toast.add({
       title: t('common.error'),
       description: t('settings.nameSaveError', 'Failed to save name'),
-      color: 'error'
+      color: 'error',
     })
-  }
-  finally {
+  } finally {
     isSaving.value = false
   }
 }
@@ -95,7 +93,7 @@ function changeLanguage(newLocale: string) {
   toast.add({
     title: t('common.success'),
     description: t('settings.languageChanged', 'Language changed'),
-    color: 'success'
+    color: 'success',
   })
 }
 
@@ -134,7 +132,10 @@ function formatDate(date: string | null | undefined): string {
               :src="user?.avatar_url || undefined"
               :alt="displayName"
               size="xl"
-              :ui="{ fallback: 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300' }"
+              :ui="{
+                fallback:
+                  'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300',
+              }"
             />
             <div class="flex-1 min-w-0">
               <!-- Name display/edit -->
@@ -150,7 +151,7 @@ function formatDate(date: string | null | undefined): string {
                   @click="startEditingName"
                 />
               </div>
-              
+
               <!-- Name edit form -->
               <div v-else class="flex items-center gap-2">
                 <UInput
@@ -177,7 +178,7 @@ function formatDate(date: string | null | undefined): string {
                   @click="cancelEditingName"
                 />
               </div>
-              
+
               <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 {{ user?.email || (user?.telegram_id ? `Telegram ID: ${user.telegram_id}` : '') }}
               </p>
@@ -223,8 +224,8 @@ function formatDate(date: string | null | undefined): string {
                 {{ t('user.role') }}
               </dt>
               <dd class="mt-1">
-                <UBadge 
-                  :color="user?.is_admin ? 'primary' : 'neutral'" 
+                <UBadge
+                  :color="user?.is_admin ? 'primary' : 'neutral'"
                   :variant="user?.is_admin ? 'solid' : 'outline'"
                   size="sm"
                 >
@@ -282,20 +283,10 @@ function formatDate(date: string | null | undefined): string {
             {{ t('settings.themeDescription', 'Choose your preferred theme') }}
           </p>
           <div class="flex flex-wrap gap-3">
-            <UButton
-              color="neutral"
-              variant="outline"
-              icon="i-heroicons-sun"
-              size="lg"
-            >
+            <UButton color="neutral" variant="outline" icon="i-heroicons-sun" size="lg">
               {{ t('settings.lightTheme', 'Light') }}
             </UButton>
-            <UButton
-              color="neutral"
-              variant="outline"
-              icon="i-heroicons-moon"
-              size="lg"
-            >
+            <UButton color="neutral" variant="outline" icon="i-heroicons-moon" size="lg">
               {{ t('settings.darkTheme', 'Dark') }}
             </UButton>
             <UButton
@@ -308,7 +299,12 @@ function formatDate(date: string | null | undefined): string {
             </UButton>
           </div>
           <p class="text-xs text-gray-400 dark:text-gray-500 mt-3">
-            {{ t('settings.themeNote', 'Theme preference is synced with your system settings by default.') }}
+            {{
+              t(
+                'settings.themeNote',
+                'Theme preference is synced with your system settings by default.'
+              )
+            }}
           </p>
         </div>
       </div>

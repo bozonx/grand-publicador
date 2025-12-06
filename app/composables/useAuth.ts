@@ -25,7 +25,7 @@ export function useAuth() {
   // Detect if running inside Telegram WebApp
   const isTelegramWebApp = computed(() => {
     if (import.meta.server) return false
-    return !!(window.Telegram?.WebApp?.initDataUnsafe?.user)
+    return !!window.Telegram?.WebApp?.initDataUnsafe?.user
   })
 
   // Determine auth mode
@@ -106,7 +106,9 @@ export function useAuth() {
    */
   async function initializeBrowser(): Promise<User | null> {
     // Wait for Supabase auth to be ready
-    const { data: { session } } = await supabase.auth.getSession()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
 
     if (!session?.user) {
       // Not authenticated via browser
@@ -157,14 +159,12 @@ export function useAuth() {
 
       authStore.setInitialized(true)
       return user
-    }
-    catch (err) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error'
       console.error('[Auth] Initialization error:', message)
       authStore.setError(message)
       return null
-    }
-    finally {
+    } finally {
       authStore.setLoading(false)
     }
   }
@@ -192,13 +192,11 @@ export function useAuth() {
       }
 
       return null
-    }
-    catch (err) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error'
       authStore.setError(message)
       return null
-    }
-    finally {
+    } finally {
       authStore.setLoading(false)
     }
   }
@@ -206,7 +204,11 @@ export function useAuth() {
   /**
    * Sign up with email and password (browser mode)
    */
-  async function signUpWithEmail(email: string, password: string, fullName?: string): Promise<User | null> {
+  async function signUpWithEmail(
+    email: string,
+    password: string,
+    fullName?: string
+  ): Promise<User | null> {
     authStore.setLoading(true)
     authStore.setError(null)
 
@@ -232,13 +234,11 @@ export function useAuth() {
       }
 
       return null
-    }
-    catch (err) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error'
       authStore.setError(message)
       return null
-    }
-    finally {
+    } finally {
       authStore.setLoading(false)
     }
   }
@@ -261,12 +261,10 @@ export function useAuth() {
       if (error) {
         authStore.setError(error.message)
       }
-    }
-    catch (err) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error'
       authStore.setError(message)
-    }
-    finally {
+    } finally {
       authStore.setLoading(false)
     }
   }
@@ -318,8 +316,7 @@ export function useAuth() {
 
       if (event === 'SIGNED_IN' && session?.user) {
         await initializeBrowser()
-      }
-      else if (event === 'SIGNED_OUT') {
+      } else if (event === 'SIGNED_OUT') {
         authStore.reset()
       }
     })
