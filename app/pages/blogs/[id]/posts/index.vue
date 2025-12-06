@@ -142,6 +142,14 @@ async function handleDelete() {
 }
 
 /**
+ * Cancel delete
+ */
+function cancelDelete() {
+  showDeleteModal.value = false
+  postToDelete.value = null
+}
+
+/**
  * Reset all filters
  */
 function resetFilters() {
@@ -463,10 +471,7 @@ const hasActiveFilters = computed(() => {
               color="neutral"
               variant="ghost"
               :disabled="isDeleting"
-              @click="
-                showDeleteModal = false
-                postToDelete = null
-              "
+              @click="cancelDelete"
             >
               {{ t('common.cancel') }}
             </UButton>

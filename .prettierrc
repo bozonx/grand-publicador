@@ -3,12 +3,13 @@
   "singleQuote": true,
   "tabWidth": 2,
   "trailingComma": "es5",
-  "printWidth": 100,
+  "printWidth": 120,
   "endOfLine": "lf",
   "bracketSpacing": true,
   "arrowParens": "always",
   "htmlWhitespaceSensitivity": "css",
   "vueIndentScriptAndStyle": false,
   "proseWrap": "preserve",
+  "bracketSameLine": true,
   "plugins": ["prettier-plugin-tailwindcss"]
 }
