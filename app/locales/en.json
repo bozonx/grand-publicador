@@ -231,15 +231,15 @@
     "notifications": "Notifications",
     "account": "Account",
     "saveSettings": "Save settings",
-    "selectLanguage": "Select your preferred language for the interface",
+    "selectLanguage": "Select language",
     "languageChanged": "Language changed",
     "nameSaved": "Name saved successfully",
     "nameSaveError": "Failed to save name",
-    "themeDescription": "Choose your preferred theme",
+    "themeDescription": "Select your preferred theme",
     "lightTheme": "Light",
     "darkTheme": "Dark",
     "systemTheme": "System",
-    "themeNote": "Theme preference is synced with your system settings by default."
+    "themeNote": "System theme will automatically adapt to your device settings."
   },
   "validation": {
     "required": "This field is required",
@@ -278,7 +278,7 @@
   },
   "admin": {
     "userManagement": "User Management",
-    "searchUsers": "Search by name, username, or email",
+    "searchUsers": "Search users...",
     "filterByRole": "Filter by role",
     "adminsOnly": "Admins only",
     "regularUsers": "Regular users",

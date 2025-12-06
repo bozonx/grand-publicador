@@ -231,15 +231,15 @@
     "notifications": "Уведомления",
     "account": "Аккаунт",
     "saveSettings": "Сохранить настройки",
-    "selectLanguage": "Выберите предпочтительный язык интерфейса",
+    "selectLanguage": "Выберите язык",
     "languageChanged": "Язык изменён",
     "nameSaved": "Имя сохранено",
     "nameSaveError": "Не удалось сохранить имя",
-    "themeDescription": "Выберите тему оформления",
+    "themeDescription": "Выберите предпочтительную тему",
     "lightTheme": "Светлая",
     "darkTheme": "Тёмная",
     "systemTheme": "Системная",
-    "themeNote": "Тема по умолчанию синхронизируется с системными настройками."
+    "themeNote": "Системная тема будет автоматически адаптироваться под настройки вашего устройства."
   },
   "validation": {
     "required": "Это поле обязательно для заполнения",
@@ -278,7 +278,7 @@
   },
   "admin": {
     "userManagement": "Управление пользователями",
-    "searchUsers": "Поиск по имени, username или email",
+    "searchUsers": "Поиск пользователей...",
     "filterByRole": "Фильтр по роли",
     "adminsOnly": "Только админы",
     "regularUsers": "Обычные пользователи",

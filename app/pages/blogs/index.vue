@@ -177,7 +177,7 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
 
             <!-- Actions dropdown -->
             <div class="ml-4" @click.stop>
-              <UDropdown
+              <UDropdownMenu
                 :items="[
                   [
                     {
@@ -204,7 +204,7 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
                   icon="i-heroicons-ellipsis-vertical"
                   :aria-label="t('common.actions')"
                 />
-              </UDropdown>
+              </UDropdownMenu>
             </div>
           </div>
         </div>

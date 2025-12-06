@@ -141,7 +141,7 @@ async function handleRemove(row: any) {
       </template>
 
       <template #actions-cell="{ row }">
-        <UDropdown
+        <UDropdownMenu
           v-if="canManage && row.original.role !== 'owner'"
           :items="getActionItems(row.original)"
         >
@@ -151,7 +151,7 @@ async function handleRemove(row: any) {
             icon="i-heroicons-ellipsis-vertical-20-solid"
             size="xs"
           />
-        </UDropdown>
+        </UDropdownMenu>
       </template>
     </UTable>
 

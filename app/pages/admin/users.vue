@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { UserWithStats } from '~/stores/users'
 
+
 definePageMeta({
   middleware: ['auth', 'admin'],
 })
@@ -122,6 +123,11 @@ const hasActiveFilters = computed(() => {
 })
 
 const rows = computed<UserWithStats[]>(() => users.value)
+
+// Helper to cast row type for template
+function getRow(row: unknown): UserWithStats {
+  return row as UserWithStats
+}
 </script>
 
 <template>
@@ -223,26 +229,26 @@ const rows = computed<UserWithStats[]>(() => users.value)
     <div v-else class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
       <UTable
         :rows="rows"
-        :columns="columns"
+        :columns="(columns as any)"
         :loading="isLoading"
       >
         <!-- User info column -->
         <template #user-data="{ row }">
           <div class="flex items-center gap-3">
             <UAvatar
-              :src="row.avatar_url ?? undefined"
-              :alt="getUserDisplayName(row)"
+              :src="getRow(row).avatar_url ?? undefined"
+              :alt="getUserDisplayName(getRow(row))"
               size="sm"
             >
               <template #fallback>
-                <span class="text-xs">{{ getUserInitials(row) }}</span>
+                <span class="text-xs">{{ getUserInitials(getRow(row)) }}</span>
               </template>
             </UAvatar>
             <div>
               <div class="font-medium text-gray-900 dark:text-white">
-                {{ row.full_name || '-' }}
+                {{ getRow(row).full_name || '-' }}
               </div>
-              <div class="text-sm text-gray-500">@{{ row.username || 'no-username' }}</div>
+              <div class="text-sm text-gray-500">@{{ getRow(row).username || 'no-username' }}</div>
             </div>
           </div>
         </template>
@@ -250,11 +256,11 @@ const rows = computed<UserWithStats[]>(() => users.value)
         <!-- Role column -->
         <template #role-data="{ row }">
           <UBadge
-            :color="row.is_admin ? 'primary' : 'neutral'"
-            :variant="row.is_admin ? 'solid' : 'outline'"
+            :color="getRow(row).is_admin ? 'primary' : 'neutral'"
+            :variant="getRow(row).is_admin ? 'solid' : 'outline'"
             size="sm"
           >
-            {{ row.is_admin ? t('user.isAdmin') : t('admin.regularUser') }}
+            {{ getRow(row).is_admin ? t('user.isAdmin') : t('admin.regularUser') }}
           </UBadge>
         </template>
 
@@ -263,31 +269,31 @@ const rows = computed<UserWithStats[]>(() => users.value)
           <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
             <span class="flex items-center gap-1">
               <UIcon name="i-heroicons-book-open" class="w-4 h-4" />
-              {{ row.blogsCount || 0 }} {{ t('blog.titlePlural').toLowerCase() }}
+              {{ getRow(row).blogsCount || 0 }} {{ t('blog.titlePlural').toLowerCase() }}
             </span>
             <span class="flex items-center gap-1">
               <UIcon name="i-heroicons-document-text" class="w-4 h-4" />
-              {{ row.postsCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
+              {{ getRow(row).postsCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
             </span>
           </div>
         </template>
 
         <!-- Created at column -->
         <template #created_at-data="{ row }">
-          {{ d(new Date(row.created_at), 'long') }}
+          {{ getRow(row).created_at ? d(new Date(getRow(row).created_at!), 'long') : '-' }}
         </template>
 
         <!-- Actions column -->
         <template #actions-data="{ row }">
           <div class="text-right">
             <UButton
-              :color="row.is_admin ? 'warning' : 'success'"
+              :color="getRow(row).is_admin ? 'warning' : 'success'"
               variant="ghost"
               size="sm"
-              :icon="row.is_admin ? 'i-heroicons-shield-exclamation' : 'i-heroicons-shield-check'"
-              @click="confirmToggleAdmin(row)"
+              :icon="getRow(row).is_admin ? 'i-heroicons-shield-exclamation' : 'i-heroicons-shield-check'"
+              @click="confirmToggleAdmin(getRow(row))"
             >
-              {{ row.is_admin ? t('admin.revokeAdmin') : t('admin.grantAdmin') }}
+              {{ getRow(row).is_admin ? t('admin.revokeAdmin') : t('admin.grantAdmin') }}
             </UButton>
           </div>
         </template>
