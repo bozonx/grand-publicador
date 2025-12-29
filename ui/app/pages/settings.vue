@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import type { Database } from '~/types/database.types'
-
 definePageMeta({
   middleware: 'auth',
 })
 
 const { t, locale, setLocale, availableLocales } = useI18n()
 const { user, displayName, authMode, refreshUser } = useAuth()
-const supabase = useSupabaseClient<Database>()
 const toast = useToast()
 
 // Edit mode state
@@ -27,7 +24,7 @@ const languageOptions = computed(() =>
  * Start editing name
  */
 function startEditingName() {
-  newFullName.value = user.value?.full_name || ''
+  newFullName.value = user.value?.fullName || ''
   isEditingName.value = true
 }
 
@@ -50,24 +47,23 @@ async function saveFullName() {
   isSaving.value = true
 
   try {
-    const { error } = await supabase
-      .from('users')
-      .update({
-        full_name: newFullName.value.trim(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', user.value.id)
-
-    if (error) throw error
-
-    // Refresh user data
-    await refreshUser()
-
+    // TODO: Implement update user profile in backend
+    // const { error } = await api.put('/users/me', { full_name: newFullName.value.trim() })
+    
+    // Simulating success for now or warning
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
     toast.add({
-      title: t('common.success'),
-      description: t('settings.nameSaved', 'Name saved successfully'),
-      color: 'success',
+      title: t('common.warning'),
+      description: 'Update profile not implemented in backend yet',
+      color: 'warning',
     })
+
+    // Refresh user data (would work if we actually updated)
+    // await refreshUser()
+
+    // eslint-disable-next-line no-console
+    console.warn('Profile update not implemented')
 
     isEditingName.value = false
     newFullName.value = ''
@@ -129,7 +125,7 @@ function formatDate(date: string | null | undefined): string {
           <!-- Avatar and basic info -->
           <div class="flex items-start gap-4 mb-6">
             <UAvatar
-              :src="user?.avatar_url || undefined"
+              :src="user?.avatarUrl || undefined"
               :alt="displayName"
               size="xl"
               :ui="{
@@ -180,7 +176,7 @@ function formatDate(date: string | null | undefined): string {
               </div>
 
               <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                {{ user?.email || (user?.telegram_id ? `Telegram ID: ${user.telegram_id}` : '') }}
+                {{ user?.email || (user?.telegramId ? `Telegram ID: ${user.telegramId}` : '') }}
               </p>
             </div>
           </div>
@@ -203,12 +199,12 @@ function formatDate(date: string | null | undefined): string {
                 {{ user?.email || '—' }}
               </dd>
             </div>
-            <div v-if="user?.telegram_id">
+            <div v-if="user?.telegramId">
               <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
                 {{ t('user.telegramId') }}
               </dt>
               <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                {{ user.telegram_id }}
+                {{ user.telegramId }}
               </dd>
             </div>
             <div>
@@ -225,11 +221,11 @@ function formatDate(date: string | null | undefined): string {
               </dt>
               <dd class="mt-1">
                 <UBadge
-                  :color="user?.is_admin ? 'primary' : 'neutral'"
-                  :variant="user?.is_admin ? 'solid' : 'outline'"
+                  :color="user?.isAdmin ? 'primary' : 'neutral'"
+                  :variant="user?.isAdmin ? 'solid' : 'outline'"
                   size="sm"
                 >
-                  {{ user?.is_admin ? t('user.isAdmin') : t('admin.regularUser') }}
+                  {{ user?.isAdmin ? t('user.isAdmin') : t('admin.regularUser') }}
                 </UBadge>
               </dd>
             </div>
@@ -238,7 +234,7 @@ function formatDate(date: string | null | undefined): string {
                 {{ t('user.createdAt') }}
               </dt>
               <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                {{ formatDate(user?.created_at) }}
+                {{ formatDate(user?.createdAt) }}
               </dd>
             </div>
           </dl>

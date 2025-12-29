@@ -3,11 +3,14 @@ import { defineStore } from 'pinia';
 
 export interface User {
     id: string;
-    telegramId?: number; // Backend uses number for telegramId
+    telegramId?: string; // Backend sends string for BigInt
     username?: string;
     fullName?: string;
     avatarUrl?: string;
+    email?: string;
     isAdmin: boolean;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 interface AuthResponse {

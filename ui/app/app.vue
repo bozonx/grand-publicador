@@ -10,17 +10,5 @@
 </template>
 
 <script setup lang="ts">
-const { authMode, loginWithDev, isAuthenticated } = useAuth();
-
-onMounted(async () => {
-  if (authMode.value === 'dev' && !isAuthenticated.value) {
-    console.log('Auto-logging in for Dev Mode...');
-    try {
-      await loginWithDev();
-      console.log('Dev Login Successful');
-    } catch (e) {
-      console.error('Dev Login Failed', e);
-    }
-  }
-});
+// Auth logic moved to plugins/auth.client.ts
 </script>

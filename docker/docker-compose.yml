@@ -11,11 +11,10 @@ services:
       - TZ=UTC
       - LISTEN_HOST=0.0.0.0
       - LISTEN_PORT=8080
-      - DATABASE_URL=file:/app/data/app.db
+      - LOG_LEVEL=warn
       - JWT_SECRET=change-me-in-production
       - TELEGRAM_BOT_TOKEN=your_token_here
       - API_KEY=your_api_key_here
-      - LOG_LEVEL=warn
     volumes:
       - ./data:/app/data
     healthcheck:
