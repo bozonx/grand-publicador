@@ -59,5 +59,11 @@ export default defineNuxtConfig({
     },
   },
 
+  nitro: {
+    routeRules: {
+      '/api/**': { proxy: 'http://localhost:8080/api/**' },
+    },
+  },
+
   devtools: { enabled: true }
 })

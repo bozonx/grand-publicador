@@ -15,6 +15,7 @@ export const useAuth = () => {
         authMode: computed(() => (config.public.devMode === 'true' ? 'dev' : 'telegram')),
 
         loginWithTelegram: authStore.loginWithTelegram,
+        loginWithDev: authStore.loginWithDev,
         signOut: authStore.logout,
         refreshUser: authStore.fetchMe,
         initialize: authStore.fetchMe,

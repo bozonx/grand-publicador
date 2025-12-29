@@ -7,6 +7,7 @@ import {
   Get,
   UseGuards,
   Request,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
 import { TelegramLoginDto } from './dto/index.js';
@@ -19,7 +20,7 @@ import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
  */
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   /**
    * Log in using Telegram Mini App init data.
@@ -39,5 +40,17 @@ export class AuthController {
   @Get('me')
   async getProfile(@Request() req: AuthenticatedRequest) {
     return this.authService.getProfile(req.user.sub);
+  }
+
+  /**
+   * Dev login endpoint.
+   */
+  @Post('dev')
+  @HttpCode(HttpStatus.OK)
+  async loginDev(@Body() body: { telegramId: number }) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new UnauthorizedException('Dev login not allowed in production');
+    }
+    return this.authService.loginDev(body.telegramId);
   }
 }

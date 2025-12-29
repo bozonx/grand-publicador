@@ -119,4 +119,32 @@ export class AuthService {
 
     return plainToInstance(UserDto, user, { excludeExtraneousValues: true });
   }
+
+  /**
+   * Development login to bypass Telegram validation.
+   * Only works in development environment.
+   */
+  async loginDev(telegramId: number): Promise<AuthResponseDto> {
+    const user = await this.usersService.findOrCreateTelegramUser({
+      telegramId: BigInt(telegramId),
+      username: 'dev_user',
+      firstName: 'Dev',
+      lastName: 'User',
+    });
+
+    const payload = {
+      sub: user.id,
+      telegramId: user.telegramId?.toString(),
+      username: user.username,
+    };
+
+    return plainToInstance(
+      AuthResponseDto,
+      {
+        access_token: this.jwtService.sign(payload),
+        user: user,
+      },
+      { excludeExtraneousValues: true },
+    );
+  }
 }

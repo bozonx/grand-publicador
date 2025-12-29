@@ -54,6 +54,37 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
+
+
+    async function loginWithDev() {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            const config = useRuntimeConfig();
+            const devTelegramId = config.public.devTelegramId;
+
+            if (!devTelegramId) {
+                throw new Error('VITE_DEV_TELEGRAM_ID not set');
+            }
+
+            const response = await api.post<AuthResponse>('/auth/dev', {
+                telegramId: Number(devTelegramId),
+            });
+
+            token.value = response.accessToken;
+            user.value = response.user;
+            isInitialized.value = true;
+
+            return response;
+        } catch (err: any) {
+            error.value = err.message;
+            console.error('Dev login failed', err);
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
     async function logout() {
         user.value = null;
         token.value = null;
@@ -90,6 +121,7 @@ export const useAuthStore = defineStore('auth', () => {
         isAdmin,
         displayName,
         loginWithTelegram,
+        loginWithDev,
         logout,
         fetchMe,
     };
