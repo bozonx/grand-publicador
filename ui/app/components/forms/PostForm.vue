@@ -156,13 +156,13 @@ const isFormValid = computed(() => {
 </script>
 
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
     <!-- Header -->
     <div class="p-6 border-b border-gray-200 dark:border-gray-700">
       <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
         {{ isEditMode ? t('post.editPost') : t('post.createPost') }}
       </h2>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+      <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">
         {{
           isEditMode
             ? t('post.editDescription', 'Update your post content and settings')
@@ -174,91 +174,54 @@ const isFormValid = computed(() => {
     <div class="p-6 space-y-6">
       <!-- Channel selection (only for new posts) -->
       <div v-if="!isEditMode">
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {{ t('channel.title') }} <span class="text-red-500">*</span>
-        </label>
-        <USelect
-          v-model="formData.channelId"
-          :options="channelOptions"
-          option-attribute="label"
-          value-attribute="value"
-          :placeholder="t('post.selectChannel', 'Select a channel')"
-          class="w-full"
-          size="lg"
-        />
-        <p
-          v-if="channelOptions.length === 0"
-          class="mt-2 text-sm text-amber-600 dark:text-amber-400"
-        >
-          <UIcon name="i-heroicons-exclamation-triangle" class="w-4 h-4 inline mr-1" />
-          {{ t('post.noChannelsAvailable', 'No channels available. Create a channel first.') }}
-        </p>
+        <UFormField :label="t('channel.title')" required>
+          <USelect
+            v-model="formData.channelId"
+            :options="channelOptions"
+            option-attribute="label"
+            value-attribute="value"
+            :placeholder="t('post.selectChannel', 'Select a channel')"
+            class="w-full"
+            size="lg"
+          />
+          <template v-if="channelOptions.length === 0" #help>
+            <div class="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+              <UIcon name="i-heroicons-exclamation-triangle" class="w-4 h-4" />
+              <span>{{ t('post.noChannelsAvailable', 'No channels available. Create a channel first.') }}</span>
+            </div>
+          </template>
+        </UFormField>
       </div>
 
       <!-- Channel info (for edit mode) -->
-      <div v-else-if="post?.channel" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-        <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+      <div v-else-if="post?.channel" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-100 dark:border-gray-600">
+        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
           {{ t('channel.title') }}
         </label>
         <div class="flex items-center gap-2">
-          <UIcon name="i-heroicons-signal" class="w-5 h-5 text-gray-400" />
+          <UIcon name="i-heroicons-paper-airplane" class="w-5 h-5 text-primary-500" />
           <span class="font-medium text-gray-900 dark:text-white">
             {{ post.channel.name }}
           </span>
-          <UBadge size="xs" color="neutral">
+          <UBadge size="xs" color="neutral" variant="soft">
             {{ post.channel.socialMedia }}
           </UBadge>
         </div>
       </div>
 
-      <!-- Post type -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {{ t('post.postType') }} <span class="text-red-500">*</span>
-        </label>
-        <USelect
-          v-model="formData.postType"
-          :options="typeOptions"
-          option-attribute="label"
-          value-attribute="value"
-          class="w-full"
-        />
-      </div>
+      <!-- Post type & Status Row -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <UFormField :label="t('post.postType')" required>
+          <USelect
+            v-model="formData.postType"
+            :options="typeOptions"
+            option-attribute="label"
+            value-attribute="value"
+            class="w-full"
+          />
+        </UFormField>
 
-      <!-- Title (optional) -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {{ t('post.postTitle') }}
-          <span class="text-gray-400 font-normal">({{ t('common.optional') }})</span>
-        </label>
-        <UInput
-          v-model="formData.title"
-          :placeholder="t('post.titlePlaceholder', 'Enter post title')"
-          size="lg"
-        />
-      </div>
-
-      <!-- Content (required) - Tiptap Editor -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {{ t('post.content') }} <span class="text-red-500">*</span>
-        </label>
-        <EditorTiptapEditor
-          v-model="formData.content"
-          :placeholder="t('post.contentPlaceholder', 'Write your post content here...')"
-          :min-height="250"
-        />
-        <p v-if="!isContentValid && formData.content" class="mt-2 text-sm text-red-500">
-          {{ t('validation.required') }}
-        </p>
-      </div>
-
-      <!-- Status and Scheduling -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {{ t('post.status') }}
-          </label>
+        <UFormField :label="t('post.status')" required>
           <USelect
             v-model="formData.status"
             :options="availableStatusOptions"
@@ -266,23 +229,44 @@ const isFormValid = computed(() => {
             value-attribute="value"
             class="w-full"
           />
-        </div>
-
-        <div v-if="formData.status === 'scheduled'">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {{ t('post.scheduledAt') }} <span class="text-red-500">*</span>
-          </label>
-          <UInput v-model="formData.scheduledAt" type="datetime-local" class="w-full" />
-        </div>
+        </UFormField>
       </div>
 
+      <!-- Scheduling -->
+      <UFormField v-if="formData.status === 'scheduled'" :label="t('post.scheduledAt')" required>
+        <UInput v-model="formData.scheduledAt" type="datetime-local" class="w-full" icon="i-heroicons-clock" />
+      </UFormField>
+
+      <!-- Title (optional) -->
+      <UFormField :label="t('post.postTitle')" :help="t('common.optional')">
+        <UInput
+          v-model="formData.title"
+          :placeholder="t('post.titlePlaceholder', 'Enter post title')"
+          size="lg"
+          class="w-full"
+        />
+      </UFormField>
+
+      <!-- Content (required) - Tiptap Editor -->
+      <UFormField :label="t('post.content')" required>
+        <EditorTiptapEditor
+          v-model="formData.content"
+          :placeholder="t('post.contentPlaceholder', 'Write your post content here...')"
+          :min-height="250"
+        />
+        <template v-if="!isContentValid && formData.content" #error>
+          {{ t('validation.required') }}
+        </template>
+      </UFormField>
+
       <!-- Advanced fields toggle -->
-      <div>
+      <div class="flex justify-center">
         <UButton
-          variant="ghost"
+          variant="outline"
           color="neutral"
           size="sm"
           :icon="showAdvancedFields ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'"
+          class="rounded-full"
           @click="toggleAdvancedFields"
         >
           {{
@@ -294,69 +278,51 @@ const isFormValid = computed(() => {
       </div>
 
       <!-- Advanced fields -->
-      <div
-        v-if="showAdvancedFields"
-        class="space-y-6 pt-4 border-t border-gray-200 dark:border-gray-700"
+      <Transition
+        enter-active-class="transition duration-100 ease-out"
+        enter-from-class="transform scale-95 opacity-0"
+        enter-to-class="transform scale-100 opacity-100"
+        leave-active-class="transition duration-75 ease-in"
+        leave-from-class="transform scale-100 opacity-100"
+        leave-to-class="transform scale-95 opacity-0"
       >
-        <!-- Description -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {{ t('post.description') }}
-          </label>
-          <UTextarea
-            v-model="formData.description"
-            :placeholder="t('post.descriptionPlaceholder', 'Short description of your post')"
-            :rows="3"
-          />
-        </div>
+        <div
+          v-if="showAdvancedFields"
+          class="space-y-6 pt-6 mt-2 border-t border-gray-100 dark:border-gray-700"
+        >
+          <UFormField :label="t('post.description')">
+            <UTextarea
+              v-model="formData.description"
+              :placeholder="t('post.descriptionPlaceholder', 'Short description of your post')"
+              :rows="3"
+              class="w-full"
+            />
+          </UFormField>
 
-        <!-- Author comment -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {{ t('post.authorComment') }}
-          </label>
-          <UTextarea
-            v-model="formData.authorComment"
-            :placeholder="t('post.authorCommentPlaceholder', 'Internal comment (not published)')"
-            :rows="2"
-          />
-          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {{
-              t(
-                'post.authorCommentHint',
-                'This comment is for internal use only and will not be published.'
-              )
-            }}
-          </p>
-        </div>
+          <UFormField :label="t('post.authorComment')" :help="t('post.authorCommentHint')">
+            <UTextarea
+              v-model="formData.authorComment"
+              :placeholder="t('post.authorCommentPlaceholder', 'Internal comment (not published)')"
+              :rows="2"
+              class="w-full"
+            />
+          </UFormField>
 
-        <!-- Tags -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {{ t('post.tags') }}
-          </label>
-          <UInput
-            v-model="formData.tags"
-            :placeholder="t('post.tagsPlaceholder', 'tag1, tag2, tag3')"
-          />
-          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {{ t('post.tagsHint', 'Separate tags with commas') }}
-          </p>
-        </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <UFormField :label="t('post.tags')" :help="t('post.tagsHint')">
+              <UInput
+                v-model="formData.tags"
+                :placeholder="t('post.tagsPlaceholder', 'tag1, tag2, tag3')"
+                icon="i-heroicons-hashtag"
+              />
+            </UFormField>
 
-        <!-- Post date (content date) -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {{ t('post.postDate') }}
-          </label>
-          <UInput v-model="formData.postDate" type="date" />
-          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {{
-              t('post.postDateHint', 'The date associated with the content (not publication date)')
-            }}
-          </p>
+            <UFormField :label="t('post.postDate')" :help="t('post.postDateHint')">
+              <UInput v-model="formData.postDate" type="date" icon="i-heroicons-calendar-days" />
+            </UFormField>
+          </div>
         </div>
-      </div>
+      </Transition>
 
       <!-- Form actions -->
       <div
@@ -378,7 +344,9 @@ const isFormValid = computed(() => {
           :disabled="!isFormValid"
           @click="handleSubmit"
         >
-          {{ isEditMode ? t('common.save') : t('common.create') }}
+          <template #default>
+            {{ isEditMode ? t('common.save') : t('common.create') }}
+          </template>
         </UButton>
       </div>
     </div>
