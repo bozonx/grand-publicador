@@ -1,5 +1,6 @@
+
 import { registerAs } from '@nestjs/config';
-import { IsInt, IsString, IsIn, Min, Max, validateSync } from 'class-validator';
+import { IsInt, IsString, IsIn, Min, Max, validateSync, IsOptional } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 
 export class AppConfig {
@@ -22,17 +23,18 @@ export class AppConfig {
   public logLevel!: string;
 
   @IsString()
+  @IsOptional()
   public apiKey?: string;
 }
 
 export default registerAs('app', (): AppConfig => {
   const config = plainToClass(AppConfig, {
-    port: parseInt(process.env.LISTEN_PORT ?? '8080', 10),
-    host: process.env.LISTEN_HOST ?? '0.0.0.0',
-    basePath: (process.env.BASE_PATH ?? '').replace(/^\/+|\/+$/g, ''),
+    port: parseInt(process.env.SERVER_PORT ?? '8080', 10),
+    host: process.env.SERVER_HOST ?? '0.0.0.0',
+    basePath: (process.env.SERVER_BASE_PATH ?? '').replace(/^\/+|\/+$/g, ''),
     nodeEnv: process.env.NODE_ENV ?? 'production',
     logLevel: process.env.LOG_LEVEL ?? 'warn',
-    apiKey: process.env.API_KEY,
+    apiKey: process.env.AUTH_API_KEY ?? process.env.API_KEY, // Fallback for backward compatibility
   });
 
   const errors = validateSync(config, {

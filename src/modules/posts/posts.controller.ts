@@ -1,3 +1,4 @@
+
 import {
     Controller,
     Get,
@@ -12,123 +13,42 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { PostsService } from './posts.service.js';
-import { IsNotEmpty, IsOptional, IsString, IsDateString, IsEnum } from 'class-validator';
-import { PostType, PostStatus } from '@prisma/client';
-
-class CreatePostDto {
-    @IsString()
-    @IsNotEmpty()
-    channelId!: string;
-
-    @IsString()
-    @IsNotEmpty()
-    content!: string;
-
-    @IsString()
-    @IsNotEmpty()
-    socialMedia!: string;
-
-    @IsEnum(PostType)
-    @IsNotEmpty()
-    postType!: PostType;
-
-    @IsString()
-    @IsOptional()
-    title?: string;
-
-    @IsString()
-    @IsOptional()
-    description?: string;
-
-    @IsString()
-    @IsOptional()
-    authorComment?: string;
-
-    @IsString()
-    @IsOptional()
-    tags?: string;
-
-    @IsOptional()
-    mediaFiles?: any;
-
-    @IsDateString()
-    @IsOptional()
-    scheduledAt?: Date;
-
-    @IsEnum(PostStatus)
-    @IsOptional()
-    status?: PostStatus;
-}
-
-class UpdatePostDto {
-    @IsString()
-    @IsOptional()
-    content?: string;
-
-    @IsString()
-    @IsOptional()
-    title?: string;
-
-    @IsString()
-    @IsOptional()
-    description?: string;
-
-    @IsString()
-    @IsOptional()
-    authorComment?: string;
-
-    @IsString()
-    @IsOptional()
-    tags?: string;
-
-    @IsOptional()
-    mediaFiles?: any;
-
-    @IsEnum(PostStatus)
-    @IsOptional()
-    status?: PostStatus;
-
-    @IsDateString()
-    @IsOptional()
-    scheduledAt?: Date;
-
-    @IsDateString()
-    @IsOptional()
-    publishedAt?: Date;
-}
+import { CreatePostDto, UpdatePostDto } from './dto/index.js';
+import { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
+import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
 
 @Controller('posts')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard(JWT_STRATEGY))
 export class PostsController {
     constructor(private readonly postsService: PostsService) { }
 
     @Post()
-    create(@Request() req: any, @Body() createPostDto: CreatePostDto) {
+    create(@Request() req: AuthenticatedRequest, @Body() createPostDto: CreatePostDto) {
         const { channelId, ...data } = createPostDto;
-        return this.postsService.create(req.user.userId, channelId, data);
+        return this.postsService.create(req.user.sub, channelId, data);
     }
 
     @Get()
-    findAll(@Request() req: any, @Query('channelId') channelId: string) {
-        return this.postsService.findAllForChannel(channelId, req.user.userId);
+    findAll(@Request() req: AuthenticatedRequest, @Query('channelId') channelId: string) {
+        return this.postsService.findAllForChannel(channelId, req.user.sub);
     }
 
     @Get(':id')
-    findOne(@Request() req: any, @Param('id') id: string) {
-        return this.postsService.findOne(id, req.user.userId);
+    findOne(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
+        return this.postsService.findOne(id, req.user.sub);
     }
 
     @Patch(':id')
     update(
-        @Request() req: any,
+        @Request() req: AuthenticatedRequest,
         @Param('id') id: string,
         @Body() updatePostDto: UpdatePostDto,
     ) {
-        return this.postsService.update(id, req.user.userId, updatePostDto);
+        return this.postsService.update(id, req.user.sub, updatePostDto);
     }
 
     @Delete(':id')
-    remove(@Request() req: any, @Param('id') id: string) {
-        return this.postsService.remove(id, req.user.userId);
+    remove(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
+        return this.postsService.remove(id, req.user.sub);
     }
 }

@@ -1,13 +1,10 @@
+
 import { Controller, Post, Body, HttpCode, HttpStatus, Get, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
-import { IsNotEmpty, IsString } from 'class-validator';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
-
-class TelegramLoginDto {
-    @IsString()
-    @IsNotEmpty()
-    initData!: string;
-}
+import { TelegramLoginDto } from './dto/index.js';
+import { AuthGuard } from '@nestjs/passport';
+import { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
+import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
 
 @Controller('auth')
 export class AuthController {
@@ -19,9 +16,9 @@ export class AuthController {
         return this.authService.loginWithTelegram(loginDto.initData);
     }
 
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(AuthGuard(JWT_STRATEGY))
     @Get('me')
-    async getProfile(@Request() req: any) {
-        return this.authService.getProfile(req.user.userId);
+    async getProfile(@Request() req: AuthenticatedRequest) {
+        return this.authService.getProfile(req.user.sub);
     }
 }

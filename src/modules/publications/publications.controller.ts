@@ -1,3 +1,4 @@
+
 import {
     Controller,
     Get,
@@ -14,39 +15,30 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { PublicationsService } from './publications.service.js';
-import { CreatePublicationDto, UpdatePublicationDto } from './dto/index.js';
+import { CreatePublicationDto, UpdatePublicationDto, CreatePostsDto } from './dto/index.js';
 import { PostStatus } from '@prisma/client';
-import { IsArray, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-
-class CreatePostsDto {
-    @IsArray()
-    @IsNotEmpty()
-    channelIds!: string[];
-
-    @IsDateString()
-    @IsOptional()
-    scheduledAt?: Date;
-}
+import { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
+import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
 
 @Controller('publications')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard(JWT_STRATEGY))
 export class PublicationsController {
     constructor(private readonly publicationsService: PublicationsService) { }
 
     @Post()
-    create(@Request() req: any, @Body() createPublicationDto: CreatePublicationDto) {
-        return this.publicationsService.create(req.user.userId, createPublicationDto);
+    create(@Request() req: AuthenticatedRequest, @Body() createPublicationDto: CreatePublicationDto) {
+        return this.publicationsService.create(req.user.sub, createPublicationDto);
     }
 
     @Get()
     findAll(
-        @Request() req: any,
+        @Request() req: AuthenticatedRequest,
         @Query('projectId') projectId: string,
         @Query('status') status?: PostStatus,
         @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit?: number,
         @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset?: number,
     ) {
-        return this.publicationsService.findAll(projectId, req.user.userId, {
+        return this.publicationsService.findAll(projectId, req.user.sub, {
             status,
             limit,
             offset,
@@ -54,33 +46,33 @@ export class PublicationsController {
     }
 
     @Get(':id')
-    findOne(@Request() req: any, @Param('id') id: string) {
-        return this.publicationsService.findOne(id, req.user.userId);
+    findOne(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
+        return this.publicationsService.findOne(id, req.user.sub);
     }
 
     @Patch(':id')
     update(
-        @Request() req: any,
+        @Request() req: AuthenticatedRequest,
         @Param('id') id: string,
         @Body() updatePublicationDto: UpdatePublicationDto,
     ) {
-        return this.publicationsService.update(id, req.user.userId, updatePublicationDto);
+        return this.publicationsService.update(id, req.user.sub, updatePublicationDto);
     }
 
     @Delete(':id')
-    remove(@Request() req: any, @Param('id') id: string) {
-        return this.publicationsService.remove(id, req.user.userId);
+    remove(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
+        return this.publicationsService.remove(id, req.user.sub);
     }
 
     @Post(':id/posts')
     createPosts(
-        @Request() req: any,
+        @Request() req: AuthenticatedRequest,
         @Param('id') id: string,
         @Body() createPostsDto: CreatePostsDto,
     ) {
         return this.publicationsService.createPostsFromPublication(
             id,
-            req.user.userId,
+            req.user.sub,
             createPostsDto.channelIds,
             createPostsDto.scheduledAt,
         );

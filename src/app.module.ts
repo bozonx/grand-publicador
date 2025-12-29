@@ -1,3 +1,4 @@
+
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
@@ -7,11 +8,10 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
 import { PrismaModule } from './modules/prisma/prisma.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
-import { BlogsModule } from './modules/blogs/blogs.module.js';
+import { ProjectsModule } from './modules/projects/projects.module.js';
 import { ChannelsModule } from './modules/channels/channels.module.js';
 import { PostsModule } from './modules/posts/posts.module.js';
-import appConfig from './config/app.config.js';
-import type { AppConfig } from './config/app.config.js';
+import appConfig, { AppConfig } from './config/app.config.js';
 import { PublicationsModule } from './modules/publications/publications.module.js';
 import { ExternalModule } from './modules/external/external.module.js';
 import { AutomationModule } from './modules/automation/automation.module.js';
@@ -35,7 +35,7 @@ import pkg from '../package.json' with { type: 'json' };
         return {
           pinoHttp: {
             level: appConfig.logLevel,
-            timestamp: () => `,"@timestamp":"${new Date().toISOString()}"`,
+            timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
             base: {
               service: (pkg as any).name ?? 'app',
               environment: appConfig.nodeEnv,
@@ -103,7 +103,7 @@ import pkg from '../package.json' with { type: 'json' };
     PermissionsModule,
     UsersModule,
     AuthModule,
-    BlogsModule,
+    ProjectsModule,
     ChannelsModule,
     PostsModule,
     PublicationsModule,

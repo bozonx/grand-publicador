@@ -1,12 +1,13 @@
+
 import { Test, type TestingModule } from '@nestjs/testing';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { BlogsService } from '../../src/modules/blogs/blogs.service.js';
+import { ForbiddenException, NotFoundException, Logger } from '@nestjs/common';
+import { ProjectsService } from '../../src/modules/projects/projects.service.js';
 import { PrismaService } from '../../src/modules/prisma/prisma.service.js';
 import { PermissionsService } from '../../src/common/services/permissions.service.js';
 import { jest } from '@jest/globals';
 
-describe('BlogsService (unit)', () => {
-  let service: BlogsService;
+describe('ProjectsService (unit)', () => {
+  let service: ProjectsService;
   let prisma: PrismaService;
   let permissions: PermissionsService;
   let moduleRef: TestingModule;
@@ -35,7 +36,7 @@ describe('BlogsService (unit)', () => {
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
       providers: [
-        BlogsService,
+        ProjectsService,
         {
           provide: PrismaService,
           useValue: mockPrismaService,
@@ -47,9 +48,12 @@ describe('BlogsService (unit)', () => {
       ],
     }).compile();
 
-    service = moduleRef.get<BlogsService>(BlogsService);
+    service = moduleRef.get<ProjectsService>(ProjectsService);
     prisma = moduleRef.get<PrismaService>(PrismaService);
     permissions = moduleRef.get<PermissionsService>(PermissionsService);
+
+    // Silence logger for tests
+    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => { });
   });
 
   afterAll(async () => {

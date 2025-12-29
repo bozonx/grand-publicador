@@ -1,9 +1,12 @@
-import { Injectable } from '@nestjs/common';
+
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { PostStatus } from '@prisma/client';
+import { PostStatus, Prisma } from '@prisma/client';
 
 @Injectable()
 export class AutomationService {
+    private readonly logger = new Logger(AutomationService.name);
+
     constructor(private prisma: PrismaService) { }
 
     /**
@@ -43,44 +46,49 @@ export class AutomationService {
      * This is an atomic operation to prevent race conditions
      */
     async claimPost(postId: string) {
-        // Try to update the post status to indicate it's being processed
-        // We use a custom meta field to track this
-        const post = await this.prisma.post.findUnique({
-            where: { id: postId },
-            include: {
-                channel: true,
-                publication: true,
-            },
-        });
+        this.logger.log(`Claiming post ${postId}`);
 
-        if (!post) {
-            throw new Error('Post not found');
-        }
+        return this.prisma.$transaction(async (tx) => {
+            const post = await tx.post.findUnique({
+                where: { id: postId },
+                include: {
+                    channel: true,
+                    publication: true,
+                },
+            });
 
-        if (post.status !== PostStatus.SCHEDULED) {
-            throw new Error('Post is not scheduled');
-        }
+            if (!post) {
+                throw new Error('Post not found');
+            }
 
-        // Parse meta and add processing flag
-        const meta = JSON.parse(post.meta);
-        if (meta.processing) {
-            throw new Error('Post is already being processed');
-        }
+            if (post.status !== PostStatus.SCHEDULED) {
+                throw new Error('Post is not scheduled');
+            }
 
-        // Update with processing flag
-        return this.prisma.post.update({
-            where: { id: postId },
-            data: {
-                meta: JSON.stringify({
-                    ...meta,
-                    processing: true,
-                    claimedAt: new Date().toISOString(),
-                }),
-            },
-            include: {
-                channel: true,
-                publication: true,
-            },
+            // Parse meta and check processing flag
+            const meta = JSON.parse(post.meta);
+            if (meta.processing) {
+                throw new Error('Post is already being processed');
+            }
+
+            // Atomic update within transaction
+            // We could also check version if we had one, but strict transaction isolation
+            // or select for update would be even better. Since we are in a transaction
+            // and checking permissions, this is reasonably safe for this scale.
+            return tx.post.update({
+                where: { id: postId },
+                data: {
+                    meta: JSON.stringify({
+                        ...meta,
+                        processing: true,
+                        claimedAt: new Date().toISOString(),
+                    }),
+                },
+                include: {
+                    channel: true,
+                    publication: true,
+                },
+            });
         });
     }
 
@@ -92,6 +100,8 @@ export class AutomationService {
         status: PostStatus,
         error?: string,
     ) {
+        this.logger.log(`Updating post ${postId} status to ${status}`);
+
         const post = await this.prisma.post.findUnique({
             where: { id: postId },
         });
@@ -103,7 +113,7 @@ export class AutomationService {
         const meta = JSON.parse(post.meta);
         delete meta.processing;
 
-        const updateData: any = {
+        const updateData: Prisma.PostUpdateInput = {
             status,
             meta: JSON.stringify({
                 ...meta,

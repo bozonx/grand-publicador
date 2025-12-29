@@ -1,23 +1,20 @@
-import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { BlogsService } from '../blogs/blogs.service.js';
+import { ProjectsService } from '../projects/projects.service.js';
 import { PermissionsService } from '../../common/services/permissions.service.js';
-import { SocialMedia, ProjectRole } from '@prisma/client';
+import { ProjectRole } from '@prisma/client';
+import { CreateChannelDto, UpdateChannelDto } from './dto/index.js';
 
 @Injectable()
 export class ChannelsService {
     constructor(
         private prisma: PrismaService,
-        private blogsService: BlogsService,
+        private projectsService: ProjectsService,
         private permissions: PermissionsService,
     ) { }
 
-    async create(userId: string, projectId: string, data: {
-        socialMedia: SocialMedia;
-        name: string;
-        channelIdentifier: string;
-        credentials?: any;
-    }) {
+    async create(userId: string, projectId: string, data: Omit<CreateChannelDto, 'projectId'>) {
         await this.permissions.checkProjectPermission(
             projectId,
             userId,
@@ -36,7 +33,7 @@ export class ChannelsService {
     }
 
     async findAllForProject(projectId: string, userId: string) {
-        await this.blogsService.findOne(projectId, userId); // Validates membership
+        await this.projectsService.findOne(projectId, userId); // Validates membership
         return this.prisma.channel.findMany({
             where: { projectId },
             include: {
@@ -56,16 +53,11 @@ export class ChannelsService {
             throw new NotFoundException('Channel not found');
         }
 
-        await this.blogsService.findOne(channel.projectId, userId);
+        await this.projectsService.findOne(channel.projectId, userId);
         return channel;
     }
 
-    async update(id: string, userId: string, data: {
-        name?: string;
-        channelIdentifier?: string;
-        credentials?: any;
-        isActive?: boolean;
-    }) {
+    async update(id: string, userId: string, data: UpdateChannelDto) {
         const channel = await this.findOne(id, userId);
         await this.permissions.checkProjectPermission(
             channel.projectId,

@@ -1,3 +1,4 @@
+
 import {
     Controller,
     Get,
@@ -12,79 +13,42 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ChannelsService } from './channels.service.js';
-import { IsNotEmpty, IsOptional, IsString, IsBoolean, IsEnum } from 'class-validator';
-import { SocialMedia } from '@prisma/client';
-
-class CreateChannelDto {
-    @IsString()
-    @IsNotEmpty()
-    projectId!: string;
-
-    @IsEnum(SocialMedia)
-    @IsNotEmpty()
-    socialMedia!: SocialMedia;
-
-    @IsString()
-    @IsNotEmpty()
-    name!: string;
-
-    @IsString()
-    @IsNotEmpty()
-    channelIdentifier!: string;
-
-    @IsOptional()
-    credentials?: any;
-}
-
-class UpdateChannelDto {
-    @IsString()
-    @IsOptional()
-    name?: string;
-
-    @IsString()
-    @IsOptional()
-    channelIdentifier?: string;
-
-    @IsOptional()
-    credentials?: any;
-
-    @IsBoolean()
-    @IsOptional()
-    isActive?: boolean;
-}
+import { CreateChannelDto, UpdateChannelDto } from './dto/index.js';
+import { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
+import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
 
 @Controller('channels')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard(JWT_STRATEGY))
 export class ChannelsController {
     constructor(private readonly channelsService: ChannelsService) { }
 
     @Post()
-    create(@Request() req: any, @Body() createChannelDto: CreateChannelDto) {
+    create(@Request() req: AuthenticatedRequest, @Body() createChannelDto: CreateChannelDto) {
         const { projectId, ...data } = createChannelDto;
-        return this.channelsService.create(req.user.userId, projectId, data);
+        return this.channelsService.create(req.user.sub, projectId, data);
     }
 
     @Get()
-    findAll(@Request() req: any, @Query('projectId') projectId: string) {
-        return this.channelsService.findAllForProject(projectId, req.user.userId);
+    findAll(@Request() req: AuthenticatedRequest, @Query('projectId') projectId: string) {
+        return this.channelsService.findAllForProject(projectId, req.user.sub);
     }
 
     @Get(':id')
-    findOne(@Request() req: any, @Param('id') id: string) {
-        return this.channelsService.findOne(id, req.user.userId);
+    findOne(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
+        return this.channelsService.findOne(id, req.user.sub);
     }
 
     @Patch(':id')
     update(
-        @Request() req: any,
+        @Request() req: AuthenticatedRequest,
         @Param('id') id: string,
         @Body() updateChannelDto: UpdateChannelDto,
     ) {
-        return this.channelsService.update(id, req.user.userId, updateChannelDto);
+        return this.channelsService.update(id, req.user.sub, updateChannelDto);
     }
 
     @Delete(':id')
-    remove(@Request() req: any, @Param('id') id: string) {
-        return this.channelsService.remove(id, req.user.userId);
+    remove(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
+        return this.channelsService.remove(id, req.user.sub);
     }
 }

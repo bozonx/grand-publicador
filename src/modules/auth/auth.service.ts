@@ -1,27 +1,40 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { createHmac } from 'node:crypto';
 import { UsersService } from '../users/users.service.js';
 
+interface TelegramUser {
+    id: number;
+    first_name: string;
+    last_name?: string;
+    username?: string;
+    photo_url?: string;
+    auth_date: number;
+    hash: string;
+}
+
 @Injectable()
 export class AuthService {
     private readonly botToken: string;
+    private readonly logger = new Logger(AuthService.name);
 
     constructor(
         private jwtService: JwtService,
         private configService: ConfigService,
         private usersService: UsersService,
     ) {
-        this.botToken = this.configService.get<string>('TELEGRAM_BOT_TOKEN')!;
+        this.botToken = this.configService.get<string>('AUTH_TELEGRAM_BOT_TOKEN') ?? this.configService.get<string>('TELEGRAM_BOT_TOKEN')!;
         if (!this.botToken) {
-            throw new Error('TELEGRAM_BOT_TOKEN is not defined in config');
+            throw new Error('AUTH_TELEGRAM_BOT_TOKEN is not defined in config');
         }
     }
 
     async loginWithTelegram(initData: string) {
         const isValid = this.validateTelegramInitData(initData);
         if (!isValid) {
+            this.logger.warn('Invalid Telegram init data');
             throw new UnauthorizedException('Invalid Telegram init data');
         }
 
@@ -31,7 +44,7 @@ export class AuthService {
             throw new UnauthorizedException('User data missing in Telegram init data');
         }
 
-        const tgUser = JSON.parse(userStr);
+        const tgUser = JSON.parse(userStr) as TelegramUser;
         const user = await this.usersService.findOrCreateTelegramUser({
             telegramId: BigInt(tgUser.id),
             username: tgUser.username,
@@ -40,7 +53,12 @@ export class AuthService {
             avatarUrl: tgUser.photo_url,
         });
 
-        const payload = { sub: user.id, telegramId: user.telegramId?.toString() };
+        const payload = {
+            sub: user.id,
+            telegramId: user.telegramId?.toString(),
+            username: user.username
+        };
+
         return {
             access_token: this.jwtService.sign(payload),
             user: {
