@@ -80,6 +80,7 @@ These variables are used by the backend when running:
 These variables can be set during `pnpm build` to override defaults from `nuxt.config.ts`:
 - `VITE_DEV_MODE` - Default: `'false'` (production mode)
 - `NUXT_PUBLIC_API_BASE` - Default: `''` (empty = same host as frontend)
+- `NUXT_APP_BASE_URL` - Default: `'/'` (root path). Set to `/gran-p/` if deploying under a subpath
 
 **Note**: In production builds (CI/CD), these variables are NOT needed because the defaults in `nuxt.config.ts` are already correct for production. They are only useful if you need to override the defaults.
 
@@ -90,6 +91,7 @@ For local development, create `ui/.env` to override defaults:
 - `VITE_DEV_MODE=true` - Enable dev features (auto-login, etc.)
 - `VITE_DEV_TELEGRAM_ID=<your-id>` - Auto-login with this Telegram ID
 - `NUXT_PUBLIC_API_BASE=http://localhost:8080` - Point to separate backend
+
 
 
 ## API Endpoints
@@ -110,6 +112,8 @@ All endpoints are served from the same host:
 
 ## Reverse Proxy Setup (Optional)
 
+### Deploying at Root Path
+
 If deploying behind nginx/traefik:
 
 ```nginx
@@ -126,6 +130,59 @@ server {
     }
 }
 ```
+
+### Deploying Under a Subpath
+
+If you need to deploy the application under a subpath (e.g., `/gran-p/`), you need to:
+
+1. **Configure the reverse proxy** to strip the prefix before forwarding to the app
+2. **Set build-time environment variable** `NUXT_APP_BASE_URL` when building the frontend
+
+#### Example: Caddy Configuration
+
+```caddy
+handle /gran-p* {
+    redir /gran-p /gran-p/ 308
+    uri strip_prefix /gran-p
+    reverse_proxy grand-publicador:8080 {
+        # your proxy settings
+    }
+}
+```
+
+#### Example: Nginx Configuration
+
+```nginx
+location /gran-p/ {
+    proxy_pass http://localhost:8080/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+
+#### Building with Subpath Support
+
+When building the Docker image or frontend, set the environment variable:
+
+```bash
+# In your CI/CD or docker-compose.yml build args:
+NUXT_APP_BASE_URL=/gran-p/
+```
+
+Or in your GitHub Actions workflow:
+
+```yaml
+- name: Build UI
+  run: pnpm build
+  working-directory: ./ui
+  env:
+    NUXT_APP_BASE_URL: /gran-p/
+```
+
+**Important**: The `NUXT_APP_BASE_URL` must be set **during build time**, not runtime.
+
 
 ## Backup
 

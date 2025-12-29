@@ -35,6 +35,7 @@ export default defineNuxtConfig({
   ssr: false,
 
   app: {
+    baseURL: process.env.NUXT_APP_BASE_URL || '/',
     head: {
       title: 'Grand Publicador',
       viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
