@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const { t } = useI18n()
-const { loginWithTelegram, loginWithTelegramWidget, loginWithDev, isLoading, error } = useAuth()
+const { loginWithTelegram, loginWithTelegramWidget, loginWithDev, isLoading, error, isAuthenticated } = useAuth()
 const config = useRuntimeConfig()
 const router = useRouter()
 
@@ -18,19 +18,29 @@ const onTelegramAuth = async (user: any) => {
 }
 
 onMounted(async () => {
+  // If already logged in (e.g. by auth plugin), redirect to home
+  if (isAuthenticated.value) {
+    router.push('/')
+    return
+  }
+
   // @ts-ignore
   const tg = window.Telegram?.WebApp
   
   // @ts-ignore
   window.onTelegramAuth = onTelegramAuth
 
-  // Check if running inside Telegram
+  // Check if running inside Telegram Mini App
   if (tg?.initData) {
      try {
        await loginWithTelegram(tg.initData)
        router.push('/')
      } catch (e) {
-       console.error("Telegram login failed", e)
+       console.error("Telegram Mini App login failed", e)
+       // If auto-login fails, we might still want to show the widget as fallback 
+       // or just stay in Telegram mode if it's a validation error
+       isTelegramContent.value = false
+       loadWidget()
      }
   } else if (isDev) {
      console.log("Dev mode detected, attempting auto-login...")
@@ -43,6 +53,7 @@ onMounted(async () => {
        loadWidget()
      }
   } else {
+    // Normal browser mode, show the Telegram Login Widget
     isTelegramContent.value = false
     loadWidget()
   }
