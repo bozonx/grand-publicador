@@ -1,3 +1,4 @@
+import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
 
 interface User {
@@ -14,9 +15,21 @@ export const useAuthStore = defineStore('auth', () => {
     const token = useCookie('auth_token');
     const api = useApi();
 
+    const isLoading = ref(false);
+    const error = ref<string | null>(null);
+    const isInitialized = ref(false);
+
     const isLoggedIn = computed(() => !!user.value);
+    const isAdmin = computed(() => user.value?.isAdmin === true);
+    const displayName = computed(() => {
+        if (user.value?.fullName) return user.value.fullName;
+        if (user.value?.username) return user.value.username;
+        return 'User';
+    });
 
     async function loginWithTelegram(initData: string) {
+        isLoading.value = true;
+        error.value = null;
         try {
             const response = await api.post<{ access_token: string, user: User }>('/auth/telegram', {
                 initData,
@@ -24,11 +37,15 @@ export const useAuthStore = defineStore('auth', () => {
 
             token.value = response.access_token;
             user.value = response.user;
+            isInitialized.value = true;
 
             return response;
-        } catch (error) {
-            console.error('Login failed', error);
-            throw error;
+        } catch (err: any) {
+            error.value = err.message;
+            console.error('Login failed', err);
+            throw err;
+        } finally {
+            isLoading.value = false;
         }
     }
 
@@ -42,17 +59,20 @@ export const useAuthStore = defineStore('auth', () => {
         if (!token.value) return;
 
         try {
-            // Assuming a /auth/me endpoint exists or similar
-            // For now, we'll just keep the user if we have a token (simplified)
-            // In a real app, you'd verify the token with the backend
-        } catch (error) {
+            // In a real app, verify the token
+        } catch (err) {
             logout();
         }
     }
 
     return {
         user,
+        isLoading,
+        isInitialized,
+        error,
         isLoggedIn,
+        isAdmin,
+        displayName,
         loginWithTelegram,
         logout,
         fetchMe,

@@ -1,17 +1,14 @@
 <template>
-  <div class="min-h-screen bg-gray-900 text-white font-sans">
-    <NuxtPage />
+  <div>
+    <NuxtRouteAnnouncer />
+    <UApp>
+      <NuxtLayout>
+        <NuxtPage />
+      </NuxtLayout>
+    </UApp>
   </div>
 </template>
 
-<script setup>
-// Meta tags and initial loads can go here
+<script setup lang="ts">
+// Initialization logic if needed
 </script>
-
-<style>
-/* Basic styles for the app */
-body {
-  margin: 0;
-  background-color: #111827;
-}
-</style>
