@@ -20,22 +20,79 @@
 - Node.js 22.x
 - pnpm 10.x
 
+### 1) Установка зависимостей
 ```bash
-# 1) Установка зависимостей в корне и в ui/
+# Установка зависимостей в корне (бэкенд)
 pnpm install
-cd ui && pnpm install && cd ..
 
-# 2) Настройка окружения
+# Установка зависимостей во фронтенде
+cd ui && pnpm install && cd ..
+```
+
+### 2) Настройка окружения
+```bash
+# Для разработки
 cp .env.development.example .env
 
-# 3) Тенерирование Prisma Client
-npx prisma generate
+# Для продакшн
+# cp .env.production.example .env
+```
+_Отредактируйте `.env`, указав ваш `TELEGRAM_BOT_TOKEN` и другие параметры._
 
-# 4) Запуск в режиме разработки
-# Бэкенд:
+### 3) Инициализация базы данных (Prisma)
+Команда создаст файл БД (SQLite), накатит миграции и сгенерирует клиент.
+```bash
+# Для разработки (создает миграцию)
+npx prisma migrate dev --name init
+
+# Наполнение базы тестовыми данными (опционально)
+npx prisma db seed
+
+# Только генерация клиента (если БД уже есть)
+npx prisma generate
+```
+
+## Режимы запуска
+
+### Разработка (Development)
+Запуск с hot-reload для бэкенда и фронтенда.
+
+**Бэкенд:**
+```bash
 npm run start:dev
-# Фронтенд:
-cd ui && npm run dev
+```
+Сервер будет доступен на `http://localhost:8080`.
+
+**Фронтенд:**
+```bash
+cd ui
+pnpm dev
+```
+Интерфейс будет доступен на `http://localhost:3000`.
+
+### Продакшн (Production)
+Сборка оптимизированных бандлов и запуск.
+
+**Бэкенд:**
+```bash
+# Сборка
+npm run build
+
+# Применение миграций (без изменения схемы)
+npx prisma migrate deploy
+
+# Запуск
+npm run start:prod
+```
+
+**Фронтенд:**
+```bash
+cd ui
+# Сборка
+pnpm build
+
+# Запуск (через node или preview)
+node .output/server/index.mjs
 ```
 
 ## Переменные окружения
