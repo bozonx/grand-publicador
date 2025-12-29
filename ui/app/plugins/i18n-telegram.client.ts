@@ -5,11 +5,19 @@
  * 2. Browser language (handled by i18n module)
  * 3. Default locale (ru)
  */
-export default defineNuxtPlugin(() => {
-  const { setLocale, locale, locales } = useI18n()
+export default defineNuxtPlugin((nuxtApp) => {
+  // Access i18n from nuxtApp context to avoid injection errors
+  // @ts-ignore - nuxt-i18n types might not be perfectly inferred
+  const i18n = nuxtApp.$i18n
+
+  if (!i18n) return;
+
+  const locale = (i18n as any).locale
+  const setLocale = (i18n as any).setLocale
+  const locales = (i18n as any).locales
 
   // Get available locale codes
-  const availableLocales = locales.value.map((l) =>
+  const availableLocales = locales.value.map((l: any) =>
     typeof l === 'string' ? l : l.code
   ) as string[]
 
@@ -40,7 +48,7 @@ export default defineNuxtPlugin(() => {
   function getTelegramLanguage(): SupportedLocale | null {
     if (typeof window === 'undefined') return null
 
-    const tgWebApp = window.Telegram?.WebApp
+    const tgWebApp = (window as any).Telegram?.WebApp
     if (!tgWebApp) return null
 
     // Try initDataUnsafe.user.language_code first
@@ -59,7 +67,11 @@ export default defineNuxtPlugin(() => {
     if (telegramLang && telegramLang !== locale.value) {
       // eslint-disable-next-line no-console
       console.info(`[i18n] Setting locale from Telegram: ${telegramLang}`)
-      setLocale(telegramLang)
+      if (setLocale) {
+        setLocale(telegramLang)
+      } else {
+        locale.value = telegramLang
+      }
     }
   }
 })

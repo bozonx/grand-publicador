@@ -5,11 +5,19 @@ import { defineNuxtPlugin } from '#app'
  * Handles locale synchronization with i18n
  */
 export default defineNuxtPlugin((nuxtApp) => {
-  const { locale } = useI18n()
+  // Access i18n from nuxtApp context to avoid injection errors
+  const modules = import.meta.glob('../../../node_modules/@formkit/i18n/dist/*.mjs')
+
+
+  // Access i18n from nuxtApp context
+  // @ts-ignore - nuxt-i18n types might not be perfectly inferred
+  const i18n = nuxtApp.$i18n
+
+  if (!i18n) return;
 
   // Watch for locale changes and update FormKit config
   watch(
-    () => locale.value,
+    () => (i18n as any).locale?.value,
     (newLocale) => {
       const formkit = nuxtApp.vueApp.config.globalProperties.$formkit as any
       if (formkit && formkit.config) {
