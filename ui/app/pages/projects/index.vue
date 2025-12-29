@@ -5,61 +5,61 @@ definePageMeta({
 
 const { t } = useI18n()
 const router = useRouter()
-const { blogs, isLoading, error, fetchBlogs, deleteBlog, canEdit, canDelete, getRoleDisplayName } =
-  useBlogs()
+const { projects, isLoading, error, fetchProjects, deleteProject, canEdit, canDelete, getRoleDisplayName } =
+  useProjects()
 
 // Delete confirmation modal state
 const showDeleteModal = ref(false)
-const blogToDelete = ref<string | null>(null)
+const projectToDelete = ref<string | null>(null)
 const isDeleting = ref(false)
 
-// Fetch blogs on mount
+// Fetch projects on mount
 onMounted(() => {
-  fetchBlogs()
+  fetchProjects()
 })
 
 /**
- * Navigate to create blog page
+ * Navigate to create project page
  */
-function goToCreateBlog() {
-  router.push('/blogs/new')
+function goToCreateProject() {
+  router.push('/projects/new')
 }
 
 /**
- * Navigate to blog details page
+ * Navigate to project details page
  */
-function goToBlog(blogId: string) {
-  router.push(`/blogs/${blogId}`)
+function goToProject(projectId: string) {
+  router.push(`/projects/${projectId}`)
 }
 
 /**
- * Navigate to edit blog page
+ * Navigate to edit project page
  */
-function goToEditBlog(blogId: string) {
-  router.push(`/blogs/${blogId}?edit=true`)
+function goToEditProject(projectId: string) {
+  router.push(`/projects/${projectId}?edit=true`)
 }
 
 /**
  * Open delete confirmation modal
  */
-function confirmDelete(blogId: string) {
-  blogToDelete.value = blogId
+function confirmDelete(projectId: string) {
+  projectToDelete.value = projectId
   showDeleteModal.value = true
 }
 
 /**
- * Handle blog deletion
+ * Handle project deletion
  */
 async function handleDelete() {
-  if (!blogToDelete.value) return
+  if (!projectToDelete.value) return
 
   isDeleting.value = true
-  const success = await deleteBlog(blogToDelete.value)
+  const success = await deleteProject(projectToDelete.value)
   isDeleting.value = false
 
   if (success) {
     showDeleteModal.value = false
-    blogToDelete.value = null
+    projectToDelete.value = null
   }
 }
 
@@ -68,7 +68,7 @@ async function handleDelete() {
  */
 function cancelDelete() {
   showDeleteModal.value = false
-  blogToDelete.value = null
+  projectToDelete.value = null
 }
 
 /**
@@ -100,14 +100,14 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
     <div class="flex items-center justify-between mb-6">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-          {{ t('blog.titlePlural') }}
+          {{ t('project.titlePlural') }}
         </h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          {{ t('blog.myBlogs') }}
+          {{ t('project.myProjects') }}
         </p>
       </div>
-      <UButton icon="i-heroicons-plus" @click="goToCreateBlog">
-        {{ t('blog.createBlog') }}
+      <UButton icon="i-heroicons-plus" @click="goToCreateProject">
+        {{ t('project.createProject') }}
       </UButton>
     </div>
 
@@ -136,41 +136,41 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
       </div>
     </div>
 
-    <!-- Blogs list -->
-    <div v-else-if="blogs.length > 0" class="space-y-4">
+    <!-- Projects list -->
+    <div v-else-if="projects.length > 0" class="space-y-4">
       <div
-        v-for="blog in blogs"
-        :key="blog.id"
+        v-for="project in projects"
+        :key="project.id"
         class="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
-        @click="goToBlog(blog.id)"
+        @click="goToProject(project.id)"
       >
         <div class="p-6">
           <div class="flex items-start justify-between">
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-3 mb-2">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate">
-                  {{ blog.name }}
+                  {{ project.name }}
                 </h3>
-                <UBadge :color="getRoleBadgeColor(blog.role)" variant="subtle" size="sm">
-                  {{ getRoleDisplayName(blog.role) }}
+                <UBadge :color="getRoleBadgeColor(project.role)" variant="subtle" size="sm">
+                  {{ getRoleDisplayName(project.role) }}
                 </UBadge>
               </div>
 
               <p
-                v-if="blog.description"
+                v-if="project.description"
                 class="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 mb-3"
               >
-                {{ blog.description }}
+                {{ project.description }}
               </p>
 
               <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                <span v-if="blog.owner" class="flex items-center gap-1">
+                <span v-if="project.owner" class="flex items-center gap-1">
                   <UIcon name="i-heroicons-user" class="w-4 h-4" />
-                  {{ blog.owner.full_name || blog.owner.username || 'Unknown' }}
+                  {{ project.owner.fullName || project.owner.username || 'Unknown' }}
                 </span>
                 <span class="flex items-center gap-1">
                   <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
-                  {{ formatDate(blog.created_at) }}
+                  {{ formatDate(project.createdAt) }}
                 </span>
               </div>
             </div>
@@ -183,17 +183,17 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
                     {
                       label: t('common.edit'),
                       icon: 'i-heroicons-pencil-square',
-                      disabled: !canEdit(blog),
-                      click: () => goToEditBlog(blog.id),
+                      disabled: !canEdit(project),
+                      click: () => goToEditProject(project.id),
                     },
                   ],
                   [
                     {
                       label: t('common.delete'),
                       icon: 'i-heroicons-trash',
-                      disabled: !canDelete(blog),
+                      disabled: !canDelete(project),
                       color: 'error' as const,
-                      click: () => confirmDelete(blog.id),
+                      click: () => confirmDelete(project.id),
                     },
                   ],
                 ]"
@@ -214,17 +214,17 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
     <!-- Empty state -->
     <div v-else class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
       <UIcon
-        name="i-heroicons-book-open"
+        name="i-heroicons-briefcase"
         class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4"
       />
       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-        {{ t('blog.noBlogsFound') }}
+        {{ t('project.noProjectsFound') }}
       </h3>
       <p class="text-gray-500 dark:text-gray-400 mb-6 max-w-sm mx-auto">
-        Create your first blog to start managing your social media content.
+        Create your first project to start managing your social media content.
       </p>
-      <UButton icon="i-heroicons-plus" @click="goToCreateBlog">
-        {{ t('blog.createBlog') }}
+      <UButton icon="i-heroicons-plus" @click="goToCreateProject">
+        {{ t('project.createProject') }}
       </UButton>
     </div>
 
@@ -240,12 +240,12 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
               />
             </div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ t('blog.deleteBlog') }}
+              {{ t('project.deleteProject') }}
             </h3>
           </div>
 
           <p class="text-gray-600 dark:text-gray-400 mb-6">
-            {{ t('blog.deleteConfirm') }}
+            {{ t('project.deleteConfirm') }}
           </p>
 
           <div class="flex justify-end gap-3">

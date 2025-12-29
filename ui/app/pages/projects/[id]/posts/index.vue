@@ -13,7 +13,7 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 
-const blogId = computed(() => route.params.id as string)
+const projectId = computed(() => route.params.id as string)
 
 const {
   posts,
@@ -24,7 +24,7 @@ const {
   totalPages,
   statusOptions,
   typeOptions,
-  fetchPostsByBlog,
+  fetchPostsByProject,
   deletePost,
   setFilter,
   clearFilter,
@@ -50,8 +50,8 @@ const isDeleting = ref(false)
 
 // Fetch data on mount
 onMounted(async () => {
-  if (blogId.value) {
-    await Promise.all([fetchChannels(blogId.value), fetchPostsByBlog(blogId.value)])
+  if (projectId.value) {
+    await Promise.all([fetchChannels(projectId.value), fetchPostsByProject(projectId.value)])
   }
 })
 
@@ -59,18 +59,18 @@ onMounted(async () => {
 watch([selectedStatus, selectedType, selectedChannel, searchQuery], () => {
   setFilter({
     status: selectedStatus.value || null,
-    post_type: selectedType.value || null,
-    channel_id: selectedChannel.value || null,
+    postType: selectedType.value || null,
+    channelId: selectedChannel.value || null,
     search: searchQuery.value || undefined,
   })
-  fetchPostsByBlog(blogId.value)
+  fetchPostsByProject(projectId.value)
 })
 
 // Watch for page changes
 watch(
   () => pagination.value.page,
   () => {
-    fetchPostsByBlog(blogId.value)
+    fetchPostsByProject(projectId.value)
   }
 )
 
@@ -99,21 +99,21 @@ const typeFilterOptions = computed(() => [
  * Navigate to create post page
  */
 function goToCreatePost() {
-  router.push(`/blogs/${blogId.value}/posts/new`)
+  router.push(`/projects/${projectId.value}/posts/new`)
 }
 
 /**
  * Navigate to post detail page
  */
 function goToPost(postId: string) {
-  router.push(`/blogs/${blogId.value}/posts/${postId}`)
+  router.push(`/projects/${projectId.value}/posts/${postId}`)
 }
 
 /**
- * Navigate back to blog
+ * Navigate back to project
  */
 function goBack() {
-  router.push(`/blogs/${blogId.value}`)
+  router.push(`/projects/${projectId.value}`)
 }
 
 /**
@@ -137,7 +137,7 @@ async function handleDelete() {
   if (success) {
     showDeleteModal.value = false
     postToDelete.value = null
-    fetchPostsByBlog(blogId.value)
+    fetchPostsByProject(projectId.value)
   }
 }
 
@@ -158,7 +158,7 @@ function resetFilters() {
   selectedChannel.value = null
   searchQuery.value = ''
   clearFilter()
-  fetchPostsByBlog(blogId.value)
+  fetchPostsByProject(projectId.value)
 }
 
 /**
@@ -341,7 +341,7 @@ const hasActiveFilters = computed(() => {
                   {{ getStatusDisplayName(post.status) }}
                 </UBadge>
                 <UBadge color="neutral" size="xs" variant="outline">
-                  {{ getTypeDisplayName(post.post_type) }}
+                  {{ getTypeDisplayName(post.postType) }}
                 </UBadge>
               </div>
 
@@ -363,22 +363,22 @@ const hasActiveFilters = computed(() => {
                 <!-- Author -->
                 <span v-if="post.author" class="flex items-center gap-1">
                   <UIcon name="i-heroicons-user" class="w-3.5 h-3.5" />
-                  {{ post.author.full_name || post.author.username }}
+                  {{ post.author.fullName || post.author.username }}
                 </span>
 
                 <!-- Created date -->
                 <span class="flex items-center gap-1">
                   <UIcon name="i-heroicons-calendar" class="w-3.5 h-3.5" />
-                  {{ formatDate(post.created_at) }}
+                  {{ formatDate(post.createdAt) }}
                 </span>
 
                 <!-- Scheduled date -->
                 <span
-                  v-if="post.status === 'scheduled' && post.scheduled_at"
+                  v-if="post.status === 'scheduled' && post.scheduledAt"
                   class="flex items-center gap-1 text-amber-600 dark:text-amber-400"
                 >
                   <UIcon name="i-heroicons-clock" class="w-3.5 h-3.5" />
-                  {{ formatDateTime(post.scheduled_at) }}
+                  {{ formatDateTime(post.scheduledAt) }}
                 </span>
 
                 <!-- Tags -->

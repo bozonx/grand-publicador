@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
 import type { PostWithRelations, PostCreateInput, PostUpdateInput } from '~/composables/usePosts'
-import type { ChannelWithBlog } from '~/composables/useChannels'
+import type { ChannelWithProject } from '~/composables/useChannels'
 
 type PostStatusEnum = Database['public']['Enums']['post_status_enum']
 type PostTypeEnum = Database['public']['Enums']['post_type_enum']
 
 interface Props {
-  /** Blog ID for fetching channels */
-  blogId: string
+  /** Project ID for fetching channels */
+  projectId: string
   /** Post data for editing, null for creating new */
   post?: PostWithRelations | null
   /** Pre-selected channel ID */
@@ -33,16 +33,16 @@ const { channels, fetchChannels } = useChannels()
 
 // Form state
 const formData = reactive({
-  channel_id: props.post?.channel_id || props.channelId || '',
+  channelId: props.post?.channelId || props.channelId || '',
   content: props.post?.content || '',
-  post_type: (props.post?.post_type || 'post') as PostTypeEnum,
+  postType: (props.post?.postType || 'post') as PostTypeEnum,
   title: props.post?.title || '',
   description: props.post?.description || '',
-  author_comment: props.post?.author_comment || '',
+  authorComment: props.post?.authorComment || '',
   tags: props.post?.tags?.join(', ') || '',
-  post_date: props.post?.post_date || '',
+  postDate: props.post?.postDate || '',
   status: (props.post?.status || 'draft') as PostStatusEnum,
-  scheduled_at: props.post?.scheduled_at || '',
+  scheduledAt: props.post?.scheduledAt || '',
 })
 
 const isEditMode = computed(() => !!props.post?.id)
@@ -50,16 +50,16 @@ const showAdvancedFields = ref(false)
 
 // Fetch channels on mount
 onMounted(() => {
-  if (props.blogId) {
-    fetchChannels(props.blogId)
+  if (props.projectId) {
+    fetchChannels(props.projectId)
   }
 })
 
 // Channel options for select
 const channelOptions = computed(() => {
-  return channels.value.map((channel: ChannelWithBlog) => ({
+  return channels.value.map((channel: ChannelWithProject) => ({
     value: channel.id,
-    label: `${channel.name} (${channel.social_media})`,
+    label: `${channel.name} (${channel.socialMedia})`,
   }))
 })
 
@@ -82,15 +82,15 @@ async function handleSubmit() {
     // Update existing post
     const updateData: PostUpdateInput = {
       content: formData.content,
-      post_type: formData.post_type,
+      postType: formData.postType,
       title: formData.title || undefined,
       description: formData.description || undefined,
-      author_comment: formData.author_comment || undefined,
+      authorComment: formData.authorComment || undefined,
       tags: tagsArray.length > 0 ? tagsArray : undefined,
-      post_date: formData.post_date || undefined,
+      postDate: formData.postDate || undefined,
       status: formData.status,
-      scheduled_at:
-        formData.status === 'scheduled' ? formData.scheduled_at || undefined : undefined,
+      scheduledAt:
+        formData.status === 'scheduled' ? formData.scheduledAt || undefined : undefined,
     }
 
     const result = await updatePost(props.post.id, updateData)
@@ -99,22 +99,22 @@ async function handleSubmit() {
     }
   } else {
     // Create new post
-    if (!formData.channel_id) {
+    if (!formData.channelId) {
       return // Validation should prevent this
     }
 
     const createData: PostCreateInput = {
-      channel_id: formData.channel_id,
+      channelId: formData.channelId,
       content: formData.content,
-      post_type: formData.post_type,
+      postType: formData.postType,
       title: formData.title || undefined,
       description: formData.description || undefined,
-      author_comment: formData.author_comment || undefined,
+      authorComment: formData.authorComment || undefined,
       tags: tagsArray.length > 0 ? tagsArray : undefined,
-      post_date: formData.post_date || undefined,
+      postDate: formData.postDate || undefined,
       status: formData.status,
-      scheduled_at:
-        formData.status === 'scheduled' ? formData.scheduled_at || undefined : undefined,
+      scheduledAt:
+        formData.status === 'scheduled' ? formData.scheduledAt || undefined : undefined,
     }
 
     const result = await createPost(createData)
@@ -148,9 +148,9 @@ const isContentValid = computed(() => {
  * Check if form is valid
  */
 const isFormValid = computed(() => {
-  if (!isEditMode.value && !formData.channel_id) return false
+  if (!isEditMode.value && !formData.channelId) return false
   if (!isContentValid.value) return false
-  if (formData.status === 'scheduled' && !formData.scheduled_at) return false
+  if (formData.status === 'scheduled' && !formData.scheduledAt) return false
   return true
 })
 </script>
@@ -178,7 +178,7 @@ const isFormValid = computed(() => {
           {{ t('channel.title') }} <span class="text-red-500">*</span>
         </label>
         <USelect
-          v-model="formData.channel_id"
+          v-model="formData.channelId"
           :options="channelOptions"
           option-attribute="label"
           value-attribute="value"
@@ -206,7 +206,7 @@ const isFormValid = computed(() => {
             {{ post.channel.name }}
           </span>
           <UBadge size="xs" color="neutral">
-            {{ post.channel.social_media }}
+            {{ post.channel.socialMedia }}
           </UBadge>
         </div>
       </div>
@@ -217,7 +217,7 @@ const isFormValid = computed(() => {
           {{ t('post.postType') }} <span class="text-red-500">*</span>
         </label>
         <USelect
-          v-model="formData.post_type"
+          v-model="formData.postType"
           :options="typeOptions"
           option-attribute="label"
           value-attribute="value"
@@ -272,7 +272,7 @@ const isFormValid = computed(() => {
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             {{ t('post.scheduledAt') }} <span class="text-red-500">*</span>
           </label>
-          <UInput v-model="formData.scheduled_at" type="datetime-local" class="w-full" />
+          <UInput v-model="formData.scheduledAt" type="datetime-local" class="w-full" />
         </div>
       </div>
 
@@ -316,7 +316,7 @@ const isFormValid = computed(() => {
             {{ t('post.authorComment') }}
           </label>
           <UTextarea
-            v-model="formData.author_comment"
+            v-model="formData.authorComment"
             :placeholder="t('post.authorCommentPlaceholder', 'Internal comment (not published)')"
             :rows="2"
           />
@@ -349,7 +349,7 @@ const isFormValid = computed(() => {
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             {{ t('post.postDate') }}
           </label>
-          <UInput v-model="formData.post_date" type="date" />
+          <UInput v-model="formData.postDate" type="date" />
           <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
             {{
               t('post.postDateHint', 'The date associated with the content (not publication date)')

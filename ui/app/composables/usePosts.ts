@@ -26,7 +26,7 @@ export interface PostWithRelations extends Post {
     channel?: {
         id: string
         name: string
-        blogId: string
+        projectId: string
         socialMedia: string
     } | null
     author?: {
@@ -83,16 +83,16 @@ export function usePosts() {
     const filter = ref<PostsFilter>({})
     const totalCount = ref(0)
 
-    async function fetchPostsByBlog(blogId: string): Promise<PostWithRelations[]> {
+    async function fetchPostsByProject(projectId: string): Promise<PostWithRelations[]> {
         isLoading.value = true
         error.value = null
 
         try {
-            const data = await api.get<PostWithRelations[]>(`/posts?blogId=${blogId}`)
+            const data = await api.get<PostWithRelations[]>(`/api/posts?projectId=${projectId}`)
             posts.value = data
             return data
         } catch (err: any) {
-            console.error('[usePosts] fetchPostsByBlog error:', err)
+            console.error('[usePosts] fetchPostsByProject error:', err)
             return []
         } finally {
             isLoading.value = false
@@ -190,16 +190,103 @@ export function usePosts() {
         }
     }
 
+    // Pagination
+    const pagination = ref({
+        page: 1,
+        limit: 10,
+    })
+    const totalPages = computed(() => Math.ceil(totalCount.value / pagination.value.limit))
+
+    function setPage(page: number) {
+        pagination.value.page = page
+    }
+
+    // Filters
+    function setFilter(newFilter: Partial<PostsFilter>) {
+        filter.value = { ...filter.value, ...newFilter }
+        pagination.value.page = 1 // Reset to first page on filter change
+    }
+
+    function clearFilter() {
+        filter.value = {}
+        pagination.value.page = 1
+    }
+
+    // Constants
+    const statusOptions = computed(() => [
+        { value: 'draft', label: t('postStatus.draft') },
+        { value: 'scheduled', label: t('postStatus.scheduled') },
+        { value: 'published', label: t('postStatus.published') },
+        { value: 'failed', label: t('postStatus.failed') },
+    ])
+
+    const typeOptions = computed(() => [
+        { value: 'post', label: t('postType.post') },
+        { value: 'article', label: t('postType.article') },
+        { value: 'news', label: t('postType.news') },
+        { value: 'video', label: t('postType.video') },
+        { value: 'short', label: t('postType.short') },
+    ])
+
+    // Helpers
+    function getStatusDisplayName(status: PostStatus): string {
+        return t(`postStatus.${status}`)
+    }
+
+    function getTypeDisplayName(type: PostType): string {
+        return t(`postType.${type}`)
+    }
+
+    function getStatusColor(status: PostStatus): 'neutral' | 'warning' | 'success' | 'error' {
+        const colors: Record<PostStatus, 'neutral' | 'warning' | 'success' | 'error'> = {
+            draft: 'neutral',
+            scheduled: 'warning',
+            published: 'success',
+            failed: 'error',
+        }
+        return colors[status] || 'neutral'
+    }
+
+    function canDelete(post: PostWithRelations): boolean {
+        if (!user.value) return false
+        // Allow deleting if user is author or if user is owner/admin of the project (logic can be refined)
+        return post.authorId === user.value.id
+    }
+
+    function canEdit(post: PostWithRelations): boolean {
+        // Same logic as delete for now
+        return canDelete(post)
+    }
+
+    function clearCurrentPost() {
+        currentPost.value = null
+        error.value = null
+    }
+
     return {
         posts,
         currentPost,
         isLoading,
         error,
+        filter,
         totalCount,
-        fetchPostsByBlog,
+        pagination,
+        totalPages,
+        statusOptions,
+        typeOptions,
+        fetchPostsByProject,
         fetchPost,
         createPost,
         updatePost,
         deletePost,
+        setFilter,
+        clearFilter,
+        setPage,
+        getStatusDisplayName,
+        getTypeDisplayName,
+        getStatusColor,
+        canDelete,
+        canEdit,
+        clearCurrentPost,
     }
 }

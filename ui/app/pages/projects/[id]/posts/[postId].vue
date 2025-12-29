@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { ProjectWithRole } from '~/stores/projects'
+
 definePageMeta({
   middleware: 'auth',
 })
@@ -7,7 +9,7 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 
-const blogId = computed(() => route.params.id as string)
+const projectId = computed(() => route.params.id as string)
 const postId = computed(() => route.params.postId as string)
 
 const {
@@ -45,7 +47,7 @@ onUnmounted(() => {
  * Navigate back to posts list
  */
 function goBack() {
-  router.push(`/blogs/${blogId.value}/posts`)
+  router.push(`/projects/${projectId.value}/posts`)
 }
 
 /**
@@ -93,7 +95,7 @@ async function handleDelete() {
 
   if (success) {
     showDeleteModal.value = false
-    router.push(`/blogs/${blogId.value}/posts`)
+    router.push(`/projects/${projectId.value}/posts`)
   }
 }
 
@@ -181,7 +183,7 @@ function formatDateTime(date: string | null): string {
     <!-- Edit mode -->
     <div v-else-if="isEditMode && canEdit(currentPost)" class="max-w-4xl mx-auto">
       <FormsPostForm
-        :blog-id="blogId"
+        :project-id="projectId"
         :post="currentPost"
         @success="handleSuccess"
         @cancel="handleCancel"
@@ -204,7 +206,7 @@ function formatDateTime(date: string | null): string {
                   {{ getStatusDisplayName(currentPost.status) }}
                 </UBadge>
                 <UBadge color="neutral" variant="outline">
-                  {{ getTypeDisplayName(currentPost.post_type) }}
+                  {{ getTypeDisplayName(currentPost.postType) }}
                 </UBadge>
               </div>
 
@@ -221,31 +223,31 @@ function formatDateTime(date: string | null): string {
                 <!-- Author -->
                 <span v-if="currentPost.author" class="flex items-center gap-1">
                   <UIcon name="i-heroicons-user" class="w-4 h-4" />
-                  {{ currentPost.author.full_name || currentPost.author.username }}
+                  {{ currentPost.author.fullName || currentPost.author.username }}
                 </span>
 
                 <!-- Created date -->
                 <span class="flex items-center gap-1">
                   <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
-                  {{ t('post.createdAt', 'Created') }}: {{ formatDate(currentPost.created_at) }}
+                  {{ t('post.createdAt', 'Created') }}: {{ formatDate(currentPost.createdAt) }}
                 </span>
 
                 <!-- Scheduled date -->
                 <span
-                  v-if="currentPost.status === 'scheduled' && currentPost.scheduled_at"
+                  v-if="currentPost.status === 'scheduled' && currentPost.scheduledAt"
                   class="flex items-center gap-1 text-amber-600 dark:text-amber-400"
                 >
                   <UIcon name="i-heroicons-clock" class="w-4 h-4" />
-                  {{ t('post.scheduledAt') }}: {{ formatDateTime(currentPost.scheduled_at) }}
+                  {{ t('post.scheduledAt') }}: {{ formatDateTime(currentPost.scheduledAt) }}
                 </span>
 
                 <!-- Published date -->
                 <span
-                  v-if="currentPost.status === 'published' && currentPost.published_at"
+                  v-if="currentPost.status === 'published' && currentPost.publishedAt"
                   class="flex items-center gap-1 text-green-600 dark:text-green-400"
                 >
                   <UIcon name="i-heroicons-check-circle" class="w-4 h-4" />
-                  {{ t('post.publishedAt') }}: {{ formatDateTime(currentPost.published_at) }}
+                  {{ t('post.publishedAt') }}: {{ formatDateTime(currentPost.publishedAt) }}
                 </span>
               </div>
             </div>
@@ -307,12 +309,12 @@ function formatDateTime(date: string | null): string {
             </div>
 
             <!-- Author comment -->
-            <div v-if="currentPost.author_comment">
+            <div v-if="currentPost.authorComment">
               <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
                 {{ t('post.authorComment') }}
               </dt>
               <dd class="text-sm text-gray-900 dark:text-white italic">
-                {{ currentPost.author_comment }}
+                {{ currentPost.authorComment }}
               </dd>
             </div>
 
@@ -335,22 +337,22 @@ function formatDateTime(date: string | null): string {
             </div>
 
             <!-- Post date -->
-            <div v-if="currentPost.post_date">
+            <div v-if="currentPost.postDate">
               <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
                 {{ t('post.postDate') }}
               </dt>
               <dd class="text-sm text-gray-900 dark:text-white">
-                {{ formatDate(currentPost.post_date) }}
+                {{ formatDate(currentPost.postDate) }}
               </dd>
             </div>
 
             <!-- Last updated -->
-            <div v-if="currentPost.updated_at">
+            <div v-if="currentPost.updatedAt">
               <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
                 {{ t('post.updatedAt', 'Last updated') }}
               </dt>
               <dd class="text-sm text-gray-900 dark:text-white">
-                {{ formatDateTime(currentPost.updated_at) }}
+                {{ formatDateTime(currentPost.updatedAt) }}
               </dd>
             </div>
 
@@ -360,7 +362,7 @@ function formatDateTime(date: string | null): string {
                 {{ t('channel.socialMedia') }}
               </dt>
               <dd class="text-sm text-gray-900 dark:text-white capitalize">
-                {{ currentPost.social_media }}
+                {{ currentPost.channel?.socialMedia || '-' }}
               </dd>
             </div>
           </dl>

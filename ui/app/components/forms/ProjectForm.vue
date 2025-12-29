@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { BlogWithRole } from '~/stores/blogs'
+import type { ProjectWithRole } from '~/stores/projects'
 
 interface Props {
-  /** Blog data for editing, null for creating new */
-  blog?: BlogWithRole | null
+  /** Project data for editing, null for creating new */
+  project?: ProjectWithRole | null
   /** Whether the form is in loading state */
   isLoading?: boolean
 }
@@ -14,7 +14,7 @@ interface Emits {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  blog: null,
+  project: null,
   isLoading: false,
 })
 
@@ -24,14 +24,13 @@ const { t } = useI18n()
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const form = ref<{ node: any } | null>(null)
 
-const isEditMode = computed(() => !!props.blog?.id)
+const isEditMode = computed(() => !!props.project?.id)
 
 /**
  * Form submission handler
  * Validates and emits the form data
  */
 function handleSubmit(data: Record<string, unknown>) {
-  console.log('[BlogForm] handleSubmit called with:', data)
   emit('submit', {
     name: data.name as string,
     description: (data.description as string) || '',
@@ -54,26 +53,26 @@ function submitForm() {
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
     <div class="mb-6">
       <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-        {{ isEditMode ? t('blog.editBlog') : t('blog.createBlog') }}
+        {{ isEditMode ? t('project.editProject') : t('project.createProject') }}
       </h2>
       <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
         {{
           isEditMode
-            ? 'Update your blog information below'
-            : 'Fill in the details to create a new blog'
+            ? 'Update your project information below'
+            : 'Fill in the details to create a new project'
         }}
       </p>
     </div>
 
     <FormKit ref="form" type="form" :actions="false" @submit="handleSubmit">
       <div class="space-y-6">
-        <!-- Blog name -->
+        <!-- Project name -->
         <FormKit
           type="text"
           name="name"
-          :label="t('blog.name')"
-          :placeholder="t('blog.name')"
-          :value="blog?.name || ''"
+          :label="t('project.name')"
+          :placeholder="t('project.name')"
+          :value="project?.name || ''"
           validation="required|length:2,100"
           :validation-messages="{
             required: t('validation.required'),
@@ -84,13 +83,13 @@ function submitForm() {
           }"
         />
 
-        <!-- Blog description -->
+        <!-- Project description -->
         <FormKit
           type="textarea"
           name="description"
-          :label="t('blog.description')"
-          :placeholder="t('blog.description')"
-          :value="blog?.description || ''"
+          :label="t('project.description')"
+          :placeholder="t('project.description')"
+          :value="project?.description || ''"
           validation="length:0,500"
           :validation-messages="{
             length: t('validation.maxLength', { max: 500 }),

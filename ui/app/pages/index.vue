@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { BlogWithRole } from '~/stores/blogs'
+import { useProjects } from '~/composables/useProjects'
+import type { ProjectWithRole } from '~/stores/projects'
 import type { PostWithRelations } from '~/composables/usePosts'
 
 definePageMeta({
@@ -9,28 +10,28 @@ definePageMeta({
 const { t } = useI18n()
 const { displayName, isAdmin } = useAuth()
 
-const { blogs, fetchBlogs, isLoading: blogsLoading } = useBlogs()
-const { posts: _posts, fetchPostsByBlog, isLoading: postsLoading } = usePosts()
+const { projects, fetchProjects, isLoading: projectsLoading } = useProjects()
+const { posts: _posts, fetchPostsByProject, isLoading: postsLoading } = usePosts()
 
 // State
 const recentPosts = ref<PostWithRelations[]>([])
-const isLoading = computed(() => blogsLoading.value || postsLoading.value)
+const isLoading = computed(() => projectsLoading.value || postsLoading.value)
 
 // Fetch data on mount
 onMounted(async () => {
-  await fetchBlogs()
+  await fetchProjects()
 
-  // Fetch posts from all user's blogs
-  if (blogs.value.length > 0) {
+  // Fetch posts from all user's projects
+  if (projects.value.length > 0) {
     const allPosts: PostWithRelations[] = []
-    for (const blog of blogs.value.slice(0, 3)) {
-      // Limit to first 3 blogs
-      const blogPosts = await fetchPostsByBlog(blog.id)
-      allPosts.push(...blogPosts.slice(0, 5)) // Limit posts per blog
+    for (const project of projects.value.slice(0, 3)) {
+      // Limit to first 3 projects
+      const projectPosts = await fetchPostsByProject(project.id)
+      allPosts.push(...projectPosts.slice(0, 5)) // Limit posts per project
     }
     // Sort by creation date and take top 5
     recentPosts.value = allPosts
-      .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+      .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
       .slice(0, 5)
   }
 })
@@ -66,12 +67,12 @@ function getStatusColor(status: string | null): 'success' | 'warning' | 'error' 
 }
 
 // Quick stats
-const totalBlogs = computed(() => blogs.value.length)
+const totalProjects = computed(() => projects.value.length)
 const totalChannels = computed(() =>
-  blogs.value.reduce((sum: number, blog: BlogWithRole) => sum + (blog.channelCount || 0), 0)
+  projects.value.reduce((sum: number, project: ProjectWithRole) => sum + (project.channelCount || 0), 0)
 )
 const totalPosts = computed(() =>
-  blogs.value.reduce((sum: number, blog: BlogWithRole) => sum + (blog.postCount || 0), 0)
+  projects.value.reduce((sum: number, project: ProjectWithRole) => sum + (project.postCount || 0), 0)
 )
 </script>
 
@@ -89,20 +90,20 @@ const totalPosts = computed(() =>
 
     <!-- Stats cards -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-      <!-- Blogs stat -->
+      <!-- Projects stat -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
-              {{ t('blog.titlePlural') }}
+              {{ t('project.titlePlural') }}
             </p>
             <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">
-              {{ totalBlogs }}
+              {{ totalProjects }}
             </p>
           </div>
           <div class="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
             <UIcon
-              name="i-heroicons-book-open"
+              name="i-heroicons-briefcase"
               class="w-6 h-6 text-primary-600 dark:text-primary-400"
             />
           </div>
@@ -153,8 +154,8 @@ const totalPosts = computed(() =>
         {{ t('dashboard.quickActions') }}
       </h2>
       <div class="flex flex-wrap gap-3">
-        <UButton icon="i-heroicons-plus" color="primary" to="/blogs/new">
-          {{ t('blog.createBlog') }}
+        <UButton icon="i-heroicons-plus" color="primary" to="/projects/new">
+          {{ t('project.createProject') }}
         </UButton>
         <UButton
           v-if="isAdmin"
@@ -173,58 +174,58 @@ const totalPosts = computed(() =>
 
     <!-- Content grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- My Blogs -->
+      <!-- My Projects -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
         <div
           class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between"
         >
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-            {{ t('blog.titlePlural') }}
+            {{ t('project.titlePlural') }}
           </h2>
-          <UButton variant="ghost" color="primary" size="sm" to="/blogs">
+          <UButton variant="ghost" color="primary" size="sm" to="/projects">
             {{ t('common.viewAll') }}
           </UButton>
         </div>
         <div class="p-6">
           <!-- Loading -->
-          <div v-if="isLoading && blogs.length === 0" class="flex items-center justify-center py-8">
+          <div v-if="isLoading && projects.length === 0" class="flex items-center justify-center py-8">
             <UIcon name="i-heroicons-arrow-path" class="w-6 h-6 text-gray-400 animate-spin" />
           </div>
 
           <!-- Empty state -->
-          <div v-else-if="blogs.length === 0" class="text-center py-8">
+          <div v-else-if="projects.length === 0" class="text-center py-8">
             <UIcon
-              name="i-heroicons-book-open"
+              name="i-heroicons-briefcase"
               class="w-10 h-10 mx-auto text-gray-400 dark:text-gray-500 mb-3"
             />
             <p class="text-gray-500 dark:text-gray-400 mb-4">
-              {{ t('blog.noBlogsDescription') }}
+              {{ t('project.noProjectsDescription') }}
             </p>
-            <UButton icon="i-heroicons-plus" size="sm" to="/blogs/new">
-              {{ t('blog.createBlog') }}
+            <UButton icon="i-heroicons-plus" size="sm" to="/projects/new">
+              {{ t('project.createProject') }}
             </UButton>
           </div>
 
-          <!-- Blog list -->
+          <!-- Project list -->
           <div v-else class="space-y-3">
             <NuxtLink
-              v-for="blog in blogs.slice(0, 5)"
-              :key="blog.id"
-              :to="`/blogs/${blog.id}`"
+              v-for="project in projects.slice(0, 5)"
+              :key="project.id"
+              :to="`/projects/${project.id}`"
               class="block p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <div class="flex items-center justify-between">
                 <div class="min-w-0">
                   <h3 class="font-medium text-gray-900 dark:text-white truncate">
-                    {{ blog.name }}
+                    {{ project.name }}
                   </h3>
                   <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                    {{ blog.channelCount || 0 }} {{ t('channel.titlePlural').toLowerCase() }} ·
-                    {{ blog.postCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
+                    {{ project.channelCount || 0 }} {{ t('channel.titlePlural').toLowerCase() }} ·
+                    {{ project.postCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
                   </p>
                 </div>
-                <UBadge v-if="blog.role" color="primary" variant="subtle" size="xs">
-                  {{ t(`roles.${blog.role}`) }}
+                <UBadge v-if="project.role" color="primary" variant="subtle" size="xs">
+                  {{ t(`roles.${project.role}`) }}
                 </UBadge>
               </div>
             </NuxtLink>
@@ -264,7 +265,7 @@ const totalPosts = computed(() =>
             <NuxtLink
               v-for="post in recentPosts"
               :key="post.id"
-              :to="`/blogs/${post.channel?.blogId}/posts/${post.id}`"
+              :to="`/projects/${post.channel?.projectId}/posts/${post.id}`"
               class="block p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <div class="flex items-start justify-between gap-3">

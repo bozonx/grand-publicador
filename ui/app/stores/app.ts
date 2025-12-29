@@ -15,11 +15,11 @@ export const useAppStore = defineStore('app', () => {
   const isSidebarOpen = ref(false)
   const isLoading = ref(false)
   const theme = ref<Theme>('system')
-  const currentBlogId = ref<string | null>(null)
+  const currentProjectId = ref<string | null>(null)
   const toasts = ref<Toast[]>([])
 
   // Getters
-  const hasCurrentBlog = computed(() => !!currentBlogId.value)
+  const hasCurrentProject = computed(() => !!currentProjectId.value)
 
   // Actions
   function toggleSidebar() {
@@ -38,8 +38,8 @@ export const useAppStore = defineStore('app', () => {
     theme.value = newTheme
   }
 
-  function setCurrentBlog(blogId: string | null) {
-    currentBlogId.value = blogId
+  function setCurrentProject(projectId: string | null) {
+    currentProjectId.value = projectId
   }
 
   function addToast(toast: Omit<Toast, 'id'>) {
@@ -90,18 +90,18 @@ export const useAppStore = defineStore('app', () => {
     isSidebarOpen,
     isLoading,
     theme,
-    currentBlogId,
+    currentProjectId,
     toasts,
 
     // Getters
-    hasCurrentBlog,
+    hasCurrentProject,
 
     // Actions
     toggleSidebar,
     setSidebarOpen,
     setLoading,
     setTheme,
-    setCurrentBlog,
+    setCurrentProject,
     addToast,
     removeToast,
     clearToasts,

@@ -1,27 +1,27 @@
 import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useBlogsStore } from '~/stores/blogs'
-import type { Blog, BlogWithRole, BlogMemberWithUser, BlogRole } from '~/stores/blogs'
+import { useProjectsStore } from '~/stores/projects'
+import type { Project, ProjectWithRole, ProjectMemberWithUser, ProjectRole } from '~/stores/projects'
 
-export function useBlogs() {
+export function useProjects() {
     const api = useApi()
     const { user } = useAuth()
     const { t } = useI18n()
     const toast = useToast()
 
-    const store = useBlogsStore()
-    const { blogs, currentBlog, members, isLoading, error } = storeToRefs(store)
+    const store = useProjectsStore()
+    const { projects, currentProject, members, isLoading, error } = storeToRefs(store)
 
-    async function fetchBlogs(): Promise<BlogWithRole[]> {
+    async function fetchProjects(): Promise<ProjectWithRole[]> {
         store.setLoading(true)
         store.setError(null)
 
         try {
-            const data = await api.get<BlogWithRole[]>('/blogs')
-            store.setBlogs(data)
+            const data = await api.get<ProjectWithRole[]>('/api/projects')
+            store.setProjects(data)
             return data
         } catch (err: any) {
-            const message = err.message || 'Failed to fetch blogs'
+            const message = err.message || 'Failed to fetch projects'
             store.setError(message)
             toast.add({
                 title: t('common.error'),
@@ -34,16 +34,16 @@ export function useBlogs() {
         }
     }
 
-    async function fetchBlog(blogId: string): Promise<BlogWithRole | null> {
+    async function fetchProject(projectId: string): Promise<ProjectWithRole | null> {
         store.setLoading(true)
         store.setError(null)
 
         try {
-            const data = await api.get<BlogWithRole>(`/blogs/${blogId}`)
-            store.setCurrentBlog(data)
+            const data = await api.get<ProjectWithRole>(`/api/projects/${projectId}`)
+            store.setCurrentProject(data)
             return data
         } catch (err: any) {
-            const message = err.message || 'Failed to fetch blog'
+            const message = err.message || 'Failed to fetch project'
             store.setError(message)
             toast.add({
                 title: t('common.error'),
@@ -56,21 +56,21 @@ export function useBlogs() {
         }
     }
 
-    async function createBlog(data: { name: string; description?: string }): Promise<Blog | null> {
+    async function createProject(data: { name: string; description?: string }): Promise<Project | null> {
         store.setLoading(true)
         store.setError(null)
 
         try {
-            const blog = await api.post<Blog>('/blogs', data)
+            const project = await api.post<Project>('/api/projects', data)
             toast.add({
                 title: t('common.success'),
-                description: t('blog.createSuccess'),
+                description: t('project.createSuccess'),
                 color: 'success',
             })
-            await fetchBlogs()
-            return blog
+            await fetchProjects()
+            return project
         } catch (err: any) {
-            const message = err.message || 'Failed to create blog'
+            const message = err.message || 'Failed to create project'
             store.setError(message)
             toast.add({
                 title: t('common.error'),
@@ -83,21 +83,21 @@ export function useBlogs() {
         }
     }
 
-    async function updateBlog(blogId: string, data: Partial<Blog>): Promise<Blog | null> {
+    async function updateProject(projectId: string, data: Partial<Project>): Promise<Project | null> {
         store.setLoading(true)
         store.setError(null)
 
         try {
-            const updatedBlog = await api.patch<Blog>(`/blogs/${blogId}`, data)
+            const updatedProject = await api.patch<Project>(`/api/projects/${projectId}`, data)
             toast.add({
                 title: t('common.success'),
-                description: t('blog.updateSuccess'),
+                description: t('project.updateSuccess'),
                 color: 'success',
             })
-            store.updateBlog(blogId, updatedBlog as BlogWithRole)
-            return updatedBlog
+            store.updateProject(projectId, updatedProject as ProjectWithRole)
+            return updatedProject
         } catch (err: any) {
-            const message = err.message || 'Failed to update blog'
+            const message = err.message || 'Failed to update project'
             store.setError(message)
             toast.add({
                 title: t('common.error'),
@@ -110,21 +110,21 @@ export function useBlogs() {
         }
     }
 
-    async function deleteBlog(blogId: string): Promise<boolean> {
+    async function deleteProject(projectId: string): Promise<boolean> {
         store.setLoading(true)
         store.setError(null)
 
         try {
-            await api.delete(`/blogs/${blogId}`)
+            await api.delete(`/api/projects/${projectId}`)
             toast.add({
                 title: t('common.success'),
-                description: t('blog.deleteSuccess'),
+                description: t('project.deleteSuccess'),
                 color: 'success',
             })
-            store.removeBlog(blogId)
+            store.removeProject(projectId)
             return true
         } catch (err: any) {
-            const message = err.message || 'Failed to delete blog'
+            const message = err.message || 'Failed to delete project'
             store.setError(message)
             toast.add({
                 title: t('common.error'),
@@ -137,30 +137,30 @@ export function useBlogs() {
         }
     }
 
-    async function fetchMembers(blogId: string): Promise<BlogMemberWithUser[]> {
+    async function fetchMembers(projectId: string): Promise<ProjectMemberWithUser[]> {
         store.setLoading(true)
         try {
-            const data = await api.get<BlogMemberWithUser[]>(`/blogs/${blogId}/members`)
+            const data = await api.get<ProjectMemberWithUser[]>(`/api/projects/${projectId}/members`)
             store.setMembers(data)
             return data
         } catch (err: any) {
-            console.error('[useBlogs] fetchMembers error:', err)
+            console.error('[useProjects] fetchMembers error:', err)
             return []
         } finally {
             store.setLoading(false)
         }
     }
 
-    async function addMember(blogId: string, emailOrUsername: string, role: string): Promise<boolean> {
+    async function addMember(projectId: string, emailOrUsername: string, role: string): Promise<boolean> {
         store.setLoading(true)
         try {
-            await api.post(`/blogs/${blogId}/members`, { emailOrUsername, role })
+            await api.post(`/api/projects/${projectId}/members`, { emailOrUsername, role })
             toast.add({
                 title: t('common.success'),
-                description: t('blogMember.addSuccess'),
+                description: t('projectMember.addSuccess'),
                 color: 'success',
             })
-            await fetchMembers(blogId)
+            await fetchMembers(projectId)
             return true
         } catch (err: any) {
             const message = err.message || 'Failed to add member'
@@ -175,16 +175,16 @@ export function useBlogs() {
         }
     }
 
-    async function updateMemberRole(blogId: string, userId: string, role: string): Promise<boolean> {
+    async function updateMemberRole(projectId: string, userId: string, role: string): Promise<boolean> {
         store.setLoading(true)
         try {
-            await api.patch(`/blogs/${blogId}/members/${userId}`, { role })
+            await api.patch(`/api/projects/${projectId}/members/${userId}`, { role })
             toast.add({
                 title: t('common.success'),
-                description: t('blogMember.updateSuccess'),
+                description: t('projectMember.updateSuccess'),
                 color: 'success',
             })
-            await fetchMembers(blogId)
+            await fetchMembers(projectId)
             return true
         } catch (err: any) {
             const message = err.message || 'Failed to update member role'
@@ -199,16 +199,16 @@ export function useBlogs() {
         }
     }
 
-    async function removeMember(blogId: string, userId: string): Promise<boolean> {
+    async function removeMember(projectId: string, userId: string): Promise<boolean> {
         store.setLoading(true)
         try {
-            await api.delete(`/blogs/${blogId}/members/${userId}`)
+            await api.delete(`/api/projects/${projectId}/members/${userId}`)
             toast.add({
                 title: t('common.success'),
-                description: t('blogMember.removeSuccess'),
+                description: t('projectMember.removeSuccess'),
                 color: 'success',
             })
-            await fetchMembers(blogId)
+            await fetchMembers(projectId)
             return true
         } catch (err: any) {
             const message = err.message || 'Failed to remove member'
@@ -223,42 +223,42 @@ export function useBlogs() {
         }
     }
 
-    function canEdit(blog: BlogWithRole): boolean {
+    function canEdit(project: ProjectWithRole): boolean {
         if (!user.value) return false
-        return blog.ownerId === user.value.id || blog.role === 'owner' || blog.role === 'admin'
+        return project.ownerId === user.value.id || project.role === 'owner' || project.role === 'admin'
     }
 
-    function canDelete(blog: BlogWithRole): boolean {
+    function canDelete(project: ProjectWithRole): boolean {
         if (!user.value) return false
-        return blog.ownerId === user.value.id || blog.role === 'owner'
+        return project.ownerId === user.value.id || project.role === 'owner'
     }
 
-    function canManageMembers(blog: BlogWithRole): boolean {
-        return canEdit(blog)
+    function canManageMembers(project: ProjectWithRole): boolean {
+        return canEdit(project)
     }
 
-    function getRoleDisplayName(role: BlogRole | undefined): string {
+    function getRoleDisplayName(role: ProjectRole | undefined): string {
         if (!role) return t('roles.viewer')
         return t(`roles.${role}`)
     }
 
-    function clearCurrentBlog() {
-        store.setCurrentBlog(null)
+    function clearCurrentProject() {
+        store.setCurrentProject(null)
         store.setError(null)
     }
 
     return {
-        blogs,
-        currentBlog,
+        projects,
+        currentProject,
         members,
         isLoading,
         error,
-        fetchBlogs,
-        fetchBlog,
-        createBlog,
-        updateBlog,
-        deleteBlog,
-        clearCurrentBlog,
+        fetchProjects,
+        fetchProject,
+        createProject,
+        updateProject,
+        deleteProject,
+        clearCurrentProject,
         fetchMembers,
         addMember,
         updateMemberRole,

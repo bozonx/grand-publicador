@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useProjects } from '~/composables/useProjects'
 definePageMeta({
   middleware: 'auth',
 })
@@ -10,20 +11,20 @@ const router = useRouter()
 const route = useRoute()
 
 const {
-  currentBlog,
+  currentProject,
   isLoading,
   error,
-  fetchBlog,
-  updateBlog,
-  deleteBlog,
-  clearCurrentBlog,
+  fetchProject,
+  updateProject,
+  deleteProject,
+  clearCurrentProject,
   canEdit,
   canDelete,
   canManageMembers,
   getRoleDisplayName,
-} = useBlogs()
+} = useProjects()
 
-const blogId = computed(() => route.params.id as string)
+const projectId = computed(() => route.params.id as string)
 const isEditMode = computed(() => route.query.edit === 'true')
 
 // Delete confirmation modal state
@@ -31,23 +32,23 @@ const showDeleteModal = ref(false)
 const isDeleting = ref(false)
 const isSaving = ref(false)
 
-// Fetch blog on mount
+// Fetch project on mount
 onMounted(async () => {
-  if (blogId.value) {
-    await fetchBlog(blogId.value)
+  if (projectId.value) {
+    await fetchProject(projectId.value)
   }
 })
 
 // Clean up on unmount
 onUnmounted(() => {
-  clearCurrentBlog()
+  clearCurrentProject()
 })
 
 /**
- * Navigate back to blogs list
+ * Navigate back to projects list
  */
 function goBack() {
-  router.push('/blogs')
+  router.push('/projects')
 }
 
 /**
@@ -69,13 +70,13 @@ function cancelEdit() {
 }
 
 /**
- * Handle blog update
+ * Handle project update
  */
 async function handleUpdate(data: { name: string; description: string }) {
-  if (!blogId.value) return
+  if (!projectId.value) return
 
   isSaving.value = true
-  const result = await updateBlog(blogId.value, {
+  const result = await updateProject(projectId.value, {
     name: data.name,
     description: data.description || null,
   })
@@ -94,18 +95,18 @@ function confirmDelete() {
 }
 
 /**
- * Handle blog deletion
+ * Handle project deletion
  */
 async function handleDelete() {
-  if (!blogId.value) return
+  if (!projectId.value) return
 
   isDeleting.value = true
-  const success = await deleteBlog(blogId.value)
+  const success = await deleteProject(projectId.value)
   isDeleting.value = false
 
   if (success) {
     showDeleteModal.value = false
-    router.push('/blogs')
+    router.push('/projects')
   }
 }
 
@@ -172,9 +173,9 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
       </div>
     </div>
 
-    <!-- Blog not found -->
+    <!-- Project not found -->
     <div
-      v-else-if="!currentBlog"
+      v-else-if="!currentProject"
       class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center"
     >
       <UIcon
@@ -185,7 +186,7 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
         {{ t('errors.notFound') }}
       </h3>
       <p class="text-gray-500 dark:text-gray-400 mb-6">
-        The blog you're looking for doesn't exist or you don't have access to it.
+        The project you're looking for doesn't exist or you don't have access to it.
       </p>
       <UButton @click="goBack">
         {{ t('common.back') }}
@@ -193,9 +194,9 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
     </div>
 
     <!-- Edit mode -->
-    <div v-else-if="isEditMode && canEdit(currentBlog)" class="max-w-4xl mx-auto">
-      <FormsBlogForm
-        :blog="currentBlog"
+    <div v-else-if="isEditMode && canEdit(currentProject)" class="max-w-4xl mx-auto">
+      <FormsProjectForm
+        :project="currentProject"
         :is-loading="isSaving"
         @submit="handleUpdate"
         @cancel="cancelEdit"
@@ -211,36 +212,36 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-3 mb-2">
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white truncate">
-                  {{ currentBlog.name }}
+                  {{ currentProject.name }}
                 </h1>
-                <UBadge :color="getRoleBadgeColor(currentBlog.role)" variant="subtle">
-                  {{ getRoleDisplayName(currentBlog.role) }}
+                <UBadge :color="getRoleBadgeColor(currentProject.role)" variant="subtle">
+                  {{ getRoleDisplayName(currentProject.role) }}
                 </UBadge>
               </div>
 
-              <p v-if="currentBlog.description" class="text-gray-600 dark:text-gray-400 mb-4">
-                {{ currentBlog.description }}
+              <p v-if="currentProject.description" class="text-gray-600 dark:text-gray-400 mb-4">
+                {{ currentProject.description }}
               </p>
 
               <div
                 class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400"
               >
-                <span v-if="currentBlog.owner" class="flex items-center gap-1">
+                <span v-if="currentProject.owner" class="flex items-center gap-1">
                   <UIcon name="i-heroicons-user" class="w-4 h-4" />
-                  {{ t('blog.owner') }}:
-                  {{ currentBlog.owner.fullName || currentBlog.owner.username || 'Unknown' }}
+                  {{ t('project.owner') }}:
+                  {{ currentProject.owner.fullName || currentProject.owner.username || 'Unknown' }}
                 </span>
                 <span class="flex items-center gap-1">
                   <UIcon name="i-heroicons-users" class="w-4 h-4" />
-                  {{ t('blog.members') }}: {{ currentBlog.memberCount || 0 }}
+                  {{ t('project.members') }}: {{ currentProject.memberCount || 0 }}
                 </span>
                 <span class="flex items-center gap-1">
                   <UIcon name="i-heroicons-signal" class="w-4 h-4" />
-                  {{ t('channel.titlePlural') }}: {{ currentBlog.channelCount || 0 }}
+                  {{ t('channel.titlePlural') }}: {{ currentProject.channelCount || 0 }}
                 </span>
                 <span class="flex items-center gap-1">
                   <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
-                  {{ d(new Date(currentBlog.createdAt || ''), 'long') }}
+                  {{ d(new Date(currentProject.createdAt || ''), 'long') }}
                 </span>
               </div>
             </div>
@@ -248,7 +249,7 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
             <!-- Actions -->
             <div class="flex items-center gap-2 ml-4">
               <UButton
-                v-if="canEdit(currentBlog)"
+                v-if="canEdit(currentProject)"
                 color="primary"
                 variant="outline"
                 icon="i-heroicons-pencil-square"
@@ -257,7 +258,7 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
                 {{ t('common.edit') }}
               </UButton>
               <UButton
-                v-if="canDelete(currentBlog)"
+                v-if="canDelete(currentProject)"
                 color="error"
                 variant="ghost"
                 icon="i-heroicons-trash"
@@ -283,7 +284,7 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
                 {{ t('channel.titlePlural') }}
               </h3>
               <p class="text-sm text-gray-500 dark:text-gray-400">
-                {{ currentBlog.channelCount || 0 }} {{ t('channel.titlePlural').toLowerCase() }}
+                {{ currentProject.channelCount || 0 }} {{ t('channel.titlePlural').toLowerCase() }}
               </p>
             </div>
           </div>
@@ -308,20 +309,20 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
             </div>
             <div>
               <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                {{ t('blogMember.titlePlural') }}
+                {{ t('projectMember.titlePlural') }}
               </h3>
               <p class="text-sm text-gray-500 dark:text-gray-400">
-                {{ currentBlog.memberCount || 0 }} {{ t('blogMember.titlePlural').toLowerCase() }}
+                {{ currentProject.memberCount || 0 }} {{ t('projectMember.titlePlural').toLowerCase() }}
               </p>
             </div>
           </div>
           <UButton
-            v-if="canManageMembers(currentBlog)"
+            v-if="canManageMembers(currentProject)"
             icon="i-heroicons-user-plus"
             class="w-full"
             disabled
           >
-            {{ t('blogMember.invite') }}
+            {{ t('projectMember.invite') }}
           </UButton>
           <UButton
             v-else
@@ -349,7 +350,7 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
                 {{ t('post.titlePlural') }}
               </h3>
               <p class="text-sm text-gray-500 dark:text-gray-400">
-                {{ currentBlog.postCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
+                {{ currentProject.postCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
               </p>
             </div>
           </div>
@@ -358,14 +359,14 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
               icon="i-heroicons-arrow-right"
               class="flex-1"
               variant="outline"
-              :to="`/blogs/${currentBlog.id}/posts`"
+              :to="`/projects/${currentProject.id}/posts`"
             >
               {{ t('common.view') }}
             </UButton>
             <UButton
               icon="i-heroicons-plus"
               color="primary"
-              :to="`/blogs/${currentBlog.id}/posts/new`"
+              :to="`/projects/${currentProject.id}/posts/new`"
             >
               {{ t('common.create') }}
             </UButton>
@@ -373,7 +374,7 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
         </div>
       </div>
 
-      <!-- Blog info section -->
+      <!-- Project info section -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
         <div class="p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
@@ -384,18 +385,18 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
           <dl class="space-y-4">
             <div class="flex flex-col sm:flex-row sm:gap-4">
               <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:w-40">
-                {{ t('blog.name') }}
+                {{ t('project.name') }}
               </dt>
               <dd class="text-sm text-gray-900 dark:text-white">
-                {{ currentBlog.name }}
+                {{ currentProject.name }}
               </dd>
             </div>
             <div class="flex flex-col sm:flex-row sm:gap-4">
               <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:w-40">
-                {{ t('blog.description') }}
+                {{ t('project.description') }}
               </dt>
               <dd class="text-sm text-gray-900 dark:text-white">
-                {{ currentBlog.description || '-' }}
+                {{ currentProject.description || '-' }}
               </dd>
             </div>
             <div class="flex flex-col sm:flex-row sm:gap-4">
@@ -403,8 +404,8 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
                 {{ t('user.role') }}
               </dt>
               <dd class="text-sm">
-                <UBadge :color="getRoleBadgeColor(currentBlog.role)" variant="subtle">
-                  {{ getRoleDisplayName(currentBlog.role) }}
+                <UBadge :color="getRoleBadgeColor(currentProject.role)" variant="subtle">
+                  {{ getRoleDisplayName(currentProject.role) }}
                 </UBadge>
               </dd>
             </div>
@@ -413,13 +414,13 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
                 {{ t('user.createdAt') }}
               </dt>
               <dd class="text-sm text-gray-900 dark:text-white">
-                {{ d(new Date(currentBlog.createdAt || ''), 'long') }}
+                {{ d(new Date(currentProject.createdAt || ''), 'long') }}
               </dd>
             </div>
-            <div v-if="currentBlog.updatedAt" class="flex flex-col sm:flex-row sm:gap-4">
+            <div v-if="currentProject.updatedAt" class="flex flex-col sm:flex-row sm:gap-4">
               <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:w-40">Updated</dt>
               <dd class="text-sm text-gray-900 dark:text-white">
-                {{ d(new Date(currentBlog.updatedAt), 'long') }}
+                {{ d(new Date(currentProject.updatedAt), 'long') }}
               </dd>
             </div>
           </dl>
@@ -428,12 +429,12 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
 
       <!-- Members Section -->
       <div id="members-section" class="bg-white dark:bg-gray-800 rounded-lg shadow mt-6 p-6">
-        <BlogsBlogMembersList :blog-id="currentBlog.id" />
+        <ProjectsProjectMembersList :project-id="currentProject.id" />
       </div>
 
       <!-- Channels Section -->
       <div id="channels-section" class="bg-white dark:bg-gray-800 rounded-lg shadow mt-6 p-6">
-        <FeaturesChannelsList :blog-id="currentBlog.id" />
+        <FeaturesChannelsList :project-id="currentProject.id" />
       </div>
     </div>
 
@@ -449,12 +450,12 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
               />
             </div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ t('blog.deleteBlog') }}
+              {{ t('project.deleteProject') }}
             </h3>
           </div>
 
           <p class="text-gray-600 dark:text-gray-400 mb-6">
-            {{ t('blog.deleteConfirm') }}
+            {{ t('project.deleteConfirm') }}
           </p>
 
           <div class="flex justify-end gap-3">

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
+import { useProjects } from '~/composables/useProjects'
 
-type BlogRole = Database['public']['Enums']['blog_role']
+type ProjectRole = Database['public']['Enums']['blog_role']
 
 const props = defineProps<{
   modelValue: boolean
-  blogId: string
+  projectId: string
 }>()
 
 const emit = defineEmits<{
@@ -14,7 +15,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const { addMember } = useBlogs()
+const { addMember } = useProjects()
 
 const isOpen = computed({
   get: () => props.modelValue,
@@ -23,7 +24,7 @@ const isOpen = computed({
 
 const isLoading = ref(false)
 const emailOrUsername = ref('')
-const selectedRole = ref<BlogRole>('viewer')
+const selectedRole = ref<ProjectRole>('viewer')
 
 const roleOptions = computed(() => [
   { label: t('roles.admin'), value: 'admin' },
@@ -35,7 +36,7 @@ async function handleInvite() {
   if (!emailOrUsername.value) return
 
   isLoading.value = true
-  const success = await addMember(props.blogId, emailOrUsername.value, selectedRole.value)
+  const success = await addMember(props.projectId, emailOrUsername.value, selectedRole.value)
   isLoading.value = false
 
   if (success) {
@@ -56,7 +57,7 @@ function closeModal() {
     <div class="p-6">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-          {{ t('blogMember.invite') }}
+          {{ t('projectMember.invite') }}
         </h3>
         <UButton
           color="neutral"
@@ -68,10 +69,10 @@ function closeModal() {
       </div>
 
       <form class="space-y-4" @submit.prevent="handleInvite">
-        <UFormGroup :label="t('blogMember.userEmailOrUsername')" required>
+        <UFormGroup :label="t('projectMember.userEmailOrUsername')" required>
           <UInput
             v-model="emailOrUsername"
-            :placeholder="t('blogMember.searchPlaceholder')"
+            :placeholder="t('projectMember.searchPlaceholder')"
             autofocus
           />
         </UFormGroup>
@@ -85,7 +86,7 @@ function closeModal() {
             {{ t('common.cancel') }}
           </UButton>
           <UButton type="submit" color="primary" :loading="isLoading" :disabled="!emailOrUsername">
-            {{ t('blogMember.invite') }}
+            {{ t('projectMember.invite') }}
           </UButton>
         </div>
       </form>

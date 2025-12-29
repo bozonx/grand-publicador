@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
 import type {
-  ChannelWithBlog,
+  ChannelWithProject,
   ChannelCreateInput,
   ChannelUpdateInput,
 } from '~/composables/useChannels'
@@ -9,10 +9,10 @@ import type {
 type SocialMediaEnum = Database['public']['Enums']['social_media_enum']
 
 interface Props {
-  /** Blog ID for creating new channel */
-  blogId: string
+  /** Project ID for creating new channel */
+  projectId: string
   /** Channel data for editing, null for creating new */
-  channel?: ChannelWithBlog | null
+  channel?: ChannelWithProject | null
 }
 
 interface Emits {
@@ -48,8 +48,8 @@ async function handleSubmit(data: Record<string, unknown>) {
     // Update existing channel
     const updateData: ChannelUpdateInput = {
       name: data.name as string,
-      channel_identifier: data.channel_identifier as string,
-      is_active: data.is_active as boolean,
+      channelIdentifier: data.channel_identifier as string,
+      isActive: data.is_active as boolean,
     }
 
     const result = await updateChannel(props.channel.id, updateData)
@@ -58,14 +58,14 @@ async function handleSubmit(data: Record<string, unknown>) {
     }
   } else {
     // Create new channel
-    const createData: ChannelCreateInput = {
+    const result = await createChannel({
+      projectId: props.projectId,
       name: data.name as string,
-      social_media: data.social_media as SocialMediaEnum,
-      channel_identifier: data.channel_identifier as string,
-      is_active: data.is_active as boolean,
-    }
+      socialMedia: data.social_media as SocialMediaEnum,
+      channelIdentifier: data.channel_identifier as string,
+      isActive: data.is_active as boolean,
+    })
 
-    const result = await createChannel(props.blogId, createData)
     if (result) {
       emit('success')
     }
@@ -118,7 +118,7 @@ function getIdentifierHelp(socialMedia: SocialMediaEnum | undefined): string {
 }
 
 // Selected social media for dynamic placeholder
-const selectedSocialMedia = ref<SocialMediaEnum | undefined>(props.channel?.social_media)
+const selectedSocialMedia = ref<SocialMediaEnum | undefined>(props.channel?.socialMedia)
 
 // Watch for changes in form to update placeholder
 function onSocialMediaChange(value: string | undefined) {
@@ -170,7 +170,7 @@ function onSocialMediaChange(value: string | undefined) {
                 value: opt.value,
               }))
             "
-            :value="channel?.social_media || 'telegram'"
+            :value="channel?.socialMedia || 'telegram'"
             validation="required"
             :validation-messages="{
               required: t('validation.required'),
@@ -213,18 +213,18 @@ function onSocialMediaChange(value: string | undefined) {
             <div
               class="p-2 rounded"
               :style="{
-                backgroundColor: getSocialMediaColor(channel?.social_media || 'telegram') + '20',
+                backgroundColor: getSocialMediaColor(channel?.socialMedia || 'telegram') + '20',
               }"
             >
               <UIcon
-                :name="getSocialMediaIcon(channel?.social_media || 'telegram')"
+                :name="getSocialMediaIcon(channel?.socialMedia || 'telegram')"
                 class="w-5 h-5"
-                :style="{ color: getSocialMediaColor(channel?.social_media || 'telegram') }"
+                :style="{ color: getSocialMediaColor(channel?.socialMedia || 'telegram') }"
               />
             </div>
             <span class="font-medium text-gray-900 dark:text-white">
               {{
-                socialMediaOptions.find((o: { value: string }) => o.value === channel?.social_media)
+                socialMediaOptions.find((o: { value: string }) => o.value === channel?.socialMedia)
                   ?.label
               }}
             </span>
@@ -240,9 +240,9 @@ function onSocialMediaChange(value: string | undefined) {
           name="channel_identifier"
           :label="t('channel.identifier')"
           :placeholder="
-            getIdentifierPlaceholder(isEditMode ? channel?.social_media : selectedSocialMedia)
+            getIdentifierPlaceholder(isEditMode ? channel?.socialMedia : selectedSocialMedia)
           "
-          :value="channel?.channel_identifier || ''"
+          :value="channel?.channelIdentifier || ''"
           validation="required|length:1,500"
           :validation-messages="{
             required: t('validation.required'),
@@ -251,7 +251,7 @@ function onSocialMediaChange(value: string | undefined) {
               ' / ' +
               t('validation.maxLength', { max: 500 }),
           }"
-          :help="getIdentifierHelp(isEditMode ? channel?.social_media : selectedSocialMedia)"
+          :help="getIdentifierHelp(isEditMode ? channel?.socialMedia : selectedSocialMedia)"
         />
 
         <!-- Active status -->
@@ -259,7 +259,7 @@ function onSocialMediaChange(value: string | undefined) {
           type="checkbox"
           name="is_active"
           :label="t('channel.isActive')"
-          :value="channel?.is_active ?? true"
+          :value="channel?.isActive ?? true"
           :help="t('channel.isActiveHelp')"
           decorator-icon="check"
         />

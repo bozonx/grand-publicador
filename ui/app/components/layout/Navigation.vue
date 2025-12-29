@@ -17,9 +17,9 @@ const navItems = computed<NavItem[]>(() => [
     icon: 'i-heroicons-home',
   },
   {
-    label: t('navigation.blogs'),
-    to: '/blogs',
-    icon: 'i-heroicons-book-open',
+    label: t('navigation.projects'),
+    to: '/projects',
+    icon: 'i-heroicons-briefcase', 
   },
   {
     label: t('navigation.users'),

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
-import type { BlogMemberWithUser } from '~/stores/blogs'
+import type { ProjectMemberWithUser } from '~/stores/projects'
 import type { TableColumn } from '@nuxt/ui'
 
 // Re-defining BadgeColor locally as it matches UBadge prop type
 type BadgeColor = 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral'
 
 const props = defineProps<{
-  blogId: string
+  projectId: string
 }>()
 
 const { t } = useI18n()
@@ -17,23 +17,23 @@ const {
   isLoading,
   removeMember,
   updateMemberRole,
-  currentBlog,
+  currentProject,
   canManageMembers,
-} = useBlogs()
+} = useProjects()
 
 const isInviteModalOpen = ref(false)
 
 // Init
 onMounted(() => {
-  if (props.blogId) {
-    fetchMembers(props.blogId)
+  if (props.projectId) {
+    fetchMembers(props.projectId)
   }
 })
 
-const canManage = computed(() => currentBlog.value && canManageMembers(currentBlog.value))
+const canManage = computed(() => currentProject.value && canManageMembers(currentProject.value))
 
 // Define typed columns for the table
-const columns = computed<TableColumn<BlogMemberWithUser>[]>(() => [
+const columns = computed<TableColumn<ProjectMemberWithUser>[]>(() => [
   { accessorKey: 'user', header: t('user.username') },
   { accessorKey: 'role', header: t('user.role') },
   { accessorKey: 'actions', header: '' },
@@ -54,13 +54,14 @@ function getActionItems(row: any) {
   const actions = []
 
   // Role change actions
+  // TODO: Update Database type to 'project_role' if backend changed it, otherwise keep 'blog_role' alias or cast
   const roles: Database['public']['Enums']['blog_role'][] = ['admin', 'editor', 'viewer']
   const roleActions = roles
     .filter((r) => r !== row.role)
     .map((role) => ({
       label: t(`roles.${role}`),
       icon: 'i-heroicons-arrow-path',
-      click: () => updateMemberRole(props.blogId, row.user.id, role),
+      click: () => updateMemberRole(props.projectId, row.user.id, role),
     }))
 
   if (roleActions.length > 0) {
@@ -70,7 +71,7 @@ function getActionItems(row: any) {
   // Remove action
   actions.push([
     {
-      label: t('blogMember.remove'),
+      label: t('projectMember.remove'),
       icon: 'i-heroicons-trash-20-solid',
       click: () => handleRemove(row),
       class: 'text-red-500 dark:text-red-400',
@@ -82,8 +83,8 @@ function getActionItems(row: any) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleRemove(row: any) {
-  if (confirm(t('blogMember.removeConfirm'))) {
-    await removeMember(props.blogId, row.user.id)
+  if (confirm(t('projectMember.removeConfirm'))) {
+    await removeMember(props.projectId, row.user.id)
   }
 }
 </script>
@@ -92,7 +93,7 @@ async function handleRemove(row: any) {
   <div class="space-y-4">
     <div class="flex justify-between items-center">
       <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-        {{ t('blogMember.titlePlural') }}
+        {{ t('projectMember.titlePlural') }}
       </h3>
       <UButton
         v-if="canManage"
@@ -101,7 +102,7 @@ async function handleRemove(row: any) {
         color="primary"
         @click="isInviteModalOpen = true"
       >
-        {{ t('blogMember.invite') }}
+        {{ t('projectMember.invite') }}
       </UButton>
     </div>
 
@@ -115,13 +116,13 @@ async function handleRemove(row: any) {
       <template #user-cell="{ row }">
         <div class="flex items-center gap-3">
           <UAvatar
-            :src="row.original.user.avatar_url ?? undefined"
-            :alt="row.original.user.username ?? row.original.user.full_name ?? undefined"
+            :src="row.original.user.avatarUrl ?? undefined"
+            :alt="row.original.user.username ?? row.original.user.fullName ?? undefined"
             size="sm"
           />
           <div>
             <div class="font-medium text-gray-900 dark:text-white text-sm">
-              {{ row.original.user.full_name || row.original.user.username }}
+              {{ row.original.user.fullName || row.original.user.username }}
             </div>
             <div class="text-xs text-gray-500">
               {{ row.original.user.email }}
@@ -155,10 +156,10 @@ async function handleRemove(row: any) {
       </template>
     </UTable>
 
-    <BlogsInviteMemberModal
+    <ProjectsInviteMemberModal
       v-model="isInviteModalOpen"
-      :blog-id="blogId"
-      @success="fetchMembers(blogId)"
+      :project-id="projectId"
+      @success="fetchMembers(projectId)"
     />
   </div>
 </template>

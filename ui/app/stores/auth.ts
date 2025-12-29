@@ -1,13 +1,18 @@
 import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
 
-interface User {
+export interface User {
     id: string;
-    telegramId?: string;
+    telegramId?: number; // Backend uses number for telegramId
     username?: string;
     fullName?: string;
     avatarUrl?: string;
     isAdmin: boolean;
+}
+
+interface AuthResponse {
+    accessToken: string;
+    user: User;
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -31,11 +36,11 @@ export const useAuthStore = defineStore('auth', () => {
         isLoading.value = true;
         error.value = null;
         try {
-            const response = await api.post<{ access_token: string, user: User }>('/auth/telegram', {
+            const response = await api.post<AuthResponse>('/auth/telegram', {
                 initData,
             });
 
-            token.value = response.access_token;
+            token.value = response.accessToken;
             user.value = response.user;
             isInitialized.value = true;
 

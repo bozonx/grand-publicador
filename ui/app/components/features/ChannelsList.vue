@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
-import type { ChannelWithBlog } from '~/composables/useChannels'
+import type { ChannelWithProject } from '~/composables/useChannels'
 
 type SocialMediaEnum = Database['public']['Enums']['social_media_enum']
 
 const props = defineProps<{
-  blogId: string
+  projectId: string
 }>()
 
 const { t } = useI18n()
@@ -27,8 +27,8 @@ const {
 // Modal states
 const isCreateModalOpen = ref(false)
 const isEditModalOpen = ref(false)
-const channelToEdit = ref<ChannelWithBlog | null>(null)
-const channelToDelete = ref<ChannelWithBlog | null>(null)
+const channelToEdit = ref<ChannelWithProject | null>(null)
+const channelToDelete = ref<ChannelWithProject | null>(null)
 const isDeleteModalOpen = ref(false)
 const isDeleting = ref(false)
 
@@ -39,8 +39,8 @@ const searchQuery = ref('')
 
 // Fetch channels on mount
 onMounted(() => {
-  if (props.blogId) {
-    fetchChannels(props.blogId)
+  if (props.projectId) {
+    fetchChannels(props.projectId)
   }
 })
 
@@ -49,11 +49,11 @@ watch(
   [selectedSocialMedia, selectedActiveStatus, searchQuery],
   () => {
     setFilter({
-      social_media: selectedSocialMedia.value,
-      is_active: selectedActiveStatus.value,
+      socialMedia: selectedSocialMedia.value,
+      isActive: selectedActiveStatus.value,
       search: searchQuery.value || undefined,
     })
-    fetchChannels(props.blogId)
+    fetchChannels(props.projectId)
   },
   { debounce: 300 } as any
 )
@@ -61,7 +61,7 @@ watch(
 /**
  * Open edit modal with channel data
  */
-function openEditModal(channel: ChannelWithBlog) {
+function openEditModal(channel: ChannelWithProject) {
   channelToEdit.value = channel
   isEditModalOpen.value = true
 }
@@ -69,7 +69,7 @@ function openEditModal(channel: ChannelWithBlog) {
 /**
  * Open delete confirmation modal
  */
-function openDeleteModal(channel: ChannelWithBlog) {
+function openDeleteModal(channel: ChannelWithProject) {
   channelToDelete.value = channel
   isDeleteModalOpen.value = true
 }
@@ -81,7 +81,7 @@ async function handleDelete() {
   if (!channelToDelete.value) return
 
   isDeleting.value = true
-  const success = await deleteChannel(channelToDelete.value.id, props.blogId)
+  const success = await deleteChannel(channelToDelete.value.id)
   isDeleting.value = false
 
   if (success) {
@@ -95,7 +95,7 @@ async function handleDelete() {
  */
 function handleCreateSuccess() {
   isCreateModalOpen.value = false
-  fetchChannels(props.blogId)
+  fetchChannels(props.projectId)
 }
 
 /**
@@ -104,13 +104,13 @@ function handleCreateSuccess() {
 function handleUpdateSuccess() {
   isEditModalOpen.value = false
   channelToEdit.value = null
-  fetchChannels(props.blogId)
+  fetchChannels(props.projectId)
 }
 
 /**
  * Handle toggle active status
  */
-async function handleToggleActive(channel: ChannelWithBlog) {
+async function handleToggleActive(channel: ChannelWithProject) {
   await toggleChannelActive(channel.id)
 }
 
@@ -122,7 +122,7 @@ function resetFilters() {
   selectedActiveStatus.value = null
   searchQuery.value = ''
   clearFilter()
-  fetchChannels(props.blogId)
+  fetchChannels(props.projectId)
 }
 
 /**
@@ -234,13 +234,13 @@ const activeStatusOptions = [
       </h3>
       <p class="text-gray-500 dark:text-gray-400 mb-6">
         {{
-          filter.social_media || filter.search
+          filter.socialMedia || filter.search
             ? t('channel.noChannelsFiltered')
             : t('channel.noChannelsDescription')
         }}
       </p>
       <UButton
-        v-if="!filter.social_media && !filter.search"
+        v-if="!filter.socialMedia && !filter.search"
         icon="i-heroicons-plus"
         @click="isCreateModalOpen = true"
       >
@@ -256,19 +256,19 @@ const activeStatusOptions = [
         class="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow overflow-hidden"
       >
         <!-- Card header with social media color bar -->
-        <div class="h-1" :style="{ backgroundColor: getSocialMediaColor(channel.social_media) }" />
+        <div class="h-1" :style="{ backgroundColor: getSocialMediaColor(channel.socialMedia) }" />
 
         <div class="p-4">
           <!-- Channel info -->
           <div class="flex items-start gap-3 mb-4">
             <div
               class="p-2 rounded-lg"
-              :style="{ backgroundColor: getSocialMediaColor(channel.social_media) + '20' }"
+              :style="{ backgroundColor: getSocialMediaColor(channel.socialMedia) + '20' }"
             >
               <UIcon
-                :name="getSocialMediaIcon(channel.social_media)"
+                :name="getSocialMediaIcon(channel.socialMedia)"
                 class="w-6 h-6"
-                :style="{ color: getSocialMediaColor(channel.social_media) }"
+                :style="{ color: getSocialMediaColor(channel.socialMedia) }"
               />
             </div>
             <div class="flex-1 min-w-0">
@@ -276,11 +276,11 @@ const activeStatusOptions = [
                 {{ channel.name }}
               </h4>
               <p class="text-sm text-gray-500 dark:text-gray-400 truncate">
-                {{ getSocialMediaDisplayName(channel.social_media) }}
+                {{ getSocialMediaDisplayName(channel.socialMedia) }}
               </p>
             </div>
-            <UBadge :color="getStatusColor(channel.is_active)" size="xs" variant="subtle">
-              {{ channel.is_active ? t('channel.active') : t('channel.inactive') }}
+            <UBadge :color="getStatusColor(channel.isActive)" size="xs" variant="subtle">
+              {{ channel.isActive ? t('channel.active') : t('channel.inactive') }}
             </UBadge>
           </div>
 
@@ -288,7 +288,7 @@ const activeStatusOptions = [
           <div class="mb-4 p-2 bg-gray-50 dark:bg-gray-700/50 rounded text-sm">
             <span class="text-gray-500 dark:text-gray-400">ID: </span>
             <span class="font-mono text-gray-900 dark:text-white">{{
-              channel.channel_identifier
+              channel.channelIdentifier
             }}</span>
           </div>
 
@@ -300,7 +300,7 @@ const activeStatusOptions = [
             </span>
             <span class="flex items-center gap-1">
               <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
-              {{ formatDate(channel.created_at) }}
+              {{ formatDate(channel.createdAt) }}
             </span>
           </div>
 
@@ -317,12 +317,12 @@ const activeStatusOptions = [
             </UButton>
             <UButton
               size="xs"
-              :color="channel.is_active ? 'warning' : 'success'"
+              :color="channel.isActive ? 'warning' : 'success'"
               variant="ghost"
-              :icon="channel.is_active ? 'i-heroicons-pause' : 'i-heroicons-play'"
+              :icon="channel.isActive ? 'i-heroicons-pause' : 'i-heroicons-play'"
               @click="handleToggleActive(channel)"
             >
-              {{ channel.is_active ? t('channel.deactivate') : t('channel.activate') }}
+              {{ channel.isActive ? t('channel.deactivate') : t('channel.activate') }}
             </UButton>
             <UButton
               size="xs"
@@ -343,7 +343,7 @@ const activeStatusOptions = [
       <template #content>
         <div class="p-6">
           <FormsChannelForm
-            :blog-id="blogId"
+            :project-id="projectId"
             @success="handleCreateSuccess"
             @cancel="isCreateModalOpen = false"
           />
@@ -357,7 +357,7 @@ const activeStatusOptions = [
         <div class="p-6">
           <FormsChannelForm
             v-if="channelToEdit"
-            :blog-id="blogId"
+            :project-id="projectId"
             :channel="channelToEdit"
             @success="handleUpdateSuccess"
             @cancel="

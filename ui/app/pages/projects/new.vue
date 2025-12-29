@@ -5,28 +5,28 @@ definePageMeta({
 
 const { t } = useI18n()
 const router = useRouter()
-const { createBlog, isLoading } = useBlogs()
+const { createProject, isLoading } = useProjects()
 
 /**
- * Handle blog creation
+ * Handle project creation
  */
 async function handleCreate(data: { name: string; description: string }) {
-  const blog = await createBlog({
+  const project = await createProject({
     name: data.name,
     description: data.description || undefined,
   })
 
-  if (blog) {
-    // Navigate to the created blog
-    router.push(`/blogs/${blog.id}`)
+  if (project) {
+    // Navigate to the created project
+    router.push(`/projects/${project.id}`)
   }
 }
 
 /**
- * Cancel and go back to blogs list
+ * Cancel and go back to projects list
  */
 function handleCancel() {
-  router.push('/blogs')
+  router.push('/projects')
 }
 </script>
 
@@ -46,6 +46,6 @@ function handleCancel() {
     </div>
 
     <!-- Create form -->
-    <FormsBlogForm :is-loading="isLoading" @submit="handleCreate" @cancel="handleCancel" />
+    <FormsProjectForm :is-loading="isLoading" @submit="handleCreate" @cancel="handleCancel" />
   </div>
 </template>

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useProjects } from '~/composables/useProjects'
+import type { ProjectWithRole } from '~/stores/projects'
+
 definePageMeta({
   middleware: 'auth',
 })
@@ -6,13 +9,13 @@ definePageMeta({
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
-const { fetchBlog, currentBlog } = useBlogs()
+const { fetchProject, currentProject } = useProjects()
 
-const blogId = computed(() => route.params.id as string)
+const projectId = computed(() => route.params.id as string)
 
 onMounted(() => {
-  if (blogId.value && (!currentBlog.value || currentBlog.value.id !== blogId.value)) {
-    fetchBlog(blogId.value)
+  if (projectId.value && (!currentProject.value || currentProject.value.id !== projectId.value)) {
+    fetchProject(projectId.value)
   }
 })
 
@@ -20,14 +23,14 @@ onMounted(() => {
  * Handle successful post creation
  */
 function handleSuccess(postId: string) {
-  router.push(`/blogs/${blogId.value}/posts/${postId}`)
+  router.push(`/projects/${projectId.value}/posts/${postId}`)
 }
 
 /**
  * Handle cancel
  */
 function handleCancel() {
-  router.push(`/blogs/${blogId.value}/posts`)
+  router.push(`/projects/${projectId.value}/posts`)
 }
 </script>
 
@@ -44,14 +47,14 @@ function handleCancel() {
       >
         <span class="flex items-center gap-1">
           {{ t('common.back') }}
-          <span v-if="currentBlog" class="text-gray-500 font-normal">
-            to {{ currentBlog.name }}
+          <span v-if="currentProject" class="text-gray-500 font-normal">
+            to {{ currentProject.name }}
           </span>
         </span>
       </UButton>
     </div>
 
     <!-- Post form -->
-    <FormsPostForm :blog-id="blogId" @success="handleSuccess" @cancel="handleCancel" />
+    <FormsPostForm :project-id="projectId" @success="handleSuccess" @cancel="handleCancel" />
   </div>
 </template>
