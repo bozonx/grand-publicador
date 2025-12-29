@@ -1,10 +1,4 @@
-import {
-    Controller,
-    Post,
-    Body,
-    Param,
-    UseGuards,
-} from '@nestjs/common';
+import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { PublicationsService } from '../publications/publications.service.js';
 import { ApiKeyGuard } from '../../common/guards/api-key.guard.js';
 import {
@@ -13,23 +7,20 @@ import {
 } from './dto/external.dto.js';
 
 /**
- * External API for n8n and other automation tools
+ * External API controller for n8n and other automation tools
  * Protected by API key authentication
  */
-@Controller('external/v1')
+@Controller('external')
 @UseGuards(ApiKeyGuard)
 export class ExternalController {
-    constructor(private readonly publicationsService: PublicationsService) { }
+    constructor(private publicationsService: PublicationsService) { }
 
     /**
-     * Create a new publication from external source
-     * POST /api/external/v1/publications
+     * Create a publication from external source
      */
     @Post('publications')
     async createPublication(@Body() dto: CreateExternalPublicationDto) {
-        // For external API, we don't have userId, so we use null
-        // The publication will be created without an author
-        return this.publicationsService.create(null as any, {
+        return this.publicationsService.createExternal({
             projectId: dto.projectId,
             title: dto.title,
             content: dto.content,
@@ -40,18 +31,12 @@ export class ExternalController {
     }
 
     /**
-     * Schedule publication to channels
-     * POST /api/external/v1/publications/:id/schedule
+     * Schedule a publication to be posted to channels
      */
-    @Post('publications/:id/schedule')
-    async schedulePublication(
-        @Param('id') id: string,
-        @Body() dto: SchedulePublicationDto,
-    ) {
-        // For external API, we don't have userId, so we use null
-        return this.publicationsService.createPostsFromPublication(
-            id,
-            null as any,
+    @Post('publications/schedule')
+    async schedulePublication(@Body() dto: SchedulePublicationDto) {
+        return this.publicationsService.createPostsFromPublicationExternal(
+            dto.publicationId,
             dto.channelIds,
             dto.scheduledAt,
         );

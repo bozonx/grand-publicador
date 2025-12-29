@@ -2,11 +2,13 @@ import { Test, type TestingModule } from '@nestjs/testing';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PublicationsService } from '../../src/modules/publications/publications.service.js';
 import { PrismaService } from '../../src/modules/prisma/prisma.service.js';
+import { PermissionsService } from '../../src/common/services/permissions.service.js';
 import { jest } from '@jest/globals';
 
 describe('PublicationsService (unit)', () => {
     let service: PublicationsService;
     let prisma: PrismaService;
+    let permissions: PermissionsService;
     let moduleRef: TestingModule;
 
     const mockPrismaService = {
@@ -31,6 +33,12 @@ describe('PublicationsService (unit)', () => {
         },
     };
 
+    const mockPermissionsService = {
+        checkProjectAccess: jest.fn(),
+        checkProjectPermission: jest.fn(),
+        getUserProjectRole: jest.fn(),
+    };
+
     beforeAll(async () => {
         moduleRef = await Test.createTestingModule({
             providers: [
@@ -39,11 +47,16 @@ describe('PublicationsService (unit)', () => {
                     provide: PrismaService,
                     useValue: mockPrismaService,
                 },
+                {
+                    provide: PermissionsService,
+                    useValue: mockPermissionsService,
+                },
             ],
         }).compile();
 
         service = moduleRef.get<PublicationsService>(PublicationsService);
         prisma = moduleRef.get<PrismaService>(PrismaService);
+        permissions = moduleRef.get<PermissionsService>(PermissionsService);
     });
 
     afterAll(async () => {
@@ -68,11 +81,7 @@ describe('PublicationsService (unit)', () => {
             };
 
             // Mock user has access to project
-            mockPrismaService.projectMember.findUnique.mockResolvedValue({
-                projectId,
-                userId,
-                role: 'EDITOR',
-            });
+            mockPermissionsService.checkProjectAccess.mockResolvedValue(undefined);
 
             const expectedPublication = {
                 id: 'pub-1',
@@ -89,6 +98,7 @@ describe('PublicationsService (unit)', () => {
             const result = await service.create(userId, createDto);
 
             expect(result).toEqual(expectedPublication);
+            expect(mockPermissionsService.checkProjectAccess).toHaveBeenCalledWith(projectId, userId);
             expect(mockPrismaService.publication.create).toHaveBeenCalledWith({
                 data: {
                     projectId,
@@ -103,48 +113,24 @@ describe('PublicationsService (unit)', () => {
             });
         });
 
-        it('should throw ForbiddenException when user is not project member and not owner', async () => {
+        it('should throw ForbiddenException when user does not have access', async () => {
             const userId = 'user-1';
             const createDto = {
                 projectId: 'project-1',
                 content: 'Test content',
             };
 
-            // User is not a member
-            mockPrismaService.projectMember.findUnique.mockResolvedValue(null);
-            // User is not owner
-            mockPrismaService.project.findUnique.mockResolvedValue({
-                id: 'project-1',
-                ownerId: 'other-user',
-            });
+            // Mock access denied
+            mockPermissionsService.checkProjectAccess.mockRejectedValue(
+                new ForbiddenException('You do not have access to this project'),
+            );
 
             await expect(service.create(userId, createDto as any)).rejects.toThrow(
                 ForbiddenException,
             );
         });
 
-        it('should allow project owner to create publication even without membership', async () => {
-            const userId = 'user-1';
-            const createDto = {
-                projectId: 'project-1',
-                content: 'Test content',
-            };
 
-            // User is not a member
-            mockPrismaService.projectMember.findUnique.mockResolvedValue(null);
-            // But user is owner
-            mockPrismaService.project.findUnique.mockResolvedValue({
-                id: 'project-1',
-                ownerId: userId,
-            });
-
-            mockPrismaService.publication.create.mockResolvedValue({
-                id: 'pub-1',
-                ...createDto,
-            });
-
-            await expect(service.create(userId, createDto as any)).resolves.toBeDefined();
-        });
     });
 
     describe('findAll', () => {
@@ -152,11 +138,7 @@ describe('PublicationsService (unit)', () => {
             const userId = 'user-1';
             const projectId = 'project-1';
 
-            mockPrismaService.projectMember.findUnique.mockResolvedValue({
-                projectId,
-                userId,
-                role: 'VIEWER',
-            });
+            mockPermissionsService.checkProjectAccess.mockResolvedValue(undefined);
 
             const mockPublications = [
                 { id: 'pub-1', status: 'DRAFT' },
@@ -172,6 +154,7 @@ describe('PublicationsService (unit)', () => {
             });
 
             expect(result).toEqual(mockPublications);
+            expect(mockPermissionsService.checkProjectAccess).toHaveBeenCalledWith(projectId, userId);
             expect(mockPrismaService.publication.findMany).toHaveBeenCalledWith({
                 where: { projectId, status: 'DRAFT' },
                 include: expect.any(Object),

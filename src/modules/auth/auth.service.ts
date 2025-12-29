@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { createHmac, createHash } from 'node:crypto';
+import { createHmac } from 'node:crypto';
 import { UsersService } from '../users/users.service.js';
 
 @Injectable()

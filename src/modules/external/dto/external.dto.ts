@@ -35,6 +35,10 @@ export class CreateExternalPublicationDto {
 }
 
 export class SchedulePublicationDto {
+    @IsString()
+    @IsNotEmpty()
+    publicationId!: string;
+
     @IsArray()
     @IsNotEmpty()
     channelIds!: string[];

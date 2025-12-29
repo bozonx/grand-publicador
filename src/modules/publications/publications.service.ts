@@ -37,6 +37,25 @@ export class PublicationsService {
     }
 
     /**
+     * Create a publication from external API (no auth check)
+     * Used by n8n and other automation tools
+     */
+    async createExternal(data: CreatePublicationDto) {
+        return this.prisma.publication.create({
+            data: {
+                projectId: data.projectId,
+                authorId: null, // External publications have no author
+                title: data.title,
+                content: data.content,
+                mediaFiles: JSON.stringify(data.mediaFiles || []),
+                tags: data.tags,
+                status: data.status || PostStatus.DRAFT,
+                meta: JSON.stringify(data.meta || {}),
+            },
+        });
+    }
+
+    /**
      * Find all publications for a project
      */
     async findAll(
@@ -197,6 +216,60 @@ export class PublicationsService {
                         publicationId: publication.id,
                         channelId: channel.id,
                         authorId: userId,
+                        content: publication.content,
+                        socialMedia: channel.socialMedia,
+                        postType: 'POST',
+                        title: publication.title,
+                        tags: publication.tags,
+                        mediaFiles: publication.mediaFiles,
+                        status: scheduledAt ? PostStatus.SCHEDULED : PostStatus.DRAFT,
+                        scheduledAt,
+                        meta: publication.meta,
+                    },
+                }),
+            ),
+        );
+
+        return posts;
+    }
+
+    /**
+     * Create posts from publication for external API (no auth check)
+     * Used by n8n and other automation tools
+     */
+    async createPostsFromPublicationExternal(
+        publicationId: string,
+        channelIds: string[],
+        scheduledAt?: Date,
+    ) {
+        const publication = await this.prisma.publication.findUnique({
+            where: { id: publicationId },
+        });
+
+        if (!publication) {
+            throw new NotFoundException('Publication not found');
+        }
+
+        // Verify all channels belong to the same project
+        const channels = await this.prisma.channel.findMany({
+            where: {
+                id: { in: channelIds },
+                projectId: publication.projectId,
+            },
+        });
+
+        if (channels.length !== channelIds.length) {
+            throw new NotFoundException('Some channels not found or do not belong to this project');
+        }
+
+        // Create posts for each channel
+        const posts = await Promise.all(
+            channels.map((channel) =>
+                this.prisma.post.create({
+                    data: {
+                        publicationId: publication.id,
+                        channelId: channel.id,
+                        authorId: null, // External posts have no author
                         content: publication.content,
                         socialMedia: channel.socialMedia,
                         postType: 'POST',

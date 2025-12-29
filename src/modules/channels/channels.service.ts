@@ -1,13 +1,15 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { BlogsService } from '../blogs/blogs.service.js';
-import { SocialMedia } from '@prisma/client';
+import { PermissionsService } from '../../common/services/permissions.service.js';
+import { SocialMedia, ProjectRole } from '@prisma/client';
 
 @Injectable()
 export class ChannelsService {
     constructor(
         private prisma: PrismaService,
         private blogsService: BlogsService,
+        private permissions: PermissionsService,
     ) { }
 
     async create(userId: string, projectId: string, data: {
@@ -16,7 +18,11 @@ export class ChannelsService {
         channelIdentifier: string;
         credentials?: any;
     }) {
-        await this.checkPermission(projectId, userId, ['OWNER', 'ADMIN', 'EDITOR']);
+        await this.permissions.checkProjectPermission(
+            projectId,
+            userId,
+            [ProjectRole.OWNER, ProjectRole.ADMIN, ProjectRole.EDITOR],
+        );
 
         return this.prisma.channel.create({
             data: {
@@ -61,7 +67,11 @@ export class ChannelsService {
         isActive?: boolean;
     }) {
         const channel = await this.findOne(id, userId);
-        await this.checkPermission(channel.projectId, userId, ['OWNER', 'ADMIN', 'EDITOR']);
+        await this.permissions.checkProjectPermission(
+            channel.projectId,
+            userId,
+            [ProjectRole.OWNER, ProjectRole.ADMIN, ProjectRole.EDITOR],
+        );
 
         return this.prisma.channel.update({
             where: { id },
@@ -76,22 +86,14 @@ export class ChannelsService {
 
     async remove(id: string, userId: string) {
         const channel = await this.findOne(id, userId);
-        await this.checkPermission(channel.projectId, userId, ['OWNER', 'ADMIN']);
+        await this.permissions.checkProjectPermission(
+            channel.projectId,
+            userId,
+            [ProjectRole.OWNER, ProjectRole.ADMIN],
+        );
 
         return this.prisma.channel.delete({
             where: { id },
         });
-    }
-
-    private async checkPermission(projectId: string, userId: string, allowedRoles: string[]) {
-        const membership = await this.prisma.projectMember.findUnique({
-            where: {
-                projectId_userId: { projectId, userId },
-            },
-        });
-
-        if (!membership || !allowedRoles.includes(membership.role)) {
-            throw new ForbiddenException('Insufficient permissions');
-        }
     }
 }

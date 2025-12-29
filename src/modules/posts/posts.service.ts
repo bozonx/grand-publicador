@@ -1,13 +1,15 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ChannelsService } from '../channels/channels.service.js';
-import { PostType, PostStatus } from '@prisma/client';
+import { PermissionsService } from '../../common/services/permissions.service.js';
+import { PostType, PostStatus, ProjectRole } from '@prisma/client';
 
 @Injectable()
 export class PostsService {
     constructor(
         private prisma: PrismaService,
         private channelsService: ChannelsService,
+        private permissions: PermissionsService,
     ) { }
 
     async create(userId: string, channelId: string, data: {
@@ -23,7 +25,11 @@ export class PostsService {
         status?: PostStatus;
     }) {
         const channel = await this.channelsService.findOne(channelId, userId);
-        await this.checkPermission(channel.projectId, userId, ['OWNER', 'ADMIN', 'EDITOR']);
+        await this.permissions.checkProjectPermission(
+            channel.projectId,
+            userId,
+            [ProjectRole.OWNER, ProjectRole.ADMIN, ProjectRole.EDITOR],
+        );
 
         return this.prisma.post.create({
             data: {
@@ -81,7 +87,11 @@ export class PostsService {
         if (post.authorId !== userId) {
             const channel = await this.prisma.channel.findUnique({ where: { id: post.channelId } });
             if (channel) {
-                await this.checkPermission(channel.projectId, userId, ['OWNER', 'ADMIN']);
+                await this.permissions.checkProjectPermission(
+                    channel.projectId,
+                    userId,
+                    [ProjectRole.OWNER, ProjectRole.ADMIN],
+                );
             } else {
                 throw new ForbiddenException('Insufficient permissions');
             }
@@ -110,7 +120,11 @@ export class PostsService {
         if (post.authorId !== userId) {
             const channel = await this.prisma.channel.findUnique({ where: { id: post.channelId } });
             if (channel) {
-                await this.checkPermission(channel.projectId, userId, ['OWNER', 'ADMIN']);
+                await this.permissions.checkProjectPermission(
+                    channel.projectId,
+                    userId,
+                    [ProjectRole.OWNER, ProjectRole.ADMIN],
+                );
             } else {
                 throw new ForbiddenException('Insufficient permissions');
             }
@@ -119,17 +133,5 @@ export class PostsService {
         return this.prisma.post.delete({
             where: { id },
         });
-    }
-
-    private async checkPermission(projectId: string, userId: string, allowedRoles: string[]) {
-        const membership = await this.prisma.projectMember.findUnique({
-            where: {
-                projectId_userId: { projectId, userId },
-            },
-        });
-
-        if (!membership || !allowedRoles.includes(membership.role)) {
-            throw new ForbiddenException('Insufficient permissions');
-        }
     }
 }
