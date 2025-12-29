@@ -3,15 +3,11 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   modules: [
     '@nuxt/ui',
+    '@nuxt/icon',
     '@nuxtjs/i18n',
     '@pinia/nuxt',
-    '@formkit/nuxt',
     '@vueuse/nuxt',
   ],
-
-  formkit: {
-    autoImport: true,
-  },
 
   i18n: {
     locales: [
