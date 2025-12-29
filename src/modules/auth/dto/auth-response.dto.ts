@@ -7,7 +7,7 @@ import { Expose, Type } from 'class-transformer';
  */
 export class AuthResponseDto {
   @Expose()
-  access_token!: string;
+  accessToken!: string;
 
   @Expose()
   @Type(() => UserDto)

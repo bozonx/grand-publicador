@@ -81,7 +81,7 @@ export class AuthService {
     return plainToInstance(
       AuthResponseDto,
       {
-        access_token: this.jwtService.sign(payload),
+        accessToken: this.jwtService.sign(payload),
         user: user,
       },
       { excludeExtraneousValues: true },
@@ -122,7 +122,7 @@ export class AuthService {
     return plainToInstance(
       AuthResponseDto,
       {
-        access_token: this.jwtService.sign(payload),
+        accessToken: this.jwtService.sign(payload),
         user: user,
       },
       { excludeExtraneousValues: true },
@@ -213,7 +213,7 @@ export class AuthService {
     return plainToInstance(
       AuthResponseDto,
       {
-        access_token: this.jwtService.sign(payload),
+        accessToken: this.jwtService.sign(payload),
         user: user,
       },
       { excludeExtraneousValues: true },
