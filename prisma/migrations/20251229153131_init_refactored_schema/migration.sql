@@ -95,3 +95,21 @@ CREATE UNIQUE INDEX "users_telegram_id_key" ON "users"("telegram_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "project_members_project_id_user_id_key" ON "project_members"("project_id", "user_id");
+
+-- CreateIndex
+CREATE INDEX "channels_project_id_idx" ON "channels"("project_id");
+
+-- CreateIndex
+CREATE INDEX "publications_project_id_status_idx" ON "publications"("project_id", "status");
+
+-- CreateIndex
+CREATE INDEX "publications_project_id_created_at_idx" ON "publications"("project_id", "created_at");
+
+-- CreateIndex
+CREATE INDEX "posts_status_scheduled_at_idx" ON "posts"("status", "scheduled_at");
+
+-- CreateIndex
+CREATE INDEX "posts_channel_id_created_at_idx" ON "posts"("channel_id", "created_at");
+
+-- CreateIndex
+CREATE INDEX "posts_publication_id_idx" ON "posts"("publication_id");
