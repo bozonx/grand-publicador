@@ -126,7 +126,7 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
     </div>
 
     <!-- Loading state -->
-    <div v-if="isLoading" class="flex items-center justify-center py-12">
+    <div v-if="isLoading && projects.length === 0" class="flex items-center justify-center py-12">
       <div class="text-center">
         <UIcon
           name="i-heroicons-arrow-path"
