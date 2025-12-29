@@ -10,6 +10,11 @@ import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module.js';
 import type { AppConfig } from './config/app.config.js';
 
+// Solves "Do not know how to serialize a BigInt" error
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+};
+
 /**
  * Bootstrap the NestJS application.
  * Initializes the Fastify adapter, global pipes, configuration, and starts the server.
