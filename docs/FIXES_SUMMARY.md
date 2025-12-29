@@ -15,22 +15,38 @@ Frontend возвращал 404 на всех маршрутах (кроме API
 + pnpm generate
 ```
 
-### 2. Backend (`src/main.ts`)
-Добавлен обработчик для SPA fallback:
+### 2. Backend (`src/main.ts` + `src/common/filters/spa-fallback.filter.ts`)
+Создан `SpaFallbackFilter` - exception filter для обработки 404 ошибок:
 ```typescript
-app.getHttpAdapter().getInstance().setNotFoundHandler((request, reply) => {
-  const url = request.url;
-  
-  // Don't intercept API routes
-  if (url.startsWith(`/${globalPrefix}`)) {
-    reply.code(404).send({ statusCode: 404, message: 'Not Found' });
-    return;
+@Catch(NotFoundException)
+export class SpaFallbackFilter implements ExceptionFilter {
+  constructor(private readonly apiPrefix: string) {}
+
+  catch(exception: NotFoundException, host: ArgumentsHost) {
+    const url = request.url;
+    
+    // Don't intercept API routes
+    if (url.startsWith(`/${this.apiPrefix}`)) {
+      reply.code(404).send({ statusCode: 404, message: 'Not Found' });
+      return;
+    }
+    
+    // Serve SPA fallback for all other routes
+    reply.sendFile('200.html');
   }
-  
-  // Serve SPA fallback for all other routes
-  reply.sendFile('200.html');
-});
+}
 ```
+
+Зарегистрирован в `main.ts`:
+```typescript
+app.useGlobalFilters(new SpaFallbackFilter(globalPrefix));
+```
+
+**Почему exception filter, а не `setNotFoundHandler`?**
+- `@fastify/static` уже устанавливает свой `notFoundHandler`
+- Попытка установить еще один вызывает ошибку "Not found handler already set"
+- Exception filter работает на уровне NestJS и не конфликтует с Fastify плагинами
+
 
 ### 3. Nuxt Config (`ui/nuxt.config.ts`)
 Добавлена поддержка baseURL для subpath deployment:
