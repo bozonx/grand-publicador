@@ -76,19 +76,20 @@ These variables are used by the backend when running:
 - `TELEGRAM_BOT_TOKEN` - Telegram bot token (REQUIRED)
 - `API_KEY` - API key for External/Automation API (REQUIRED)
 
-### Frontend Build-time (ui/.env.production or CI/CD)
-These variables are embedded into the static bundle during `pnpm build`:
-- `VITE_DEV_MODE=false` - Disable dev features
-- `NUXT_PUBLIC_API_BASE=""` - Empty = use same host as frontend
+### Frontend Build-time (Optional)
+These variables can be set during `pnpm build` to override defaults from `nuxt.config.ts`:
+- `VITE_DEV_MODE` - Default: `'false'` (production mode)
+- `NUXT_PUBLIC_API_BASE` - Default: `''` (empty = same host as frontend)
 
-**Note**: Frontend variables are NOT needed at runtime. They are only used during the build process and become part of the static JavaScript files.
+**Note**: In production builds (CI/CD), these variables are NOT needed because the defaults in `nuxt.config.ts` are already correct for production. They are only useful if you need to override the defaults.
 
 **App Name**: The application name is defined in i18n locales (`ui/i18n/locales/*.json` under `common.appName`) and can be different for each language.
 
 ### Development Override (ui/.env)
-- `VITE_DEV_MODE=true` - Enable dev features
-- `VITE_DEV_TELEGRAM_ID=<your-id>` - Auto-login in dev
-- `NUXT_PUBLIC_API_BASE=http://localhost:8080` - Separate backend URL
+For local development, create `ui/.env` to override defaults:
+- `VITE_DEV_MODE=true` - Enable dev features (auto-login, etc.)
+- `VITE_DEV_TELEGRAM_ID=<your-id>` - Auto-login with this Telegram ID
+- `NUXT_PUBLIC_API_BASE=http://localhost:8080` - Point to separate backend
 
 
 ## API Endpoints
