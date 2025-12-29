@@ -1,3 +1,4 @@
+
 import { Test, type TestingModule } from '@nestjs/testing';
 import { AutomationService } from '../../src/modules/automation/automation.service.js';
 import { PrismaService } from '../../src/modules/prisma/prisma.service.js';
@@ -9,6 +10,8 @@ describe('AutomationService (unit)', () => {
     let moduleRef: TestingModule;
 
     const mockPrismaService = {
+        // Mock $transaction to immediately execute the callback, passing this mock object as 'tx'
+        $transaction: jest.fn((callback: (tx: any) => Promise<any>) => callback(mockPrismaService)),
         post: {
             findMany: jest.fn(),
             findUnique: jest.fn(),
@@ -37,6 +40,8 @@ describe('AutomationService (unit)', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        // Re-implement default behavior for $transaction in case it was overridden
+        mockPrismaService.$transaction.mockImplementation((callback: (tx: any) => any) => callback(mockPrismaService));
     });
 
     describe('getPendingPosts', () => {
