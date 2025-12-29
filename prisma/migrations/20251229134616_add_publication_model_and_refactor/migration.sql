@@ -12,31 +12,31 @@ CREATE TABLE "users" (
 );
 
 -- CreateTable
-CREATE TABLE "blogs" (
+CREATE TABLE "projects" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
     "description" TEXT,
     "owner_id" TEXT NOT NULL,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
-    CONSTRAINT "blogs_owner_id_fkey" FOREIGN KEY ("owner_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "projects_owner_id_fkey" FOREIGN KEY ("owner_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
-CREATE TABLE "blog_members" (
+CREATE TABLE "project_members" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "blog_id" TEXT NOT NULL,
+    "project_id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
-    "role" TEXT NOT NULL DEFAULT 'viewer',
+    "role" TEXT NOT NULL DEFAULT 'VIEWER',
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "blog_members_blog_id_fkey" FOREIGN KEY ("blog_id") REFERENCES "blogs" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "blog_members_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "project_members_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "project_members_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "channels" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "blog_id" TEXT NOT NULL,
+    "project_id" TEXT NOT NULL,
     "social_media" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "channel_identifier" TEXT NOT NULL,
@@ -44,15 +44,33 @@ CREATE TABLE "channels" (
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
-    CONSTRAINT "channels_blog_id_fkey" FOREIGN KEY ("blog_id") REFERENCES "blogs" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "channels_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "publications" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "project_id" TEXT NOT NULL,
+    "author_id" TEXT,
+    "title" TEXT,
+    "content" TEXT NOT NULL,
+    "media_files" TEXT NOT NULL DEFAULT '[]',
+    "tags" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'DRAFT',
+    "meta" TEXT NOT NULL DEFAULT '{}',
+    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" DATETIME NOT NULL,
+    CONSTRAINT "publications_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "publications_author_id_fkey" FOREIGN KEY ("author_id") REFERENCES "users" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "posts" (
     "id" TEXT NOT NULL PRIMARY KEY,
+    "publication_id" TEXT,
     "channel_id" TEXT NOT NULL,
     "author_id" TEXT,
-    "content" TEXT NOT NULL,
+    "content" TEXT,
     "social_media" TEXT NOT NULL,
     "post_type" TEXT NOT NULL,
     "title" TEXT,
@@ -61,12 +79,13 @@ CREATE TABLE "posts" (
     "tags" TEXT,
     "media_files" TEXT NOT NULL DEFAULT '[]',
     "post_date" DATETIME,
-    "status" TEXT NOT NULL DEFAULT 'draft',
+    "status" TEXT NOT NULL DEFAULT 'DRAFT',
     "scheduled_at" DATETIME,
     "published_at" DATETIME,
     "meta" TEXT NOT NULL DEFAULT '{}',
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
+    CONSTRAINT "posts_publication_id_fkey" FOREIGN KEY ("publication_id") REFERENCES "publications" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "posts_channel_id_fkey" FOREIGN KEY ("channel_id") REFERENCES "channels" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "posts_author_id_fkey" FOREIGN KEY ("author_id") REFERENCES "users" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
@@ -75,4 +94,4 @@ CREATE TABLE "posts" (
 CREATE UNIQUE INDEX "users_telegram_id_key" ON "users"("telegram_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "blog_members_blog_id_user_id_key" ON "blog_members"("blog_id", "user_id");
+CREATE UNIQUE INDEX "project_members_project_id_user_id_key" ON "project_members"("project_id", "user_id");

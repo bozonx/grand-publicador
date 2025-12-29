@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, ProjectRole, SocialMedia, PostType, PostStatus } from '@prisma/client';
 import "dotenv/config";
 
 const prisma = new PrismaClient();
@@ -42,19 +42,19 @@ async function main() {
         },
     });
 
-    // 2. CREATE TEST BLOGS
-    const techBlog = await prisma.blog.upsert({
+    // 2. CREATE PROJECTS (prev. BLOGS)
+    const techProject = await prisma.project.upsert({
         where: { id: '11111111-1111-1111-1111-111111111111' },
         update: {},
         create: {
             id: '11111111-1111-1111-1111-111111111111',
             name: 'Tech Blog',
-            description: 'A blog about technology, programming, and software development',
+            description: 'A project about technology, programming, and software development',
             ownerId: devUser.id,
         },
     });
 
-    const travelBlog = await prisma.blog.upsert({
+    const travelProject = await prisma.project.upsert({
         where: { id: '11111111-1111-1111-1111-111111111112' },
         update: {},
         create: {
@@ -65,29 +65,29 @@ async function main() {
         },
     });
 
-    // 3. CREATE BLOG MEMBERS
-    await prisma.blogMember.upsert({
-        where: { blogId_userId: { blogId: techBlog.id, userId: devUser.id } },
-        update: { role: 'owner' },
-        create: { blogId: techBlog.id, userId: devUser.id, role: 'owner' },
+    // 3. CREATE PROJECT MEMBERS (prev. BLOG MEMBERS)
+    await prisma.projectMember.upsert({
+        where: { projectId_userId: { projectId: techProject.id, userId: devUser.id } },
+        update: { role: ProjectRole.OWNER },
+        create: { projectId: techProject.id, userId: devUser.id, role: ProjectRole.OWNER },
     });
 
-    await prisma.blogMember.upsert({
-        where: { blogId_userId: { blogId: techBlog.id, userId: editorUser.id } },
-        update: { role: 'editor' },
-        create: { blogId: techBlog.id, userId: editorUser.id, role: 'editor' },
+    await prisma.projectMember.upsert({
+        where: { projectId_userId: { projectId: techProject.id, userId: editorUser.id } },
+        update: { role: ProjectRole.EDITOR },
+        create: { projectId: techProject.id, userId: editorUser.id, role: ProjectRole.EDITOR },
     });
 
-    await prisma.blogMember.upsert({
-        where: { blogId_userId: { blogId: techBlog.id, userId: viewerUser.id } },
-        update: { role: 'viewer' },
-        create: { blogId: techBlog.id, userId: viewerUser.id, role: 'viewer' },
+    await prisma.projectMember.upsert({
+        where: { projectId_userId: { projectId: techProject.id, userId: viewerUser.id } },
+        update: { role: ProjectRole.VIEWER },
+        create: { projectId: techProject.id, userId: viewerUser.id, role: ProjectRole.VIEWER },
     });
 
-    await prisma.blogMember.upsert({
-        where: { blogId_userId: { blogId: travelBlog.id, userId: devUser.id } },
-        update: { role: 'owner' },
-        create: { blogId: travelBlog.id, userId: devUser.id, role: 'owner' },
+    await prisma.projectMember.upsert({
+        where: { projectId_userId: { projectId: travelProject.id, userId: devUser.id } },
+        update: { role: ProjectRole.OWNER },
+        create: { projectId: travelProject.id, userId: devUser.id, role: ProjectRole.OWNER },
     });
 
     // 4. CREATE CHANNELS
@@ -96,8 +96,8 @@ async function main() {
         update: {},
         create: {
             id: '22222222-2222-2222-2222-222222222221',
-            blogId: techBlog.id,
-            socialMedia: 'telegram',
+            projectId: techProject.id,
+            socialMedia: SocialMedia.TELEGRAM,
             name: 'Tech News TG',
             channelIdentifier: '@tech_news_channel',
             isActive: true,
@@ -109,8 +109,8 @@ async function main() {
         update: {},
         create: {
             id: '22222222-2222-2222-2222-222222222222',
-            blogId: techBlog.id,
-            socialMedia: 'youtube',
+            projectId: techProject.id,
+            socialMedia: SocialMedia.YOUTUBE,
             name: 'Tech Tutorials',
             channelIdentifier: 'UCxxxxxxxx',
             isActive: true,
@@ -122,29 +122,57 @@ async function main() {
         update: {},
         create: {
             id: '22222222-2222-2222-2222-222222222224',
-            blogId: travelBlog.id,
-            socialMedia: 'telegram',
+            projectId: travelProject.id,
+            socialMedia: SocialMedia.TELEGRAM,
             name: 'Travel Stories',
             channelIdentifier: '@travel_stories',
             isActive: true,
         },
     });
 
-    // 5. CREATE POSTS
+    // 5. CREATE PUBLICATIONS (Master Content)
+    const welcomePub = await prisma.publication.upsert({
+        where: { id: '44444444-4444-4444-4444-444444444441' },
+        update: {},
+        create: {
+            id: '44444444-4444-4444-4444-444444444441',
+            projectId: techProject.id,
+            authorId: devUser.id,
+            content: '<p>Welcome to our tech channel! 🚀</p><p>We will be sharing the latest news and tutorials about programming and technology.</p>',
+            title: 'Welcome Post',
+            tags: 'welcome,introduction,tech',
+            status: PostStatus.PUBLISHED,
+        }
+    });
+
+    const tokyoPub = await prisma.publication.upsert({
+        where: { id: '44444444-4444-4444-4444-444444444442' },
+        update: {},
+        create: {
+            id: '44444444-4444-4444-4444-444444444442',
+            projectId: travelProject.id,
+            authorId: devUser.id,
+            content: '<p>Just arrived in Tokyo! 🗼 The city is amazing...</p>',
+            title: 'Tokyo Adventures',
+            tags: 'tokyo,japan,travel,asia',
+            status: PostStatus.DRAFT,
+        }
+    });
+
+    // 6. CREATE POSTS (Linked to Publication)
     await prisma.post.upsert({
         where: { id: '33333333-3333-3333-3333-333333333331' },
         update: {},
         create: {
             id: '33333333-3333-3333-3333-333333333331',
+            publicationId: welcomePub.id,
             channelId: techChannel.id,
             authorId: devUser.id,
-            content: '<p>Welcome to our tech channel! 🚀</p><p>We will be sharing the latest news and tutorials about programming and technology.</p>',
-            socialMedia: 'telegram',
-            postType: 'post',
-            title: 'Welcome Post',
-            description: 'Introduction to our tech channel',
-            tags: 'welcome,introduction,tech',
-            status: 'published',
+            // socialMedia is redundant if we look at channel, but schema keeps it.
+            // Let's use the same as channel or specific.
+            socialMedia: SocialMedia.TELEGRAM,
+            postType: PostType.POST,
+            status: PostStatus.PUBLISHED,
         },
     });
 
@@ -153,16 +181,14 @@ async function main() {
         update: {},
         create: {
             id: '33333333-3333-3333-3333-333333333335',
+            publicationId: tokyoPub.id,
             channelId: travelChannel.id,
             authorId: devUser.id,
-            content: '<p>Just arrived in Tokyo! 🗼 The city is amazing...</p>',
-            socialMedia: 'telegram',
-            postType: 'post',
-            title: 'Tokyo Adventures',
-            description: 'My first day in Tokyo',
+            content: null, // Inherit from Publication
+            socialMedia: SocialMedia.TELEGRAM,
+            postType: PostType.POST,
             authorComment: 'Remember to add more photos before publishing',
-            tags: 'tokyo,japan,travel,asia',
-            status: 'draft',
+            status: PostStatus.DRAFT,
         },
     });
 

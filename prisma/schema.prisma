@@ -85,6 +85,7 @@ model Publication {
   mediaFiles String     @default("[]") @map("media_files")
   tags       String?
   status     PostStatus @default(DRAFT)
+  meta       String     @default("{}")
   createdAt  DateTime   @default(now()) @map("created_at")
   updatedAt  DateTime   @updatedAt @map("updated_at")
 
