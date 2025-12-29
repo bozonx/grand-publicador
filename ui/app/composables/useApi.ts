@@ -1,9 +1,9 @@
 export const useApi = () => {
-    const token = useCookie('auth_token');
     const config = useRuntimeConfig();
+    const token = useCookie('auth_token');
 
     // Base path for API, matching NestJS global prefix
-    const apiBase = '/api/v1';
+    const apiBase = `${config.public.apiBase}/api/v1`;
 
     const request = async <T>(url: string, options: any = {}) => {
         const headers = {

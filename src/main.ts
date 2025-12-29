@@ -30,6 +30,7 @@ async function bootstrap() {
     }),
     {
       bufferLogs: true,
+      cors: true,
     },
   );
 
