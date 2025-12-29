@@ -4,19 +4,23 @@ import {
     ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { PostStatus } from '@prisma/client';
+import { PostStatus, ProjectRole, Prisma } from '@prisma/client';
 import type { CreatePublicationDto, UpdatePublicationDto } from './dto/index.js';
+import { PermissionsService } from '../../common/services/permissions.service.js';
 
 @Injectable()
 export class PublicationsService {
-    constructor(private prisma: PrismaService) { }
+    constructor(
+        private prisma: PrismaService,
+        private permissions: PermissionsService,
+    ) { }
 
     /**
      * Create a new publication
      */
     async create(userId: string, data: CreatePublicationDto) {
         // Check if user has access to the project
-        await this.checkProjectAccess(data.projectId, userId);
+        await this.permissions.checkProjectAccess(data.projectId, userId);
 
         return this.prisma.publication.create({
             data: {
@@ -44,9 +48,9 @@ export class PublicationsService {
             offset?: number;
         },
     ) {
-        await this.checkProjectAccess(projectId, userId);
+        await this.permissions.checkProjectAccess(projectId, userId);
 
-        const where: any = { projectId };
+        const where: Prisma.PublicationWhereInput = { projectId };
         if (filters?.status) {
             where.status = filters.status;
         }
@@ -107,7 +111,7 @@ export class PublicationsService {
             throw new NotFoundException('Publication not found');
         }
 
-        await this.checkProjectAccess(publication.projectId, userId);
+        await this.permissions.checkProjectAccess(publication.projectId, userId);
 
         return publication;
     }
@@ -120,10 +124,10 @@ export class PublicationsService {
 
         // Check if user is author or has admin rights
         if (publication.authorId !== userId) {
-            await this.checkProjectPermission(
+            await this.permissions.checkProjectPermission(
                 publication.projectId,
                 userId,
-                ['OWNER', 'ADMIN'],
+                [ProjectRole.OWNER, ProjectRole.ADMIN],
             );
         }
 
@@ -150,10 +154,10 @@ export class PublicationsService {
 
         // Check if user is author or has admin rights
         if (publication.authorId !== userId) {
-            await this.checkProjectPermission(
+            await this.permissions.checkProjectPermission(
                 publication.projectId,
                 userId,
-                ['OWNER', 'ADMIN'],
+                [ProjectRole.OWNER, ProjectRole.ADMIN],
             );
         }
 
@@ -210,54 +214,4 @@ export class PublicationsService {
         return posts;
     }
 
-    /**
-     * Check if user has access to project
-     */
-    private async checkProjectAccess(projectId: string, userId: string) {
-        const membership = await this.prisma.projectMember.findUnique({
-            where: {
-                projectId_userId: { projectId, userId },
-            },
-        });
-
-        if (!membership) {
-            // Check if user is owner
-            const project = await this.prisma.project.findUnique({
-                where: { id: projectId },
-            });
-
-            if (!project || project.ownerId !== userId) {
-                throw new ForbiddenException('You do not have access to this project');
-            }
-        }
-    }
-
-    /**
-     * Check if user has specific permissions in project
-     */
-    private async checkProjectPermission(
-        projectId: string,
-        userId: string,
-        allowedRoles: string[],
-    ) {
-        const membership = await this.prisma.projectMember.findUnique({
-            where: {
-                projectId_userId: { projectId, userId },
-            },
-        });
-
-        // Check if user is owner
-        const project = await this.prisma.project.findUnique({
-            where: { id: projectId },
-        });
-
-        const isOwner = project?.ownerId === userId;
-
-        if (
-            !isOwner &&
-            (!membership || !allowedRoles.includes(membership.role))
-        ) {
-            throw new ForbiddenException('Insufficient permissions');
-        }
-    }
 }
