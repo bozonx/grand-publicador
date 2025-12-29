@@ -4,6 +4,9 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { createHmac } from 'node:crypto';
 import { UsersService } from '../users/users.service.js';
+import { plainToInstance } from 'class-transformer';
+import { AuthResponseDto } from './dto/auth-response.dto.js';
+import { UserDto } from '../users/dto/user.dto.js';
 
 interface TelegramUser {
     id: number;
@@ -31,7 +34,7 @@ export class AuthService {
         }
     }
 
-    async loginWithTelegram(initData: string) {
+    async loginWithTelegram(initData: string): Promise<AuthResponseDto> {
         const isValid = this.validateTelegramInitData(initData);
         if (!isValid) {
             this.logger.warn('Invalid Telegram init data');
@@ -59,17 +62,10 @@ export class AuthService {
             username: user.username
         };
 
-        return {
+        return plainToInstance(AuthResponseDto, {
             access_token: this.jwtService.sign(payload),
-            user: {
-                id: user.id,
-                telegramId: user.telegramId?.toString(),
-                username: user.username,
-                fullName: user.fullName,
-                avatarUrl: user.avatarUrl,
-                isAdmin: user.isAdmin,
-            },
-        };
+            user: user,
+        }, { excludeExtraneousValues: true });
     }
 
     private validateTelegramInitData(initData: string): boolean {
@@ -88,19 +84,12 @@ export class AuthService {
         return calculatedHash === hash;
     }
 
-    async getProfile(userId: string) {
+    async getProfile(userId: string): Promise<UserDto> {
         const user = await this.usersService.findById(userId);
         if (!user) {
             throw new UnauthorizedException('User not found');
         }
 
-        return {
-            id: user.id,
-            telegramId: user.telegramId?.toString(),
-            username: user.username,
-            fullName: user.fullName,
-            avatarUrl: user.avatarUrl,
-            isAdmin: user.isAdmin,
-        };
+        return plainToInstance(UserDto, user, { excludeExtraneousValues: true });
     }
 }

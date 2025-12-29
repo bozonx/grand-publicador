@@ -13,24 +13,33 @@ export class PermissionsService {
     /**
      * Check if user has access to project (any role or owner)
      */
+    /**
+     * Check if user has access to project (any role or owner)
+     */
     async checkProjectAccess(projectId: string, userId: string): Promise<void> {
-        const membership = await this.prisma.projectMember.findUnique({
-            where: {
-                projectId_userId: { projectId, userId },
+        const project = await this.prisma.project.findUnique({
+            where: { id: projectId },
+            include: {
+                members: {
+                    where: { userId },
+                    select: { role: true },
+                },
             },
         });
 
-        if (!membership) {
-            // Check if user is owner
-            const project = await this.prisma.project.findUnique({
-                where: { id: projectId },
-                select: { ownerId: true },
-            });
-
-            if (!project || project.ownerId !== userId) {
-                throw new ForbiddenException('You do not have access to this project');
-            }
+        if (!project) {
+            throw new ForbiddenException('Project not found');
         }
+
+        if (project.ownerId === userId) {
+            return;
+        }
+
+        if (project.members.length > 0) {
+            return;
+        }
+
+        throw new ForbiddenException('You do not have access to this project');
     }
 
     /**

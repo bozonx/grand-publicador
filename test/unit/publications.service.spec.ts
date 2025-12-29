@@ -95,7 +95,7 @@ describe('PublicationsService (unit)', () => {
 
             mockPrismaService.publication.create.mockResolvedValue(expectedPublication);
 
-            const result = await service.create(userId, createDto);
+            const result = await service.create(createDto, userId);
 
             expect(result).toEqual(expectedPublication);
             expect(mockPermissionsService.checkProjectAccess).toHaveBeenCalledWith(projectId, userId);
@@ -125,7 +125,7 @@ describe('PublicationsService (unit)', () => {
                 new ForbiddenException('You do not have access to this project'),
             );
 
-            await expect(service.create(userId, createDto as any)).rejects.toThrow(
+            await expect(service.create(createDto as any, userId)).rejects.toThrow(
                 ForbiddenException,
             );
         });
@@ -291,8 +291,8 @@ describe('PublicationsService (unit)', () => {
 
             const result = await service.createPostsFromPublication(
                 publicationId,
-                userId,
                 channelIds,
+                userId,
                 scheduledAt,
             );
 
@@ -323,7 +323,7 @@ describe('PublicationsService (unit)', () => {
             mockPrismaService.channel.findMany.mockResolvedValue(mockChannels);
 
             await expect(
-                service.createPostsFromPublication(publicationId, userId, channelIds),
+                service.createPostsFromPublication(publicationId, channelIds, userId),
             ).rejects.toThrow(NotFoundException);
         });
 
@@ -352,8 +352,8 @@ describe('PublicationsService (unit)', () => {
 
             const result = await service.createPostsFromPublication(
                 publicationId,
-                userId,
                 channelIds,
+                userId,
             );
 
             expect(result[0].status).toBe('DRAFT');

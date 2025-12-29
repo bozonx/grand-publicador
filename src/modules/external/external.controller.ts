@@ -20,7 +20,7 @@ export class ExternalController {
      */
     @Post('publications')
     async createPublication(@Body() dto: CreateExternalPublicationDto) {
-        return this.publicationsService.createExternal({
+        return this.publicationsService.create({
             projectId: dto.projectId,
             title: dto.title,
             content: dto.content,
@@ -35,9 +35,10 @@ export class ExternalController {
      */
     @Post('publications/schedule')
     async schedulePublication(@Body() dto: SchedulePublicationDto) {
-        return this.publicationsService.createPostsFromPublicationExternal(
+        return this.publicationsService.createPostsFromPublication(
             dto.publicationId,
             dto.channelIds,
+            undefined, // No userId for external calls
             dto.scheduledAt,
         );
     }

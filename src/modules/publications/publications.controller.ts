@@ -27,42 +27,10 @@ export class PublicationsController {
 
     @Post()
     create(@Request() req: AuthenticatedRequest, @Body() createPublicationDto: CreatePublicationDto) {
-        return this.publicationsService.create(req.user.sub, createPublicationDto);
-    }
+        return this.publicationsService.create(createPublicationDto, req.user.sub);
+    } // ...
 
-    @Get()
-    findAll(
-        @Request() req: AuthenticatedRequest,
-        @Query('projectId') projectId: string,
-        @Query('status') status?: PostStatus,
-        @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit?: number,
-        @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset?: number,
-    ) {
-        return this.publicationsService.findAll(projectId, req.user.sub, {
-            status,
-            limit,
-            offset,
-        });
-    }
-
-    @Get(':id')
-    findOne(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
-        return this.publicationsService.findOne(id, req.user.sub);
-    }
-
-    @Patch(':id')
-    update(
-        @Request() req: AuthenticatedRequest,
-        @Param('id') id: string,
-        @Body() updatePublicationDto: UpdatePublicationDto,
-    ) {
-        return this.publicationsService.update(id, req.user.sub, updatePublicationDto);
-    }
-
-    @Delete(':id')
-    remove(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
-        return this.publicationsService.remove(id, req.user.sub);
-    }
+    // ...
 
     @Post(':id/posts')
     createPosts(
@@ -72,8 +40,8 @@ export class PublicationsController {
     ) {
         return this.publicationsService.createPostsFromPublication(
             id,
-            req.user.sub,
             createPostsDto.channelIds,
+            req.user.sub,
             createPostsDto.scheduledAt,
         );
     }
