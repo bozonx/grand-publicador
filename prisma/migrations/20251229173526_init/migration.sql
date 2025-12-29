@@ -8,7 +8,8 @@ CREATE TABLE "users" (
     "telegram_id" BIGINT,
     "is_admin" BOOLEAN NOT NULL DEFAULT false,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL
+    "updated_at" DATETIME NOT NULL,
+    "preferences" TEXT NOT NULL DEFAULT '{}'
 );
 
 -- CreateTable
