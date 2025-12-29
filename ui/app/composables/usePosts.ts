@@ -88,7 +88,7 @@ export function usePosts() {
         error.value = null
 
         try {
-            const data = await api.get<PostWithRelations[]>(`/api/posts?projectId=${projectId}`)
+            const data = await api.get<PostWithRelations[]>(`/posts?projectId=${projectId}`)
             posts.value = data
             return data
         } catch (err: any) {

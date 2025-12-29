@@ -72,7 +72,7 @@ export function useChannels() {
         error.value = null
 
         try {
-            const data = await api.get<ChannelWithProject[]>('/api/channels', {
+            const data = await api.get<ChannelWithProject[]>('/channels', {
                 params: { projectId }
             })
             channels.value = data
@@ -91,7 +91,7 @@ export function useChannels() {
         error.value = null
 
         try {
-            const data = await api.get<ChannelWithProject>(`/api/channels/${channelId}`)
+            const data = await api.get<ChannelWithProject>(`/channels/${channelId}`)
             currentChannel.value = data
             return data
         } catch (err: any) {
@@ -108,7 +108,7 @@ export function useChannels() {
         error.value = null
 
         try {
-            const channel = await api.post<Channel>('/api/channels', data)
+            const channel = await api.post<Channel>('/channels', data)
             toast.add({
                 title: t('common.success'),
                 description: t('channel.createSuccess'),
@@ -219,6 +219,24 @@ export function useChannels() {
             site: '#6b7280',
         }
         return colors[socialMedia] || '#6b7280'
+    }
+
+    function getSocialMediaIcon(socialMedia: SocialMedia): string {
+        const icons: Record<string, string> = {
+            telegram: 'i-simple-icons-telegram',
+            instagram: 'i-simple-icons-instagram',
+            vk: 'i-simple-icons-vk',
+            youtube: 'i-simple-icons-youtube',
+            tiktok: 'i-simple-icons-tiktok',
+            x: 'i-simple-icons-x',
+            facebook: 'i-simple-icons-facebook',
+            site: 'i-heroicons-globe-alt',
+        }
+        return icons[socialMedia] || 'i-heroicons-hashtag'
+    }
+
+    function getSocialMediaDisplayName(socialMedia: SocialMedia): string {
+        return t(`socialMedia.${socialMedia}`)
     }
 
     return {

@@ -17,7 +17,7 @@ export function useProjects() {
         store.setError(null)
 
         try {
-            const data = await api.get<ProjectWithRole[]>('/api/projects')
+            const data = await api.get<ProjectWithRole[]>('/projects')
             store.setProjects(data)
             return data
         } catch (err: any) {
@@ -39,7 +39,7 @@ export function useProjects() {
         store.setError(null)
 
         try {
-            const data = await api.get<ProjectWithRole>(`/api/projects/${projectId}`)
+            const data = await api.get<ProjectWithRole>(`/projects/${projectId}`)
             store.setCurrentProject(data)
             return data
         } catch (err: any) {
@@ -61,7 +61,7 @@ export function useProjects() {
         store.setError(null)
 
         try {
-            const project = await api.post<Project>('/api/projects', data)
+            const project = await api.post<Project>('/projects', data)
             toast.add({
                 title: t('common.success'),
                 description: t('project.createSuccess'),
@@ -88,7 +88,7 @@ export function useProjects() {
         store.setError(null)
 
         try {
-            const updatedProject = await api.patch<Project>(`/api/projects/${projectId}`, data)
+            const updatedProject = await api.patch<Project>(`/projects/${projectId}`, data)
             toast.add({
                 title: t('common.success'),
                 description: t('project.updateSuccess'),
@@ -115,7 +115,7 @@ export function useProjects() {
         store.setError(null)
 
         try {
-            await api.delete(`/api/projects/${projectId}`)
+            await api.delete(`/projects/${projectId}`)
             toast.add({
                 title: t('common.success'),
                 description: t('project.deleteSuccess'),
@@ -140,7 +140,7 @@ export function useProjects() {
     async function fetchMembers(projectId: string): Promise<ProjectMemberWithUser[]> {
         store.setLoading(true)
         try {
-            const data = await api.get<ProjectMemberWithUser[]>(`/api/projects/${projectId}/members`)
+            const data = await api.get<ProjectMemberWithUser[]>(`/projects/${projectId}/members`)
             store.setMembers(data)
             return data
         } catch (err: any) {
@@ -154,7 +154,7 @@ export function useProjects() {
     async function addMember(projectId: string, emailOrUsername: string, role: string): Promise<boolean> {
         store.setLoading(true)
         try {
-            await api.post(`/api/projects/${projectId}/members`, { emailOrUsername, role })
+            await api.post(`/projects/${projectId}/members`, { emailOrUsername, role })
             toast.add({
                 title: t('common.success'),
                 description: t('projectMember.addSuccess'),
@@ -178,7 +178,7 @@ export function useProjects() {
     async function updateMemberRole(projectId: string, userId: string, role: string): Promise<boolean> {
         store.setLoading(true)
         try {
-            await api.patch(`/api/projects/${projectId}/members/${userId}`, { role })
+            await api.patch(`/projects/${projectId}/members/${userId}`, { role })
             toast.add({
                 title: t('common.success'),
                 description: t('projectMember.updateSuccess'),
@@ -202,7 +202,7 @@ export function useProjects() {
     async function removeMember(projectId: string, userId: string): Promise<boolean> {
         store.setLoading(true)
         try {
-            await api.delete(`/api/projects/${projectId}/members/${userId}`)
+            await api.delete(`/projects/${projectId}/members/${userId}`)
             toast.add({
                 title: t('common.success'),
                 description: t('projectMember.removeSuccess'),
