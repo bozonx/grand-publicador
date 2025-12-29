@@ -54,6 +54,7 @@ export default defineNuxtConfig({
     public: {
       devMode: process.env.VITE_DEV_MODE || 'false',
       devTelegramId: process.env.VITE_DEV_TELEGRAM_ID || '',
+      devTelegramBotToken: process.env.TELEGRAM_BOT_TOKEN || '',
       appName: process.env.VITE_APP_NAME || 'Grand Publicador',
     },
   },
