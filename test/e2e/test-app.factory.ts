@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { ValidationPipe } from '@nestjs/common';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
+import { ConfigService } from '@nestjs/config';
 import { AppModule } from '../../src/app.module.js';
 import { PrismaService } from '../../src/modules/prisma/prisma.service.js';
 
@@ -10,10 +11,31 @@ export async function createTestApp(): Promise<NestFastifyApplication> {
   })
     .overrideProvider(PrismaService)
     .useValue({
-      $connect: async () => {},
-      $disconnect: async () => {},
-      onModuleInit: async () => {},
-      onModuleDestroy: async () => {},
+      $connect: async () => { },
+      $disconnect: async () => { },
+      onModuleInit: async () => { },
+      onModuleDestroy: async () => { },
+    })
+    .overrideProvider(ConfigService)
+    .useValue({
+      get: (key: string) => {
+        const config: Record<string, any> = {
+          JWT_SECRET: 'test-secret-key',
+          AUTH_JWT_SECRET: 'test-secret-key',
+          TELEGRAM_BOT_TOKEN: 'test-bot-token',
+          DATABASE_URL: 'file:./test.db',
+          NODE_ENV: 'test',
+          app: {
+            port: 8080,
+            host: '0.0.0.0',
+            basePath: '',
+            nodeEnv: 'test',
+            logLevel: 'silent',
+            apiKey: 'test-api-key',
+          },
+        };
+        return config[key];
+      },
     })
     .compile();
 
