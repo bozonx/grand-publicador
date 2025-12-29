@@ -12,7 +12,7 @@ services:
       - LISTEN_HOST=0.0.0.0
       - LISTEN_PORT=8080
       - LOG_LEVEL=warn
-      - JWT_SECRET=change-me-in-production
+      - JWT_SECRET=slkdf923598ksfdo7853kjlksdfu4oi5jkssf908kj
       - TELEGRAM_BOT_TOKEN=your_token_here
       - API_KEY=your_api_key_here
     volumes:
