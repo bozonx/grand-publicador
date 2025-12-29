@@ -21,6 +21,7 @@ model User {
   isAdmin    Boolean  @default(false) @map("is_admin")
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
+  preferences String   @default("{}") // Store as JSON string in SQLite
 
   ownedProjects  Project[]       @relation("ProjectOwner")
   projectMembers ProjectMember[]
@@ -164,4 +165,5 @@ enum PostStatus {
   SCHEDULED
   PUBLISHED
   FAILED
+  EXPIRED
 }

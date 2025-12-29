@@ -30,8 +30,9 @@ export class AutomationController {
     @Get('posts/pending')
     async getPendingPosts(
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+        @Query('lookback', new DefaultValuePipe(60), ParseIntPipe) lookback: number,
     ) {
-        return this.automationService.getPendingPosts(limit);
+        return this.automationService.getPendingPosts(limit, lookback);
     }
 
     /**

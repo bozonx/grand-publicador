@@ -13,14 +13,34 @@ export class AutomationService {
      * Get posts that are ready to be published
      * Status: SCHEDULED and scheduledAt <= now
      */
-    async getPendingPosts(limit: number = 10) {
+    async getPendingPosts(limit: number = 10, lookbackMinutes: number = 60) {
         const now = new Date();
+        const lookbackDate = new Date(now.getTime() - lookbackMinutes * 60 * 1000);
 
+        // 1. Mark overdue posts as EXPIRED
+        await this.prisma.post.updateMany({
+            where: {
+                status: PostStatus.SCHEDULED,
+                scheduledAt: {
+                    lt: lookbackDate,
+                },
+            },
+            data: {
+                status: PostStatus.EXPIRED,
+                meta: JSON.stringify({
+                    expiredAt: now.toISOString(),
+                    reason: 'Post too old to publish',
+                }),
+            },
+        });
+
+        // 2. Get pending posts within the window
         return this.prisma.post.findMany({
             where: {
                 status: PostStatus.SCHEDULED,
                 scheduledAt: {
                     lte: now,
+                    gte: lookbackDate,
                 },
             },
             include: {
