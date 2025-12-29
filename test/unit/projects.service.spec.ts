@@ -52,7 +52,7 @@ describe('ProjectsService (unit)', () => {
     permissions = moduleRef.get<PermissionsService>(PermissionsService);
 
     // Silence logger for tests
-    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
+    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => { });
   });
 
   afterAll(async () => {
@@ -108,15 +108,37 @@ describe('ProjectsService (unit)', () => {
     it('should return all projects where user is a member', async () => {
       const userId = 'user-1';
       const mockProjects = [
-        { id: 'project-1', name: 'Project 1' },
-        { id: 'project-2', name: 'Project 2' },
+        {
+          id: 'project-1',
+          name: 'Project 1',
+          members: [{ userId, role: 'OWNER' }],
+          _count: { channels: 5 },
+        },
+        {
+          id: 'project-2',
+          name: 'Project 2',
+          members: [{ userId, role: 'EDITOR' }],
+          _count: { channels: 2 },
+        },
       ];
 
       mockPrismaService.project.findMany.mockResolvedValue(mockProjects);
 
       const result = await service.findAllForUser(userId);
 
-      expect(result).toEqual(mockProjects);
+      expect(result).toHaveLength(2);
+      expect(result[0]).toMatchObject({
+        id: 'project-1',
+        role: 'owner',
+        channelCount: 5,
+        memberCount: 1,
+      });
+      expect(result[1]).toMatchObject({
+        id: 'project-2',
+        role: 'editor',
+        channelCount: 2,
+        memberCount: 1,
+      });
     });
   });
 
@@ -137,7 +159,12 @@ describe('ProjectsService (unit)', () => {
 
       const result = await service.findOne(projectId, userId);
 
-      expect(result).toEqual({ ...mockProject, role: 'EDITOR' });
+      expect(result).toEqual({
+        ...mockProject,
+        role: 'editor',
+        channelCount: 0,
+        memberCount: 0,
+      });
     });
 
     it('should throw ForbiddenException when user has no role', async () => {

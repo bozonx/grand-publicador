@@ -103,7 +103,7 @@ describe('AuthService (unit)', () => {
       const result = await service.loginWithTelegram(initData);
 
       expect(result).toBeDefined();
-      expect(result.access_token).toBe('mock.jwt.token');
+      expect(result.accessToken).toBe('mock.jwt.token');
       expect(result.user).toBeDefined();
       expect(result.user.id).toBe(mockUser.id);
       expect(mockUsersService.findOrCreateTelegramUser).toHaveBeenCalledWith({
