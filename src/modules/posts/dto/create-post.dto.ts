@@ -3,6 +3,9 @@ import { IsNotEmpty, IsOptional, IsString, IsEnum, IsDate } from 'class-validato
 import { Type } from 'class-transformer';
 import { PostType, PostStatus } from '@prisma/client';
 
+/**
+ * DTO for creating a new post.
+ */
 export class CreatePostDto {
     @IsString()
     @IsNotEmpty()

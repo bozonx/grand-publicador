@@ -12,6 +12,15 @@ export class PostsService {
         private permissions: PermissionsService,
     ) { }
 
+    /**
+     * Create a new post in a specific channel.
+     * Requires OWNER, ADMIN, or EDITOR role in the channel's project.
+     * 
+     * @param userId - The ID of the user creating the post.
+     * @param channelId - The ID of the target channel.
+     * @param data - The post creation data.
+     * @returns The created post.
+     */
     async create(userId: string, channelId: string, data: {
         content: string;
         socialMedia: string;
@@ -49,6 +58,14 @@ export class PostsService {
         });
     }
 
+    /**
+     * Retrieve all posts for a specific channel.
+     * Validates that the user has access to the channel.
+     * 
+     * @param channelId - The ID of the channel.
+     * @param userId - The ID of the user.
+     * @returns A list of posts, ordered by creation date (descending).
+     */
     async findAllForChannel(channelId: string, userId: string) {
         await this.channelsService.findOne(channelId, userId); // Validates access
         return this.prisma.post.findMany({
@@ -57,6 +74,15 @@ export class PostsService {
         });
     }
 
+    /**
+     * Find a single post by ID.
+     * Ensures the user has access to the channel containing the post.
+     * 
+     * @param id - The ID of the post.
+     * @param userId - The ID of the user.
+     * @returns The post details.
+     * @throws NotFoundException if the post does not exist.
+     */
     async findOne(id: string, userId: string) {
         const post = await this.prisma.post.findUnique({
             where: { id },
@@ -70,6 +96,15 @@ export class PostsService {
         return post;
     }
 
+    /**
+     * Update an existing post.
+     * Allowed for the post author or project OWNER/ADMIN.
+     * 
+     * @param id - The ID of the post.
+     * @param userId - The ID of the user.
+     * @param data - The data to update.
+     * @throws ForbiddenException if the user lacks permissions.
+     */
     async update(id: string, userId: string, data: {
         content?: string;
         title?: string;
@@ -113,6 +148,13 @@ export class PostsService {
         });
     }
 
+    /**
+     * Remove a post.
+     * Allowed for the post author or project OWNER/ADMIN.
+     * 
+     * @param id - The ID of the post to remove.
+     * @param userId - The ID of the user.
+     */
     async remove(id: string, userId: string) {
         const post = await this.findOne(id, userId);
 

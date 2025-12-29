@@ -15,8 +15,9 @@ import { AutomationService } from './automation.service.js';
 import { UpdatePostStatusDto } from './dto/automation.dto.js';
 
 /**
- * Automation API for scheduled publishing
- * Protected by API key authentication
+ * Automation API for polling and updating scheduled posts.
+ * Designed for use by the background worker service.
+ * Protected by API key authentication.
  */
 @Controller('automation/v1')
 @UseGuards(ApiKeyGuard)

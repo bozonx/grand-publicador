@@ -3,6 +3,9 @@ import { IsOptional, IsString, IsEnum, IsDate } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PostStatus } from '@prisma/client';
 
+/**
+ * DTO for updating an existing post.
+ */
 export class UpdatePostDto {
     @IsString()
     @IsOptional()

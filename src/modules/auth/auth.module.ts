@@ -7,6 +7,10 @@ import { AuthController } from './auth.controller.js';
 import { JwtStrategy } from './jwt.strategy.js';
 import { UsersModule } from '../users/users.module.js';
 
+/**
+ * Module for authentication and authorization.
+ * Configures JWT strategy and Passport.
+ */
 @Module({
     imports: [
         ConfigModule,

@@ -2,6 +2,9 @@
 import { IsNotEmpty, IsOptional, IsString, IsEnum, IsObject } from 'class-validator';
 import { SocialMedia } from '@prisma/client';
 
+/**
+ * DTO for creating a new social media channel.
+ */
 export class CreateChannelDto {
     @IsString()
     @IsNotEmpty()

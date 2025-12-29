@@ -8,6 +8,9 @@ import {
 } from 'class-validator';
 import { PostStatus } from '@prisma/client';
 
+/**
+ * DTO for creating a publication via external API.
+ */
 export class CreateExternalPublicationDto {
     @IsString()
     @IsNotEmpty()
@@ -34,6 +37,9 @@ export class CreateExternalPublicationDto {
     status?: PostStatus;
 }
 
+/**
+ * DTO for scheduling a publication via external API.
+ */
 export class SchedulePublicationDto {
     @IsString()
     @IsNotEmpty()

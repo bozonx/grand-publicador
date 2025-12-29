@@ -7,6 +7,9 @@ import {
 } from 'class-validator';
 import { PostStatus } from '@prisma/client';
 
+/**
+ * DTO for updating an existing publication.
+ */
 export class UpdatePublicationDto {
     @IsString()
     @IsOptional()

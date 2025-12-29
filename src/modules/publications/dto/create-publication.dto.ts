@@ -8,6 +8,9 @@ import {
 } from 'class-validator';
 import { PostStatus } from '@prisma/client';
 
+/**
+ * DTO for creating a new publication.
+ */
 export class CreatePublicationDto {
     @IsString()
     @IsNotEmpty()

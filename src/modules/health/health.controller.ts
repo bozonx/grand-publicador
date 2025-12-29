@@ -1,8 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
 
 /**
- * Simple health check controller
- * Provides a minimal `/health` endpoint
+ * Health check controller.
+ * Provides endpoints to verify the application's readiness and liveness.
  */
 @Controller('health')
 export class HealthController {

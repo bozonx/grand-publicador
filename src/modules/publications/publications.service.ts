@@ -15,8 +15,13 @@ export class PublicationsService {
     ) { }
 
     /**
-     * Create a new publication
-     * If userId is provided, checks permissions. Otherwise assumes system/external call.
+     * Create a new publication.
+     * If userId is provided, it checks if the user has access to the project.
+     * If userId is not provided, it assumes a system call or external integration (skipped permission check).
+     * 
+     * @param data - The publication creation data.
+     * @param userId - Optional ID of the user creating the publication.
+     * @returns The created publication.
      */
     async create(data: CreatePublicationDto, userId?: string) {
         if (userId) {
@@ -39,7 +44,13 @@ export class PublicationsService {
     }
 
     /**
-     * Find all publications for a project
+     * Retrieve all publications for a project, optionally filtered.
+     * Validates that the user has access to the project.
+     * 
+     * @param projectId - The ID of the project.
+     * @param userId - The ID of the user.
+     * @param filters - Optional filters (status, limit, offset).
+     * @returns A list of publications with associated data (author, posts).
      */
     async findAll(
         projectId: string,
@@ -86,7 +97,13 @@ export class PublicationsService {
     }
 
     /**
-     * Find one publication by ID
+     * Find a single publication by ID.
+     * Ensures the user has access to the project containing the publication.
+     * 
+     * @param id - The ID of the publication.
+     * @param userId - The ID of the user.
+     * @returns The publication details.
+     * @throws NotFoundException if the publication does not exist.
      */
     async findOne(id: string, userId: string) {
         const publication = await this.prisma.publication.findUnique({
@@ -119,7 +136,12 @@ export class PublicationsService {
     }
 
     /**
-     * Update a publication
+     * Update an existing publication.
+     * Allowed for the author or project OWNER/ADMIN.
+     * 
+     * @param id - The ID of the publication.
+     * @param userId - The ID of the user.
+     * @param data - The data to update.
      */
     async update(id: string, userId: string, data: UpdatePublicationDto) {
         const publication = await this.findOne(id, userId);
@@ -149,7 +171,11 @@ export class PublicationsService {
     }
 
     /**
-     * Delete a publication
+     * Delete a publication.
+     * Allowed for the author or project OWNER/ADMIN.
+     * 
+     * @param id - The ID of the publication to remove.
+     * @param userId - The ID of the user.
      */
     async remove(id: string, userId: string) {
         const publication = await this.findOne(id, userId);
@@ -169,8 +195,14 @@ export class PublicationsService {
     }
 
     /**
-     * Create posts from publication for specified channels
-     * If userId is provided, verifies ownership/access.
+     * Generate individual posts for specified channels from a publication.
+     * Verifies that all channels belong to the same project as the publication.
+     * 
+     * @param publicationId - The ID of the source publication.
+     * @param channelIds - List of channel IDs to create posts for.
+     * @param userId - Optional user ID (if authenticated request).
+     * @param scheduledAt - Optional schedule time for the posts.
+     * @returns The created posts.
      */
     async createPostsFromPublication(
         publicationId: string,

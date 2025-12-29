@@ -1,6 +1,9 @@
 
 import { IsOptional, IsString, IsBoolean, IsObject } from 'class-validator';
 
+/**
+ * DTO for updating an existing channel.
+ */
 export class UpdateChannelDto {
     @IsString()
     @IsOptional()

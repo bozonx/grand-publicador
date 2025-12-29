@@ -10,8 +10,13 @@ export class AutomationService {
     constructor(private prisma: PrismaService) { }
 
     /**
-     * Get posts that are ready to be published
-     * Status: SCHEDULED and scheduledAt <= now
+     * Get posts that are ready to be published.
+     * Criteria: Status is SCHEDULED and scheduledAt is in the past (up to a lookback window).
+     * Also marks posts older than the lookback window as EXPIRED.
+     * 
+     * @param limit - Maximum number of posts to retrieve.
+     * @param lookbackMinutes - Window in minutes to check for pending posts.
+     * @returns A list of pending posts with related data.
      */
     async getPendingPosts(limit: number = 10, lookbackMinutes: number = 60) {
         const now = new Date();
@@ -62,8 +67,12 @@ export class AutomationService {
     }
 
     /**
-     * Claim a post for publishing
-     * This is an atomic operation to prevent race conditions
+     * Claim a post for publishing.
+     * Atomic operation that sets a 'processing' flag in the meta field to prevent race conditions.
+     * 
+     * @param postId - The ID of the post to claim.
+     * @returns The updated post with claim metadata.
+     * @throws Error if post is not found, not scheduled, or already being processed.
      */
     async claimPost(postId: string) {
         this.logger.log(`Claiming post ${postId}`);
@@ -113,7 +122,13 @@ export class AutomationService {
     }
 
     /**
-     * Update post status after publishing attempt
+     * Update post status after a publishing attempt.
+     * Removes the 'processing' flag and updates the status and last error if applicable.
+     * 
+     * @param postId - The ID of the post.
+     * @param status - The new status (e.g., PUBLISHED, FAILED).
+     * @param error - Optional error message if the attempt failed.
+     * @returns The updated post.
      */
     async updatePostStatus(
         postId: string,

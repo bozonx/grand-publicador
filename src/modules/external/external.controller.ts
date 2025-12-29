@@ -7,8 +7,8 @@ import {
 } from './dto/external.dto.js';
 
 /**
- * External API controller for n8n and other automation tools
- * Protected by API key authentication
+ * External API controller for third-party integrations (e.g., n8n, Zapier).
+ * protected by API key authentication mechanisms ensuring secure access.
  */
 @Controller('external')
 @UseGuards(ApiKeyGuard)
