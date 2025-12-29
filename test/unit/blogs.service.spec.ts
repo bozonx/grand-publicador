@@ -2,11 +2,13 @@ import { Test, type TestingModule } from '@nestjs/testing';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { BlogsService } from '../../src/modules/blogs/blogs.service.js';
 import { PrismaService } from '../../src/modules/prisma/prisma.service.js';
+import { PermissionsService } from '../../src/common/services/permissions.service.js';
 import { jest } from '@jest/globals';
 
 describe('BlogsService (unit)', () => {
   let service: BlogsService;
   let prisma: PrismaService;
+  let permissions: PermissionsService;
   let moduleRef: TestingModule;
 
   const mockPrismaService = {
@@ -24,6 +26,12 @@ describe('BlogsService (unit)', () => {
     },
   };
 
+  const mockPermissionsService = {
+    checkProjectAccess: jest.fn(),
+    checkProjectPermission: jest.fn(),
+    getUserProjectRole: jest.fn(),
+  };
+
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
       providers: [
@@ -32,11 +40,16 @@ describe('BlogsService (unit)', () => {
           provide: PrismaService,
           useValue: mockPrismaService,
         },
+        {
+          provide: PermissionsService,
+          useValue: mockPermissionsService,
+        },
       ],
     }).compile();
 
     service = moduleRef.get<BlogsService>(BlogsService);
     prisma = moduleRef.get<PrismaService>(PrismaService);
+    permissions = moduleRef.get<PermissionsService>(PermissionsService);
   });
 
   afterAll(async () => {
@@ -109,12 +122,6 @@ describe('BlogsService (unit)', () => {
       const projectId = 'project-1';
       const userId = 'user-1';
 
-      const mockMembership = {
-        projectId,
-        userId,
-        role: 'EDITOR',
-      };
-
       const mockProject = {
         id: projectId,
         name: 'Test Project',
@@ -122,7 +129,7 @@ describe('BlogsService (unit)', () => {
         members: [],
       };
 
-      mockPrismaService.projectMember.findUnique.mockResolvedValue(mockMembership);
+      mockPermissionsService.getUserProjectRole.mockResolvedValue('EDITOR');
       mockPrismaService.project.findUnique.mockResolvedValue(mockProject);
 
       const result = await service.findOne(projectId, userId);
@@ -130,11 +137,11 @@ describe('BlogsService (unit)', () => {
       expect(result).toEqual({ ...mockProject, role: 'EDITOR' });
     });
 
-    it('should throw ForbiddenException when user is not a member', async () => {
+    it('should throw ForbiddenException when user has no role', async () => {
       const projectId = 'project-1';
       const userId = 'user-1';
 
-      mockPrismaService.projectMember.findUnique.mockResolvedValue(null);
+      mockPermissionsService.getUserProjectRole.mockResolvedValue(null);
 
       await expect(service.findOne(projectId, userId)).rejects.toThrow(
         ForbiddenException,
@@ -148,11 +155,7 @@ describe('BlogsService (unit)', () => {
       const userId = 'user-1';
       const updateData = { name: 'Updated Name' };
 
-      mockPrismaService.projectMember.findUnique.mockResolvedValue({
-        projectId,
-        userId,
-        role: 'OWNER',
-      });
+      mockPermissionsService.checkProjectPermission.mockResolvedValue(undefined);
 
       const updatedProject = {
         id: projectId,
@@ -164,6 +167,11 @@ describe('BlogsService (unit)', () => {
       const result = await service.update(projectId, userId, updateData);
 
       expect(result).toEqual(updatedProject);
+      expect(mockPermissionsService.checkProjectPermission).toHaveBeenCalledWith(
+        projectId,
+        userId,
+        ['OWNER', 'ADMIN'],
+      );
     });
 
     it('should throw ForbiddenException when EDITOR tries to update', async () => {
@@ -171,11 +179,9 @@ describe('BlogsService (unit)', () => {
       const userId = 'user-1';
       const updateData = { name: 'Hacked' };
 
-      mockPrismaService.projectMember.findUnique.mockResolvedValue({
-        projectId,
-        userId,
-        role: 'EDITOR',
-      });
+      mockPermissionsService.checkProjectPermission.mockRejectedValue(
+        new ForbiddenException('Insufficient permissions'),
+      );
 
       await expect(
         service.update(projectId, userId, updateData),
@@ -188,28 +194,27 @@ describe('BlogsService (unit)', () => {
       const projectId = 'project-1';
       const userId = 'user-1';
 
-      mockPrismaService.projectMember.findUnique.mockResolvedValue({
-        projectId,
-        userId,
-        role: 'OWNER',
-      });
+      mockPermissionsService.checkProjectPermission.mockResolvedValue(undefined);
 
       mockPrismaService.project.delete.mockResolvedValue({
         id: projectId,
       });
 
       await expect(service.remove(projectId, userId)).resolves.toBeDefined();
+      expect(mockPermissionsService.checkProjectPermission).toHaveBeenCalledWith(
+        projectId,
+        userId,
+        ['OWNER'],
+      );
     });
 
     it('should throw ForbiddenException when ADMIN tries to delete', async () => {
       const projectId = 'project-1';
       const userId = 'user-1';
 
-      mockPrismaService.projectMember.findUnique.mockResolvedValue({
-        projectId,
-        userId,
-        role: 'ADMIN',
-      });
+      mockPermissionsService.checkProjectPermission.mockRejectedValue(
+        new ForbiddenException('Insufficient permissions'),
+      );
 
       await expect(service.remove(projectId, userId)).rejects.toThrow(
         ForbiddenException,

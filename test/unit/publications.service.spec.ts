@@ -183,11 +183,7 @@ describe('PublicationsService (unit)', () => {
             };
 
             mockPrismaService.publication.findUnique.mockResolvedValue(mockPublication);
-            mockPrismaService.projectMember.findUnique.mockResolvedValue({
-                projectId: 'project-1',
-                userId,
-                role: 'EDITOR',
-            });
+            mockPermissionsService.checkProjectAccess.mockResolvedValue(undefined);
 
             const updatedPublication = { ...mockPublication, ...updateDto };
             mockPrismaService.publication.update.mockResolvedValue(updatedPublication);
@@ -210,11 +206,8 @@ describe('PublicationsService (unit)', () => {
             };
 
             mockPrismaService.publication.findUnique.mockResolvedValue(mockPublication);
-            mockPrismaService.projectMember.findUnique.mockResolvedValue({
-                projectId: 'project-1',
-                userId,
-                role: 'ADMIN', // Admin role
-            });
+            mockPermissionsService.checkProjectAccess.mockResolvedValue(undefined);
+            mockPermissionsService.checkProjectPermission.mockResolvedValue(undefined);
 
             mockPrismaService.publication.update.mockResolvedValue({
                 ...mockPublication,
@@ -238,11 +231,10 @@ describe('PublicationsService (unit)', () => {
             };
 
             mockPrismaService.publication.findUnique.mockResolvedValue(mockPublication);
-            mockPrismaService.projectMember.findUnique.mockResolvedValue({
-                projectId: 'project-1',
-                userId,
-                role: 'EDITOR', // Not admin
-            });
+            mockPermissionsService.checkProjectAccess.mockResolvedValue(undefined);
+            mockPermissionsService.checkProjectPermission.mockRejectedValue(
+                new ForbiddenException('Insufficient permissions'),
+            );
 
             await expect(
                 service.update(publicationId, userId, updateDto),
@@ -281,11 +273,7 @@ describe('PublicationsService (unit)', () => {
             ];
 
             mockPrismaService.publication.findUnique.mockResolvedValue(mockPublication);
-            mockPrismaService.projectMember.findUnique.mockResolvedValue({
-                projectId: 'project-1',
-                userId,
-                role: 'EDITOR',
-            });
+            mockPermissionsService.checkProjectAccess.mockResolvedValue(undefined);
             mockPrismaService.channel.findMany.mockResolvedValue(mockChannels);
 
             const mockPosts = mockChannels.map((channel) => ({
@@ -331,11 +319,7 @@ describe('PublicationsService (unit)', () => {
             ];
 
             mockPrismaService.publication.findUnique.mockResolvedValue(mockPublication);
-            mockPrismaService.projectMember.findUnique.mockResolvedValue({
-                projectId: 'project-1',
-                userId,
-                role: 'EDITOR',
-            });
+            mockPermissionsService.checkProjectAccess.mockResolvedValue(undefined);
             mockPrismaService.channel.findMany.mockResolvedValue(mockChannels);
 
             await expect(
@@ -359,11 +343,7 @@ describe('PublicationsService (unit)', () => {
             ];
 
             mockPrismaService.publication.findUnique.mockResolvedValue(mockPublication);
-            mockPrismaService.projectMember.findUnique.mockResolvedValue({
-                projectId: 'project-1',
-                userId,
-                role: 'EDITOR',
-            });
+            mockPermissionsService.checkProjectAccess.mockResolvedValue(undefined);
             mockPrismaService.channel.findMany.mockResolvedValue(mockChannels);
 
             mockPrismaService.post.create.mockImplementation(({ data }: any) =>
@@ -393,11 +373,7 @@ describe('PublicationsService (unit)', () => {
             };
 
             mockPrismaService.publication.findUnique.mockResolvedValue(mockPublication);
-            mockPrismaService.projectMember.findUnique.mockResolvedValue({
-                projectId: 'project-1',
-                userId,
-                role: 'EDITOR',
-            });
+            mockPermissionsService.checkProjectAccess.mockResolvedValue(undefined);
 
             mockPrismaService.publication.delete.mockResolvedValue(mockPublication);
 
@@ -418,11 +394,10 @@ describe('PublicationsService (unit)', () => {
             };
 
             mockPrismaService.publication.findUnique.mockResolvedValue(mockPublication);
-            mockPrismaService.projectMember.findUnique.mockResolvedValue({
-                projectId: 'project-1',
-                userId,
-                role: 'VIEWER', // Not admin
-            });
+            mockPermissionsService.checkProjectAccess.mockResolvedValue(undefined);
+            mockPermissionsService.checkProjectPermission.mockRejectedValue(
+                new ForbiddenException('Insufficient permissions'),
+            );
 
             await expect(service.remove(publicationId, userId)).rejects.toThrow(
                 ForbiddenException,

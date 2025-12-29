@@ -371,10 +371,10 @@ describe('AutomationService (unit)', () => {
                 meta: '{}',
             };
 
-            mockPrismaService.post.findUnique.mockResolvedValue(mockPost);
-            mockPrismaService.post.update.mockResolvedValue({ ...mockPost });
-
             // First update to FAILED
+            mockPrismaService.post.findUnique.mockResolvedValueOnce(mockPost);
+            mockPrismaService.post.update.mockResolvedValueOnce({ ...mockPost });
+
             await service.updatePostStatus(postId, 'FAILED', 'Error 1');
 
             let updatedMeta = JSON.parse(
@@ -382,7 +382,14 @@ describe('AutomationService (unit)', () => {
             );
             expect(updatedMeta.lastError).toBe('Error 1');
 
-            // Second update to PUBLISHED
+            // Second update to PUBLISHED - mock the post with updated meta from first call
+            const postAfterFirstUpdate = {
+                ...mockPost,
+                meta: mockPrismaService.post.update.mock.calls[0][0].data.meta,
+            };
+            mockPrismaService.post.findUnique.mockResolvedValueOnce(postAfterFirstUpdate);
+            mockPrismaService.post.update.mockResolvedValueOnce({ ...mockPost });
+
             await service.updatePostStatus(postId, 'PUBLISHED');
 
             updatedMeta = JSON.parse(
