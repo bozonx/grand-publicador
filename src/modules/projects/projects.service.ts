@@ -15,7 +15,12 @@ export class ProjectsService {
     ) { }
 
     /**
-     * Creates a new project
+     * Creates a new project and assigns the creator as the owner.
+     * This is done in a transaction to ensure both the project and the membership record are created.
+     * 
+     * @param userId - The ID of the user creating the project.
+     * @param data - The project creation data.
+     * @returns The created project.
      */
     async create(userId: string, data: CreateProjectDto): Promise<Project> {
         this.logger.log(`Creating project "${data.name}" for user ${userId}`);
@@ -44,7 +49,12 @@ export class ProjectsService {
     }
 
     /**
-     * Returns all projects available to the user
+     * Returns all projects available to the user.
+     * Filters projects where the user is a member (including owner).
+     * 
+     * @param userId - The ID of the user.
+     * @param options - Pagination options (limit, offset).
+     * @returns A list of projects including member count and channel count.
      */
     async findAllForUser(userId: string, options?: { limit?: number; offset?: number }) {
         const take = options?.limit ?? 50;
@@ -71,7 +81,14 @@ export class ProjectsService {
     }
 
     /**
-     * Find one project by ID with security check
+     * Find one project by ID with security check.
+     * Verifies that the user is a member of the project before returning it.
+     * 
+     * @param projectId - The ID of the project.
+     * @param userId - The ID of the user.
+     * @returns The project details including channels, members, and the user's role.
+     * @throws ForbiddenException if the user is not a member.
+     * @throws NotFoundException if the project does not exist.
      */
     async findOne(projectId: string, userId: string): Promise<Project & { role: string }> {
         const role = await this.permissions.getUserProjectRole(projectId, userId);
@@ -100,7 +117,12 @@ export class ProjectsService {
     }
 
     /**
-     * Update project details
+     * Update project details.
+     * Requires OWNER or ADMIN role.
+     * 
+     * @param projectId - The ID of the project.
+     * @param userId - The ID of the user.
+     * @param data - The data to update.
      */
     async update(projectId: string, userId: string, data: UpdateProjectDto) {
         await this.permissions.checkProjectPermission(
@@ -116,7 +138,11 @@ export class ProjectsService {
     }
 
     /**
-     * Remove project
+     * Remove a project.
+     * Requires OWNER role.
+     * 
+     * @param projectId - The ID of the project.
+     * @param userId - The ID of the user.
      */
     async remove(projectId: string, userId: string) {
         await this.permissions.checkProjectPermission(

@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { User } from '@prisma/client';
 
+/**
+ * Service for managing user data.
+ */
 @Injectable()
 export class UsersService {
     constructor(private prisma: PrismaService) { }
@@ -18,6 +21,13 @@ export class UsersService {
         });
     }
 
+    /**
+     * Find a user by their Telegram ID or create one if they don't exist.
+     * Updates profile information (username, name, avatar) on every login.
+     * 
+     * @param userData - The user data from Telegram.
+     * @returns The existing or newly created User.
+     */
     async findOrCreateTelegramUser(userData: {
         telegramId: bigint;
         username?: string;

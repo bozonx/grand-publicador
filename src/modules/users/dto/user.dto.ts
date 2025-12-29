@@ -16,6 +16,10 @@ export class UserDto {
     @Expose()
     avatarUrl?: string | null;
 
+    /**
+     * The Telegram ID of the user.
+     * Transformed to string to avoid BigInt serialization issues in JSON.
+     */
     @Expose()
     @Transform(({ value }) => value?.toString(), { toPlainOnly: true })
     telegramId?: string | null;

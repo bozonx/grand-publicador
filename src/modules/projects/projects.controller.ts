@@ -19,6 +19,10 @@ import { CreateProjectDto, UpdateProjectDto } from './dto/index.js';
 import { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
 import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
 
+/**
+ * Controller for managing projects.
+ * Handles creation, retrieval, updating, and deletion of projects.
+ */
 @Controller('projects')
 @UseGuards(AuthGuard(JWT_STRATEGY))
 export class ProjectsController {

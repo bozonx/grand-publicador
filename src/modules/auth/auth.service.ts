@@ -8,6 +8,9 @@ import { plainToInstance } from 'class-transformer';
 import { AuthResponseDto } from './dto/auth-response.dto.js';
 import { UserDto } from '../users/dto/user.dto.js';
 
+/**
+ * Interface representing the structure of a Telegram user object received in initData.
+ */
 interface TelegramUser {
     id: number;
     first_name: string;
@@ -18,6 +21,10 @@ interface TelegramUser {
     hash: string;
 }
 
+/**
+ * Service responsible for authentication logic.
+ * Handles Telegram login, token generation, and user profile retrieval.
+ */
 @Injectable()
 export class AuthService {
     private readonly botToken: string;
@@ -34,6 +41,14 @@ export class AuthService {
         }
     }
 
+    /**
+     * Authenticate a user via Telegram Mini App init data.
+     * Validates the data signature and creates/updates the user.
+     * 
+     * @param initData - The raw query string received from the Telegram Mini App.
+     * @returns An object containing the JWT access token and user details.
+     * @throws UnauthorizedException if data validation fails or user is missing.
+     */
     async loginWithTelegram(initData: string): Promise<AuthResponseDto> {
         const isValid = this.validateTelegramInitData(initData);
         if (!isValid) {
@@ -68,6 +83,13 @@ export class AuthService {
         }, { excludeExtraneousValues: true });
     }
 
+    /**
+     * Validate the integrity of data received from Telegram.
+     * Implements the HMAC-SHA256 signature verification described in Telegram documentation.
+     * 
+     * @param initData - The raw query string to validate.
+     * @returns true if the signature is valid, false otherwise.
+     */
     private validateTelegramInitData(initData: string): boolean {
         const urlParams = new URLSearchParams(initData);
         const hash = urlParams.get('hash');
