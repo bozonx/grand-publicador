@@ -4,6 +4,12 @@ import { APP_FILTER } from '@nestjs/core';
 import { LoggerModule } from 'nestjs-pino';
 import { HealthModule } from './modules/health/health.module.js';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
+import { PrismaModule } from './modules/prisma/prisma.module.js';
+import { UsersModule } from './modules/users/users.module.js';
+import { AuthModule } from './modules/auth/auth.module.js';
+import { BlogsModule } from './modules/blogs/blogs.module.js';
+import { ChannelsModule } from './modules/channels/channels.module.js';
+import { PostsModule } from './modules/posts/posts.module.js';
 import appConfig from './config/app.config.js';
 import type { AppConfig } from './config/app.config.js';
 import pkg from '../package.json' with { type: 'json' };
@@ -32,15 +38,15 @@ import pkg from '../package.json' with { type: 'json' };
             },
             transport: isDev
               ? {
-                  target: 'pino-pretty',
-                  options: {
-                    colorize: true,
-                    singleLine: false,
-                    translateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss.l'Z'",
-                    ignore: 'pid,hostname',
-                    messageFormat: '[{context}] {msg}',
-                  },
-                }
+                target: 'pino-pretty',
+                options: {
+                  colorize: true,
+                  singleLine: false,
+                  translateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss.l'Z'",
+                  ignore: 'pid,hostname',
+                  messageFormat: '[{context}] {msg}',
+                },
+              }
               : undefined,
             serializers: {
               req: req => ({
@@ -89,6 +95,12 @@ import pkg from '../package.json' with { type: 'json' };
       },
     }),
     HealthModule,
+    PrismaModule,
+    UsersModule,
+    AuthModule,
+    BlogsModule,
+    ChannelsModule,
+    PostsModule,
   ],
   controllers: [],
   providers: [
@@ -98,4 +110,4 @@ import pkg from '../package.json' with { type: 'json' };
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }

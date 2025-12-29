@@ -1,0 +1,101 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(uuid())
+  email       String?
+  fullName    String?  @map("full_name")
+  username    String?
+  avatarUrl   String?  @map("avatar_url")
+  telegramId  BigInt?  @unique @map("telegram_id")
+  isAdmin     Boolean  @default(false) @map("is_admin")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  ownedBlogs  Blog[]        @relation("BlogOwner")
+  blogMembers BlogMember[]
+  posts       Post[]
+
+  @@map("users")
+}
+
+model Blog {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  ownerId     String   @map("owner_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  owner       User         @relation("BlogOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members     BlogMember[]
+  channels    Channel[]
+
+  @@map("blogs")
+}
+
+model BlogMember {
+  id        String   @id @default(uuid())
+  blogId    String   @map("blog_id")
+  userId    String   @map("user_id")
+  role      String   @default("viewer") // owner, admin, editor, viewer
+  createdAt DateTime @default(now()) @map("created_at")
+
+  blog      Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([blogId, userId])
+  @@map("blog_members")
+}
+
+model Channel {
+  id                String   @id @default(uuid())
+  blogId            String   @map("blog_id")
+  socialMedia       String   @map("social_media") // telegram, instagram, vk, youtube, tiktok, x, facebook, site
+  name              String
+  channelIdentifier String   @map("channel_identifier")
+  credentials       String   @default("{}") // Store as JSON string in SQLite
+  isActive          Boolean  @default(true) @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  blog              Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  posts             Post[]
+
+  @@map("channels")
+}
+
+model Post {
+  id            String    @id @default(uuid())
+  channelId     String    @map("channel_id")
+  authorId      String?   @map("author_id")
+  content       String
+  socialMedia   String    @map("social_media")
+  postType      String    @map("post_type") // post, article, news, video, short
+  title         String?
+  description   String?
+  authorComment String?   @map("author_comment")
+  tags          String?   // Store as comma-separated or JSON string
+  mediaFiles    String    @default("[]") @map("media_files")
+  postDate      DateTime? @map("post_date")
+  status        String    @default("draft") // draft, scheduled, published, failed
+  scheduledAt   DateTime? @map("scheduled_at")
+  publishedAt   DateTime? @map("published_at")
+  meta          String    @default("{}")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  channel       Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  author        User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@map("posts")
+}
