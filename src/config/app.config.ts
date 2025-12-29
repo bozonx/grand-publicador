@@ -58,6 +58,15 @@ export class AppConfig {
   @IsString()
   @IsOptional()
   public apiKey?: string;
+
+  /**
+   * Telegram ID of the super administrator.
+   * Users with this ID will automatically be granted administrative privileges.
+   * Defined by TELEGRAM_ADMIN_ID environment variable.
+   */
+  @IsString()
+  @IsOptional()
+  public adminTelegramId?: string;
 }
 
 export default registerAs('app', (): AppConfig => {
@@ -69,6 +78,7 @@ export default registerAs('app', (): AppConfig => {
     nodeEnv: process.env.NODE_ENV ?? 'production',
     logLevel: process.env.LOG_LEVEL ?? 'warn',
     apiKey: process.env.AUTH_API_KEY ?? process.env.API_KEY, // Fallback for backward compatibility
+    adminTelegramId: process.env.TELEGRAM_ADMIN_ID,
   });
 
   // Perform synchronous validation of the configuration object
