@@ -40,6 +40,7 @@ import pkg from '../package.json' with { type: 'json' };
               service: (pkg as any).name ?? 'app',
               environment: appConfig.nodeEnv,
             },
+            // Use pino-pretty for better readability in development
             transport: isDev
               ? {
                 target: 'pino-pretty',
@@ -70,10 +71,12 @@ import pkg from '../package.json' with { type: 'json' };
                 stack: err.stack,
               }),
             },
+            // Redact sensitive headers to prevent leakage in logs
             redact: {
               paths: ['req.headers.authorization', 'req.headers["x-api-key"]'],
               censor: '[REDACTED]',
             },
+            // Custom log level mapping based on response status code
             customLogLevel: (req, res, err) => {
               if (res.statusCode >= 500 || err) {
                 return 'error';
@@ -87,6 +90,7 @@ import pkg from '../package.json' with { type: 'json' };
               return 'info';
             },
             autoLogging: {
+              // Ignore health checks in production to reduce log noise
               ignore: req => {
                 if (appConfig.nodeEnv === 'production') {
                   return req.url?.includes('/health') ?? false;
@@ -118,4 +122,8 @@ import pkg from '../package.json' with { type: 'json' };
     },
   ],
 })
+/**
+ * The root module of the application.
+ * Configures global imports, providers, and modules.
+ */
 export class AppModule { }

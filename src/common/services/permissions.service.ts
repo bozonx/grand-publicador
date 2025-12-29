@@ -11,10 +11,12 @@ export class PermissionsService {
     constructor(private prisma: PrismaService) { }
 
     /**
-     * Check if user has access to project (any role or owner)
-     */
-    /**
-     * Check if user has access to project (any role or owner)
+     * Check if a user has access to a project.
+     * Access is granted if the user is the owner or a member with any role.
+     * 
+     * @param projectId - The ID of the project to check access for.
+     * @param userId - The ID of the user attempting to access the project.
+     * @throws ForbiddenException if the project doesn't exist or the user has no access.
      */
     async checkProjectAccess(projectId: string, userId: string): Promise<void> {
         const project = await this.prisma.project.findUnique({
@@ -43,8 +45,14 @@ export class PermissionsService {
     }
 
     /**
-     * Check if user has specific permissions in project
-     * Owner always has access regardless of membership role
+     * Check if a user has specific permissions within a project.
+     * The project owner is always granted access.
+     * Member access depends on their role being in the allowedRoles list.
+     *
+     * @param projectId - The ID of the project.
+     * @param userId - The ID of the user.
+     * @param allowedRoles - An array of roles that are permitted to perform the action.
+     * @throws ForbiddenException if project not found or permission denied.
      */
     async checkProjectPermission(
         projectId: string,
@@ -79,8 +87,11 @@ export class PermissionsService {
     }
 
     /**
-     * Get user's role in project
-     * Returns 'OWNER' if user is project owner, otherwise returns membership role
+     * Retrieve the user's role in a specific project.
+     * 
+     * @param projectId - The ID of the project.
+     * @param userId - The ID of the user.
+     * @returns 'OWNER' if the user is the owner, the MemberRole if they are a member, or null if unrelated.
      */
     async getUserProjectRole(projectId: string, userId: string): Promise<ProjectRole | null> {
         const project = await this.prisma.project.findUnique({

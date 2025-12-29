@@ -10,12 +10,18 @@ import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module.js';
 import type { AppConfig } from './config/app.config.js';
 
+/**
+ * Bootstrap the NestJS application.
+ * Initializes the Fastify adapter, global pipes, configuration, and starts the server.
+ */
 async function bootstrap() {
-  // Create app with bufferLogs enabled to capture early logs
+  // Create the app with the Fastify adapter.
+  // We enable bufferLogs to ensure that no logs are lost during the initialization phase
+  // before the custom logger is fully attached.
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({
-      logger: false, // We'll use Pino logger instead
+      logger: false, // Disable Fastify's default logger in favor of NestJS/Pino logger
     }),
     {
       bufferLogs: true,
@@ -35,22 +41,25 @@ async function bootstrap() {
   );
 
   // Configure global API prefix from configuration
+  // If appConfig.basePath is set, prepend it to 'api/v1'
   const globalPrefix = appConfig.basePath ? `${appConfig.basePath}/api/v1` : 'api/v1';
   app.setGlobalPrefix(globalPrefix);
 
   // Serve static assets from ui/dist (Nuxt static build)
+  // We resolve the path relative to the current file location
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
   const staticRoot = path.resolve(__dirname, '..', '..', 'ui', '.output', 'public');
   logger.log(`Serving static files from: ${staticRoot}`, 'Bootstrap');
 
+  // Register the fastify-static plugin to serve the frontend files
   await app.register(fastifyStatic, {
     root: staticRoot,
     prefix: '/',
     wildcard: false,
   });
 
-  // Enable graceful shutdown
+  // Enable graceful shutdown hooks to handle signals (SIGINT, SIGTERM) correctly
   app.enableShutdownHooks();
 
   await app.listen(appConfig.port, appConfig.host);
