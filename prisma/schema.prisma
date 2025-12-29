@@ -24,6 +24,7 @@ model User {
   ownedProjects  Project[]       @relation("ProjectOwner")
   projectMembers ProjectMember[]
   posts          Post[]
+  publications   Publication[]
 
   @@map("users")
 }
@@ -36,9 +37,10 @@ model Project {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  owner    User            @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  members  ProjectMember[]
-  channels Channel[]
+  owner        User            @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members      ProjectMember[]
+  channels     Channel[]
+  publications Publication[]
 
   @@map("projects")
 }
@@ -74,28 +76,49 @@ model Channel {
   @@map("channels")
 }
 
+model Publication {
+  id         String     @id @default(uuid())
+  projectId  String     @map("project_id")
+  authorId   String?    @map("author_id")
+  title      String?
+  content    String
+  mediaFiles String     @default("[]") @map("media_files")
+  tags       String?
+  status     PostStatus @default(DRAFT)
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  author  User?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  posts   Post[]
+
+  @@map("publications")
+}
+
 model Post {
-  id            String     @id @default(uuid())
-  channelId     String     @map("channel_id")
-  authorId      String?    @map("author_id")
-  content       String
-  socialMedia   String     @map("social_media") // Kept as String for flexibility or could link to Channel's socialMedia
-  postType      PostType   @map("post_type")
+  id            String       @id @default(uuid())
+  publicationId String?      @map("publication_id")
+  channelId     String       @map("channel_id")
+  authorId      String?      @map("author_id")
+  content       String?
+  socialMedia   String       @map("social_media") // Kept as String for flexibility or could link to Channel's socialMedia
+  postType      PostType     @map("post_type")
   title         String?
   description   String?
-  authorComment String?    @map("author_comment")
+  authorComment String?      @map("author_comment")
   tags          String? // Store as comma-separated or JSON string
-  mediaFiles    String     @default("[]") @map("media_files")
-  postDate      DateTime?  @map("post_date")
-  status        PostStatus @default(DRAFT)
-  scheduledAt   DateTime?  @map("scheduled_at")
-  publishedAt   DateTime?  @map("published_at")
-  meta          String     @default("{}")
-  createdAt     DateTime   @default(now()) @map("created_at")
-  updatedAt     DateTime   @updatedAt @map("updated_at")
+  mediaFiles    String       @default("[]") @map("media_files")
+  postDate      DateTime?    @map("post_date")
+  status        PostStatus   @default(DRAFT)
+  scheduledAt   DateTime?    @map("scheduled_at")
+  publishedAt   DateTime?    @map("published_at")
+  meta          String       @default("{}")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
 
-  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  author  User?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  publication Publication? @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  channel     Channel      @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  author      User?        @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
   @@map("posts")
 }
@@ -117,7 +140,6 @@ enum SocialMedia {
   FACEBOOK
   LINKEDIN
   SITE
-  OTHER
 }
 
 enum PostType {
