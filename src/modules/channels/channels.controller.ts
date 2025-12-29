@@ -12,16 +12,17 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ChannelsService } from './channels.service.js';
-import { IsNotEmpty, IsOptional, IsString, IsBoolean } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsBoolean, IsEnum } from 'class-validator';
+import { SocialMedia } from '@prisma/client';
 
 class CreateChannelDto {
     @IsString()
     @IsNotEmpty()
-    blogId!: string;
+    projectId!: string;
 
-    @IsString()
+    @IsEnum(SocialMedia)
     @IsNotEmpty()
-    socialMedia!: string;
+    socialMedia!: SocialMedia;
 
     @IsString()
     @IsNotEmpty()
@@ -59,13 +60,13 @@ export class ChannelsController {
 
     @Post()
     create(@Request() req: any, @Body() createChannelDto: CreateChannelDto) {
-        const { blogId, ...data } = createChannelDto;
-        return this.channelsService.create(req.user.userId, blogId, data);
+        const { projectId, ...data } = createChannelDto;
+        return this.channelsService.create(req.user.userId, projectId, data);
     }
 
     @Get()
-    findAll(@Request() req: any, @Query('blogId') blogId: string) {
-        return this.channelsService.findAllForBlog(blogId, req.user.userId);
+    findAll(@Request() req: any, @Query('projectId') projectId: string) {
+        return this.channelsService.findAllForProject(projectId, req.user.userId);
     }
 
     @Get(':id')

@@ -1,6 +1,7 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { BlogsService } from '../blogs/blogs.service.js';
+import { SocialMedia } from '@prisma/client';
 
 @Injectable()
 export class ChannelsService {
@@ -9,17 +10,17 @@ export class ChannelsService {
         private blogsService: BlogsService,
     ) { }
 
-    async create(userId: string, blogId: string, data: {
-        socialMedia: string;
+    async create(userId: string, projectId: string, data: {
+        socialMedia: SocialMedia;
         name: string;
         channelIdentifier: string;
         credentials?: any;
     }) {
-        await this.checkPermission(blogId, userId, ['owner', 'admin', 'editor']);
+        await this.checkPermission(projectId, userId, ['OWNER', 'ADMIN', 'EDITOR']);
 
         return this.prisma.channel.create({
             data: {
-                blogId,
+                projectId,
                 socialMedia: data.socialMedia,
                 name: data.name,
                 channelIdentifier: data.channelIdentifier,
@@ -28,10 +29,10 @@ export class ChannelsService {
         });
     }
 
-    async findAllForBlog(blogId: string, userId: string) {
-        await this.blogsService.findOne(blogId, userId); // Validates membership
+    async findAllForProject(projectId: string, userId: string) {
+        await this.blogsService.findOne(projectId, userId); // Validates membership
         return this.prisma.channel.findMany({
-            where: { blogId },
+            where: { projectId },
             include: {
                 _count: {
                     select: { posts: true },
@@ -49,7 +50,7 @@ export class ChannelsService {
             throw new NotFoundException('Channel not found');
         }
 
-        await this.blogsService.findOne(channel.blogId, userId);
+        await this.blogsService.findOne(channel.projectId, userId);
         return channel;
     }
 
@@ -60,7 +61,7 @@ export class ChannelsService {
         isActive?: boolean;
     }) {
         const channel = await this.findOne(id, userId);
-        await this.checkPermission(channel.blogId, userId, ['owner', 'admin', 'editor']);
+        await this.checkPermission(channel.projectId, userId, ['OWNER', 'ADMIN', 'EDITOR']);
 
         return this.prisma.channel.update({
             where: { id },
@@ -75,17 +76,17 @@ export class ChannelsService {
 
     async remove(id: string, userId: string) {
         const channel = await this.findOne(id, userId);
-        await this.checkPermission(channel.blogId, userId, ['owner', 'admin']);
+        await this.checkPermission(channel.projectId, userId, ['OWNER', 'ADMIN']);
 
         return this.prisma.channel.delete({
             where: { id },
         });
     }
 
-    private async checkPermission(blogId: string, userId: string, allowedRoles: string[]) {
-        const membership = await this.prisma.blogMember.findUnique({
+    private async checkPermission(projectId: string, userId: string, allowedRoles: string[]) {
+        const membership = await this.prisma.projectMember.findUnique({
             where: {
-                blogId_userId: { blogId, userId },
+                projectId_userId: { projectId, userId },
             },
         });
 

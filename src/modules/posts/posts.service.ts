@@ -1,6 +1,7 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ChannelsService } from '../channels/channels.service.js';
+import { PostType, PostStatus } from '@prisma/client';
 
 @Injectable()
 export class PostsService {
@@ -12,17 +13,17 @@ export class PostsService {
     async create(userId: string, channelId: string, data: {
         content: string;
         socialMedia: string;
-        postType: string;
+        postType: PostType;
         title?: string;
         description?: string;
         authorComment?: string;
         tags?: string;
         mediaFiles?: any;
         scheduledAt?: Date;
-        status?: string;
+        status?: PostStatus;
     }) {
         const channel = await this.channelsService.findOne(channelId, userId);
-        await this.checkPermission(channel.blogId, userId, ['owner', 'admin', 'editor']);
+        await this.checkPermission(channel.projectId, userId, ['OWNER', 'ADMIN', 'EDITOR']);
 
         return this.prisma.post.create({
             data: {
@@ -37,7 +38,7 @@ export class PostsService {
                 tags: data.tags,
                 mediaFiles: JSON.stringify(data.mediaFiles || []),
                 scheduledAt: data.scheduledAt,
-                status: data.status || 'draft',
+                status: data.status || PostStatus.DRAFT,
             },
         });
     }
@@ -70,17 +71,17 @@ export class PostsService {
         authorComment?: string;
         tags?: string;
         mediaFiles?: any;
-        status?: string;
+        status?: PostStatus;
         scheduledAt?: Date;
         publishedAt?: Date;
     }) {
         const post = await this.findOne(id, userId);
 
-        // Permission: Only author or admin/owner of the blog can update
+        // Permission: Only author or admin/owner of the project can update
         if (post.authorId !== userId) {
             const channel = await this.prisma.channel.findUnique({ where: { id: post.channelId } });
             if (channel) {
-                await this.checkPermission(channel.blogId, userId, ['owner', 'admin']);
+                await this.checkPermission(channel.projectId, userId, ['OWNER', 'ADMIN']);
             } else {
                 throw new ForbiddenException('Insufficient permissions');
             }
@@ -89,7 +90,14 @@ export class PostsService {
         return this.prisma.post.update({
             where: { id },
             data: {
-                ...data,
+                content: data.content,
+                title: data.title,
+                description: data.description,
+                authorComment: data.authorComment,
+                tags: data.tags,
+                status: data.status,
+                scheduledAt: data.scheduledAt,
+                publishedAt: data.publishedAt,
                 mediaFiles: data.mediaFiles ? JSON.stringify(data.mediaFiles) : undefined,
             },
         });
@@ -98,11 +106,11 @@ export class PostsService {
     async remove(id: string, userId: string) {
         const post = await this.findOne(id, userId);
 
-        // Permission: Only author or admin/owner of the blog can delete
+        // Permission: Only author or admin/owner of the project can delete
         if (post.authorId !== userId) {
             const channel = await this.prisma.channel.findUnique({ where: { id: post.channelId } });
             if (channel) {
-                await this.checkPermission(channel.blogId, userId, ['owner', 'admin']);
+                await this.checkPermission(channel.projectId, userId, ['OWNER', 'ADMIN']);
             } else {
                 throw new ForbiddenException('Insufficient permissions');
             }
@@ -113,10 +121,10 @@ export class PostsService {
         });
     }
 
-    private async checkPermission(blogId: string, userId: string, allowedRoles: string[]) {
-        const membership = await this.prisma.blogMember.findUnique({
+    private async checkPermission(projectId: string, userId: string, allowedRoles: string[]) {
+        const membership = await this.prisma.projectMember.findUnique({
             where: {
-                blogId_userId: { blogId, userId },
+                projectId_userId: { projectId, userId },
             },
         });
 

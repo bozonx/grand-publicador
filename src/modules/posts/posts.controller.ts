@@ -12,7 +12,8 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { PostsService } from './posts.service.js';
-import { IsNotEmpty, IsOptional, IsString, IsDateString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsDateString, IsEnum } from 'class-validator';
+import { PostType, PostStatus } from '@prisma/client';
 
 class CreatePostDto {
     @IsString()
@@ -27,9 +28,9 @@ class CreatePostDto {
     @IsNotEmpty()
     socialMedia!: string;
 
-    @IsString()
+    @IsEnum(PostType)
     @IsNotEmpty()
-    postType!: string;
+    postType!: PostType;
 
     @IsString()
     @IsOptional()
@@ -54,9 +55,9 @@ class CreatePostDto {
     @IsOptional()
     scheduledAt?: Date;
 
-    @IsString()
+    @IsEnum(PostStatus)
     @IsOptional()
-    status?: string;
+    status?: PostStatus;
 }
 
 class UpdatePostDto {
@@ -83,9 +84,9 @@ class UpdatePostDto {
     @IsOptional()
     mediaFiles?: any;
 
-    @IsString()
+    @IsEnum(PostStatus)
     @IsOptional()
-    status?: string;
+    status?: PostStatus;
 
     @IsDateString()
     @IsOptional()

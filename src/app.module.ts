@@ -12,6 +12,9 @@ import { ChannelsModule } from './modules/channels/channels.module.js';
 import { PostsModule } from './modules/posts/posts.module.js';
 import appConfig from './config/app.config.js';
 import type { AppConfig } from './config/app.config.js';
+import { PublicationsModule } from './modules/publications/publications.module.js';
+import { ExternalModule } from './modules/external/external.module.js';
+import { AutomationModule } from './modules/automation/automation.module.js';
 import pkg from '../package.json' with { type: 'json' };
 
 @Module({
@@ -101,6 +104,9 @@ import pkg from '../package.json' with { type: 'json' };
     BlogsModule,
     ChannelsModule,
     PostsModule,
+    PublicationsModule,
+    ExternalModule,
+    AutomationModule,
   ],
   controllers: [],
   providers: [

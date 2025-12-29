@@ -20,6 +20,9 @@ export class AppConfig {
   // Allow only Pino log levels
   @IsIn(['trace', 'debug', 'info', 'warn', 'error', 'fatal', 'silent'])
   public logLevel!: string;
+
+  @IsString()
+  public apiKey?: string;
 }
 
 export default registerAs('app', (): AppConfig => {
@@ -29,6 +32,7 @@ export default registerAs('app', (): AppConfig => {
     basePath: (process.env.BASE_PATH ?? '').replace(/^\/+|\/+$/g, ''),
     nodeEnv: process.env.NODE_ENV ?? 'production',
     logLevel: process.env.LOG_LEVEL ?? 'warn',
+    apiKey: process.env.API_KEY,
   });
 
   const errors = validateSync(config, {

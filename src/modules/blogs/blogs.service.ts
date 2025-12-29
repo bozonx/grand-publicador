@@ -1,14 +1,14 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { Blog, BlogMember, User } from '@prisma/client';
+import { Project, ProjectMember } from '@prisma/client';
 
 @Injectable()
 export class BlogsService {
     constructor(private prisma: PrismaService) { }
 
-    async create(userId: string, data: { name: string; description?: string }): Promise<Blog> {
+    async create(userId: string, data: { name: string; description?: string }): Promise<Project> {
         return this.prisma.$transaction(async (tx) => {
-            const blog = await tx.blog.create({
+            const project = await tx.project.create({
                 data: {
                     name: data.name,
                     description: data.description,
@@ -16,20 +16,20 @@ export class BlogsService {
                 },
             });
 
-            await tx.blogMember.create({
+            await tx.projectMember.create({
                 data: {
-                    blogId: blog.id,
+                    projectId: project.id,
                     userId: userId,
-                    role: 'owner',
+                    role: 'OWNER',
                 },
             });
 
-            return blog;
+            return project;
         });
     }
 
     async findAllForUser(userId: string) {
-        return this.prisma.blog.findMany({
+        return this.prisma.project.findMany({
             where: {
                 members: {
                     some: {
@@ -46,19 +46,19 @@ export class BlogsService {
         });
     }
 
-    async findOne(blogId: string, userId: string): Promise<Blog & { role: string }> {
-        const membership = await this.prisma.blogMember.findUnique({
+    async findOne(projectId: string, userId: string): Promise<Project & { role: string }> {
+        const membership = await this.prisma.projectMember.findUnique({
             where: {
-                blogId_userId: { blogId, userId },
+                projectId_userId: { projectId, userId },
             },
         });
 
         if (!membership) {
-            throw new ForbiddenException('You are not a member of this blog');
+            throw new ForbiddenException('You are not a member of this project');
         }
 
-        const blog = await this.prisma.blog.findUnique({
-            where: { id: blogId },
+        const project = await this.prisma.project.findUnique({
+            where: { id: projectId },
             include: {
                 channels: true,
                 members: {
@@ -69,32 +69,32 @@ export class BlogsService {
             },
         });
 
-        if (!blog) {
-            throw new NotFoundException('Blog not found');
+        if (!project) {
+            throw new NotFoundException('Project not found');
         }
 
-        return { ...blog, role: membership.role };
+        return { ...project, role: membership.role };
     }
 
-    async update(blogId: string, userId: string, data: { name?: string; description?: string }) {
-        await this.checkPermission(blogId, userId, ['owner', 'admin']);
-        return this.prisma.blog.update({
-            where: { id: blogId },
+    async update(projectId: string, userId: string, data: { name?: string; description?: string }) {
+        await this.checkPermission(projectId, userId, ['OWNER', 'ADMIN']);
+        return this.prisma.project.update({
+            where: { id: projectId },
             data,
         });
     }
 
-    async remove(blogId: string, userId: string) {
-        await this.checkPermission(blogId, userId, ['owner']);
-        return this.prisma.blog.delete({
-            where: { id: blogId },
+    async remove(projectId: string, userId: string) {
+        await this.checkPermission(projectId, userId, ['OWNER']);
+        return this.prisma.project.delete({
+            where: { id: projectId },
         });
     }
 
-    private async checkPermission(blogId: string, userId: string, allowedRoles: string[]) {
-        const membership = await this.prisma.blogMember.findUnique({
+    private async checkPermission(projectId: string, userId: string, allowedRoles: string[]) {
+        const membership = await this.prisma.projectMember.findUnique({
             where: {
-                blogId_userId: { blogId, userId },
+                projectId_userId: { projectId, userId },
             },
         });
 
