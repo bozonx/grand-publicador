@@ -1,77 +1,11 @@
 <script setup lang="ts">
 const { t } = useI18n()
-const { loginWithTelegram, isLoading, error } = useAuth()
+const { loginWithTelegram, loginWithDev, isLoading, error } = useAuth()
 const config = useRuntimeConfig()
 const router = useRouter()
 
 const isDev = config.public.devMode === 'true'
 const isTelegramContent = ref(true)
-
-async function generateDevInitData() {
-  const token = config.public.devTelegramBotToken
-  const id = config.public.devTelegramId
-  
-  if (!token || !id) {
-    throw new Error('Missing devTelegramBotToken or devTelegramId')
-  }
-
-  const timestamp = Math.floor(Date.now() / 1000)
-  
-  const user = {
-    id: Number(id),
-    first_name: 'Dev',
-    last_name: 'User',
-    username: 'dev_user',
-    language_code: 'en'
-  }
-  
-  // Construct params map
-  const params = new Map<string, string>()
-  params.set('auth_date', String(timestamp))
-  params.set('query_id', 'AAEZnJ8AAAAAAGecnwACF9_b')
-  params.set('user', JSON.stringify(user))
-
-  // Create data check string
-  const sortedKeys = Array.from(params.keys()).sort()
-  const dataCheckString = sortedKeys.map(key => `${key}=${params.get(key)}`).join('\n')
-  
-  // HMAC-SHA256 Implementation
-  const enc = new TextEncoder()
-  
-  // 1. Create secret key
-  // Key: "WebAppData", Message: Bot Token
-  const keyWebAppData = await crypto.subtle.importKey(
-    "raw",
-    enc.encode("WebAppData"),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  )
-  const secretKeyBuffer = await crypto.subtle.sign("HMAC", keyWebAppData, enc.encode(token))
-  
-  // 2. Sign data check string
-  const keySecret = await crypto.subtle.importKey(
-    "raw",
-    secretKeyBuffer,
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  )
-  const hashBuffer = await crypto.subtle.sign("HMAC", keySecret, enc.encode(dataCheckString))
-  
-  // Convert hash to hex
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
-  
-  // Return final search params string
-  const urlParams = new URLSearchParams()
-  for (const [key, value] of params) {
-    urlParams.append(key, value)
-  }
-  urlParams.append('hash', hashHex)
-  
-  return urlParams.toString()
-}
 
 onMounted(async () => {
   // @ts-ignore
@@ -88,8 +22,7 @@ onMounted(async () => {
   } else if (isDev) {
      console.log("Dev mode detected, attempting auto-login...")
      try {
-       const initData = await generateDevInitData()
-       await loginWithTelegram(initData)
+       await loginWithDev()
        router.push('/')
      } catch (e) {
        console.error("Dev login failed", e)
