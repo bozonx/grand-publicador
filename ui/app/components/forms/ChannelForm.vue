@@ -35,21 +35,28 @@ const {
   getSocialMediaColor,
 } = useChannels()
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const form = ref<{ node: any } | null>(null)
-
 const isEditMode = computed(() => !!props.channel?.id)
+
+// Form state
+const state = reactive({
+  name: props.channel?.name || '',
+  socialMedia: (props.channel?.socialMedia || 'telegram') as SocialMediaEnum,
+  channelIdentifier: props.channel?.channelIdentifier || '',
+  isActive: props.channel?.isActive ?? true,
+})
 
 /**
  * Form submission handler
  */
-async function handleSubmit(data: Record<string, unknown>) {
+async function handleSubmit() {
+  if (!state.name || !state.channelIdentifier) return
+
   if (isEditMode.value && props.channel) {
     // Update existing channel
     const updateData: ChannelUpdateInput = {
-      name: data.name as string,
-      channelIdentifier: data.channel_identifier as string,
-      isActive: data.is_active as boolean,
+      name: state.name,
+      channelIdentifier: state.channelIdentifier,
+      isActive: state.isActive,
     }
 
     const result = await updateChannel(props.channel.id, updateData)
@@ -60,10 +67,10 @@ async function handleSubmit(data: Record<string, unknown>) {
     // Create new channel
     const result = await createChannel({
       projectId: props.projectId,
-      name: data.name as string,
-      socialMedia: data.social_media as SocialMediaEnum,
-      channelIdentifier: data.channel_identifier as string,
-      isActive: data.is_active as boolean,
+      name: state.name,
+      socialMedia: state.socialMedia,
+      channelIdentifier: state.channelIdentifier,
+      isActive: state.isActive,
     })
 
     if (result) {
@@ -74,13 +81,6 @@ async function handleSubmit(data: Record<string, unknown>) {
 
 function handleCancel() {
   emit('cancel')
-}
-
-/**
- * Programmatically submit the form
- */
-function submitForm() {
-  form.value?.node.submit()
 }
 
 /**
@@ -117,19 +117,11 @@ function getIdentifierHelp(socialMedia: SocialMediaEnum | undefined): string {
   return socialMedia ? helps[socialMedia] : t('channel.identifierHelp')
 }
 
-// Selected social media for dynamic placeholder
-const selectedSocialMedia = ref<SocialMediaEnum | undefined>(props.channel?.socialMedia)
-
-// Watch for changes in form to update placeholder
-function onSocialMediaChange(value: string | undefined) {
-  if (value) {
-    selectedSocialMedia.value = value as SocialMediaEnum
-  }
-}
+const currentSocialMedia = computed(() => (isEditMode.value ? props.channel?.socialMedia : state.socialMedia))
 </script>
 
 <template>
-  <div>
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
     <div class="mb-6">
       <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
         {{ isEditMode ? t('channel.editChannel') : t('channel.createChannel') }}
@@ -139,149 +131,123 @@ function onSocialMediaChange(value: string | undefined) {
       </p>
     </div>
 
-    <FormKit ref="form" type="form" :actions="false" @submit="handleSubmit">
-      <div class="space-y-6">
-        <!-- Channel name -->
-        <FormKit
-          type="text"
-          name="name"
-          :label="t('channel.name')"
+    <div class="space-y-6">
+      <!-- Channel name -->
+      <UFormField :label="t('channel.name')" required>
+        <UInput
+          v-model="state.name"
           :placeholder="t('channel.namePlaceholder')"
-          :value="channel?.name || ''"
-          validation="required|length:2,100"
-          :validation-messages="{
-            required: t('validation.required'),
-            length:
-              t('validation.minLength', { min: 2 }) +
-              ' / ' +
-              t('validation.maxLength', { max: 100 }),
-          }"
+          class="w-full"
+          size="lg"
         />
+      </UFormField>
 
-        <!-- Social media type (only for create mode) -->
-        <div v-if="!isEditMode">
-          <FormKit
-            type="select"
-            name="social_media"
-            :label="t('channel.socialMedia')"
-            :options="
-              socialMediaOptions.map((opt: { label: string; value: string }) => ({
-                label: opt.label,
-                value: opt.value,
-              }))
-            "
-            :value="channel?.socialMedia || 'telegram'"
-            validation="required"
-            :validation-messages="{
-              required: t('validation.required'),
-            }"
-            @input="onSocialMediaChange"
+      <!-- Social media type (only for create mode) -->
+      <div v-if="!isEditMode">
+        <UFormField :label="t('channel.socialMedia')" required>
+          <USelect
+            v-model="state.socialMedia"
+            :options="socialMediaOptions"
+            option-attribute="label"
+            value-attribute="value"
+            class="w-full"
           />
+        </UFormField>
 
-          <!-- Social media preview -->
-          <div
-            v-if="selectedSocialMedia"
-            class="mt-2 flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700/50 rounded"
-          >
-            <div
-              class="p-1.5 rounded"
-              :style="{ backgroundColor: getSocialMediaColor(selectedSocialMedia) + '20' }"
-            >
-              <UIcon
-                :name="getSocialMediaIcon(selectedSocialMedia)"
-                class="w-4 h-4"
-                :style="{ color: getSocialMediaColor(selectedSocialMedia) }"
-              />
-            </div>
-            <span class="text-sm text-gray-600 dark:text-gray-300">
-              {{
-                socialMediaOptions.find((o: { value: string }) => o.value === selectedSocialMedia)
-                  ?.label
-              }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Display current social media for edit mode -->
-        <div v-else class="space-y-1">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            {{ t('channel.socialMedia') }}
-          </label>
-          <div
-            class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600"
-          >
-            <div
-              class="p-2 rounded"
-              :style="{
-                backgroundColor: getSocialMediaColor(channel?.socialMedia || 'telegram') + '20',
-              }"
-            >
-              <UIcon
-                :name="getSocialMediaIcon(channel?.socialMedia || 'telegram')"
-                class="w-5 h-5"
-                :style="{ color: getSocialMediaColor(channel?.socialMedia || 'telegram') }"
-              />
-            </div>
-            <span class="font-medium text-gray-900 dark:text-white">
-              {{
-                socialMediaOptions.find((o: { value: string }) => o.value === channel?.socialMedia)
-                  ?.label
-              }}
-            </span>
-          </div>
-          <p class="text-xs text-gray-500 dark:text-gray-400">
-            {{ t('channel.socialMediaCannotChange') }}
-          </p>
-        </div>
-
-        <!-- Channel identifier -->
-        <FormKit
-          type="text"
-          name="channel_identifier"
-          :label="t('channel.identifier')"
-          :placeholder="
-            getIdentifierPlaceholder(isEditMode ? channel?.socialMedia : selectedSocialMedia)
-          "
-          :value="channel?.channelIdentifier || ''"
-          validation="required|length:1,500"
-          :validation-messages="{
-            required: t('validation.required'),
-            length:
-              t('validation.minLength', { min: 1 }) +
-              ' / ' +
-              t('validation.maxLength', { max: 500 }),
-          }"
-          :help="getIdentifierHelp(isEditMode ? channel?.socialMedia : selectedSocialMedia)"
-        />
-
-        <!-- Active status -->
-        <FormKit
-          type="checkbox"
-          name="is_active"
-          :label="t('channel.isActive')"
-          :value="channel?.isActive ?? true"
-          :help="t('channel.isActiveHelp')"
-          decorator-icon="check"
-        />
-
-        <!-- Form actions -->
+        <!-- Social media preview -->
         <div
-          class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700"
+          v-if="state.socialMedia"
+          class="mt-2 flex items-center gap-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg"
         >
-          <UButton
-            type="button"
-            color="neutral"
-            variant="ghost"
-            :disabled="isLoading"
-            @click="handleCancel"
+          <div
+            class="p-1.5 rounded"
+            :style="{ backgroundColor: getSocialMediaColor(state.socialMedia) + '20' }"
           >
-            {{ t('common.cancel') }}
-          </UButton>
-          <UButton type="button" color="primary" :loading="isLoading" @click="submitForm">
-            {{ isEditMode ? t('common.save') : t('common.create') }}
-          </UButton>
+            <UIcon
+              :name="getSocialMediaIcon(state.socialMedia)"
+              class="w-4 h-4"
+              :style="{ color: getSocialMediaColor(state.socialMedia) }"
+            />
+          </div>
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+            {{ socialMediaOptions.find((o) => o.value === state.socialMedia)?.label }}
+          </span>
         </div>
       </div>
-    </FormKit>
+
+      <!-- Display current social media for edit mode -->
+      <div v-else class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          {{ t('channel.socialMedia') }}
+        </label>
+        <div
+          class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600"
+        >
+          <div
+            class="p-2 rounded"
+            :style="{
+              backgroundColor: getSocialMediaColor(channel?.socialMedia || 'telegram') + '20',
+            }"
+          >
+            <UIcon
+              :name="getSocialMediaIcon(channel?.socialMedia || 'telegram')"
+              class="w-5 h-5"
+              :style="{ color: getSocialMediaColor(channel?.socialMedia || 'telegram') }"
+            />
+          </div>
+          <span class="font-medium text-gray-900 dark:text-white">
+            {{ socialMediaOptions.find((o) => o.value === channel?.socialMedia)?.label }}
+          </span>
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400">
+          {{ t('channel.socialMediaCannotChange') }}
+        </p>
+      </div>
+
+      <!-- Channel identifier -->
+      <UFormField
+        :label="t('channel.identifier')"
+        required
+        :help="getIdentifierHelp(currentSocialMedia)"
+      >
+        <UInput
+          v-model="state.channelIdentifier"
+          :placeholder="getIdentifierPlaceholder(currentSocialMedia)"
+          class="w-full"
+        />
+      </UFormField>
+
+      <!-- Active status -->
+      <div class="flex items-start gap-3">
+        <UCheckbox v-model="state.isActive" :label="t('channel.isActive')" />
+      </div>
+      <p class="ml-7 text-xs text-gray-500 dark:text-gray-400">
+        {{ t('channel.isActiveHelp') }}
+      </p>
+
+      <!-- Form actions -->
+      <div
+        class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700"
+      >
+        <UButton
+          type="button"
+          color="neutral"
+          variant="ghost"
+          :disabled="isLoading"
+          @click="handleCancel"
+        >
+          {{ t('common.cancel') }}
+        </UButton>
+        <UButton
+          type="button"
+          color="primary"
+          :loading="isLoading"
+          :disabled="!state.name || !state.channelIdentifier"
+          @click="handleSubmit"
+        >
+          {{ isEditMode ? t('common.save') : t('common.create') }}
+        </UButton>
+      </div>
+    </div>
   </div>
 </template>

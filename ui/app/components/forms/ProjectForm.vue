@@ -21,31 +21,29 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>()
 
 const { t } = useI18n()
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const form = ref<{ node: any } | null>(null)
 
 const isEditMode = computed(() => !!props.project?.id)
 
+// Form state
+const state = reactive({
+  name: props.project?.name || '',
+  description: props.project?.description || '',
+})
+
 /**
- * Form submission handler
- * Validates and emits the form data
+ * Handle form submission
  */
-function handleSubmit(data: Record<string, unknown>) {
+function handleSubmit() {
+  if (!state.name || state.name.length < 2) return
+
   emit('submit', {
-    name: data.name as string,
-    description: (data.description as string) || '',
+    name: state.name,
+    description: state.description,
   })
 }
 
 function handleCancel() {
   emit('cancel')
-}
-
-/**
- * Programmatically submit the form
- */
-function submitForm() {
-  form.value?.node.submit()
 }
 </script>
 
@@ -58,63 +56,64 @@ function submitForm() {
       <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
         {{
           isEditMode
-            ? 'Update your project information below'
-            : 'Fill in the details to create a new project'
+            ? t('project.editDescription', 'Update your project information below')
+            : t('project.createDescription', 'Fill in the details to create a new project')
         }}
       </p>
     </div>
 
-    <FormKit ref="form" type="form" :actions="false" @submit="handleSubmit">
-      <div class="space-y-6">
-        <!-- Project name -->
-        <FormKit
-          type="text"
-          name="name"
-          :label="t('project.name')"
-          :placeholder="t('project.name')"
-          :value="project?.name || ''"
-          validation="required|length:2,100"
-          :validation-messages="{
-            required: t('validation.required'),
-            length:
-              t('validation.minLength', { min: 2 }) +
-              ' / ' +
-              t('validation.maxLength', { max: 100 }),
-          }"
+    <div class="space-y-6">
+      <!-- Project name -->
+      <UFormField
+        :label="t('project.name')"
+        required
+        :error="state.name && state.name.length < 2 ? t('validation.minLength', { min: 2 }) : undefined"
+      >
+        <UInput
+          v-model="state.name"
+          :placeholder="t('project.namePlaceholder', 'Enter project name')"
+          class="w-full"
+          size="lg"
         />
+      </UFormField>
 
-        <!-- Project description -->
-        <FormKit
-          type="textarea"
-          name="description"
-          :label="t('project.description')"
-          :placeholder="t('project.description')"
-          :value="project?.description || ''"
-          validation="length:0,500"
-          :validation-messages="{
-            length: t('validation.maxLength', { max: 500 }),
-          }"
-          :help="`${t('common.optional')} — ${t('validation.maxLength', { max: 500 })}`"
+      <!-- Project description -->
+      <UFormField
+        :label="t('project.description')"
+        :help="`${t('common.optional')} — ${t('validation.maxLength', { max: 500 })}`"
+        :error="state.description && state.description.length > 500 ? t('validation.maxLength', { max: 500 }) : undefined"
+      >
+        <UTextarea
+          v-model="state.description"
+          :placeholder="t('project.descriptionPlaceholder', 'Enter project description')"
+          class="w-full"
+          :rows="3"
         />
+      </UFormField>
 
-        <!-- Form actions -->
-        <div
-          class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700"
+      <!-- Form actions -->
+      <div
+        class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700"
+      >
+        <UButton
+          type="button"
+          color="neutral"
+          variant="ghost"
+          :disabled="isLoading"
+          @click="handleCancel"
         >
-          <UButton
-            type="button"
-            color="neutral"
-            variant="ghost"
-            :disabled="isLoading"
-            @click="handleCancel"
-          >
-            {{ t('common.cancel') }}
-          </UButton>
-          <UButton type="button" color="primary" :loading="isLoading" @click="submitForm">
-            {{ isEditMode ? t('common.save') : t('common.create') }}
-          </UButton>
-        </div>
+          {{ t('common.cancel') }}
+        </UButton>
+        <UButton
+          type="button"
+          color="primary"
+          :loading="isLoading"
+          :disabled="!state.name || state.name.length < 2 || state.description.length > 500"
+          @click="handleSubmit"
+        >
+          {{ isEditMode ? t('common.save') : t('common.create') }}
+        </UButton>
       </div>
-    </FormKit>
+    </div>
   </div>
 </template>

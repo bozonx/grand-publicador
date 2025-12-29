@@ -98,6 +98,26 @@
     "updateSuccess": "Блог успешно обновлён",
     "deleteSuccess": "Блог успешно удалён"
   },
+  "project": {
+    "title": "Проект",
+    "titlePlural": "Проекты",
+    "name": "Название проекта",
+    "namePlaceholder": "Введите название проекта",
+    "description": "Описание",
+    "descriptionPlaceholder": "Введите описание проекта",
+    "createProject": "Создать проект",
+    "createDescription": "Заполните данные для создания нового проекта",
+    "editProject": "Редактировать проект",
+    "editDescription": "Обновите информацию о вашем проекте ниже",
+    "deleteProject": "Удалить проект",
+    "deleteConfirm": "Вы уверены, что хотите удалить этот проект? Это действие нельзя отменить.",
+    "noProjectsFound": "Проекты не найдены",
+    "noProjectsDescription": "У вас пока нет проектов. Создайте первый!",
+    "myProjects": "Мои проекты",
+    "createSuccess": "Проект успешно создан",
+    "updateSuccess": "Проект успешно обновлён",
+    "deleteSuccess": "Проект успешно удалён"
+  },
   "blogMember": {
     "title": "Участник",
     "titlePlural": "Участники",

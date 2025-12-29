@@ -98,6 +98,26 @@
     "updateSuccess": "Blog updated successfully",
     "deleteSuccess": "Blog deleted successfully"
   },
+  "project": {
+    "title": "Project",
+    "titlePlural": "Projects",
+    "name": "Project Name",
+    "namePlaceholder": "Enter project name",
+    "description": "Description",
+    "descriptionPlaceholder": "Enter project description",
+    "createProject": "Create Project",
+    "createDescription": "Fill in the details to create a new project",
+    "editProject": "Edit Project",
+    "editDescription": "Update your project information below",
+    "deleteProject": "Delete Project",
+    "deleteConfirm": "Are you sure you want to delete this project? This action cannot be undone.",
+    "noProjectsFound": "No projects found",
+    "noProjectsDescription": "You don't have any projects yet. Create one to get started!",
+    "myProjects": "My projects",
+    "createSuccess": "Project created successfully",
+    "updateSuccess": "Project updated successfully",
+    "deleteSuccess": "Project deleted successfully"
+  },
   "blogMember": {
     "title": "Member",
     "titlePlural": "Members",
