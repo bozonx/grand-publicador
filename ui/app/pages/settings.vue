@@ -140,7 +140,7 @@ function formatDate(date: string | null | undefined): string {
             </h3>
             <UButton
               variant="ghost"
-              color="gray"
+              color="neutral"
               size="xs"
               icon="i-heroicons-pencil"
               @click="startEditingName"
