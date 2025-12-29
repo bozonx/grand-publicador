@@ -6,6 +6,7 @@ definePageMeta({
 const { t, locale, setLocale, availableLocales } = useI18n()
 const { user, displayName, authMode, refreshUser } = useAuth()
 const toast = useToast()
+const colorMode = useColorMode()
 
 // Edit mode state
 const isEditingName = ref(false)
@@ -101,9 +102,9 @@ function formatDate(date: string | null | undefined): string {
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto">
+  <div class="max-w-4xl mx-auto space-y-6">
     <!-- Page header -->
-    <div class="mb-6">
+    <div>
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
         {{ t('settings.title') }}
       </h1>
@@ -112,198 +113,207 @@ function formatDate(date: string | null | undefined): string {
       </p>
     </div>
 
-    <!-- Settings sections -->
-    <div class="space-y-6">
-      <!-- Profile section -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-            {{ t('auth.profile') }}
-          </h2>
-        </div>
-        <div class="p-6">
-          <!-- Avatar and basic info -->
-          <div class="flex items-start gap-4 mb-6">
-            <UAvatar
-              :src="user?.avatarUrl || undefined"
-              :alt="displayName"
-              size="xl"
-              :ui="{
-                fallback:
-                  'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300',
-              }"
-            />
-            <div class="flex-1 min-w-0">
-              <!-- Name display/edit -->
-              <div v-if="!isEditingName" class="flex items-center gap-2">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                  {{ displayName }}
-                </h3>
-                <UButton
-                  variant="ghost"
-                  color="neutral"
-                  size="xs"
-                  icon="i-heroicons-pencil"
-                  @click="startEditingName"
-                />
-              </div>
-
-              <!-- Name edit form -->
-              <div v-else class="flex items-center gap-2">
-                <UInput
-                  v-model="newFullName"
-                  :placeholder="t('user.displayName')"
-                  size="sm"
-                  class="flex-1 max-w-xs"
-                  @keyup.enter="saveFullName"
-                  @keyup.escape="cancelEditingName"
-                />
-                <UButton
-                  color="primary"
-                  size="xs"
-                  icon="i-heroicons-check"
-                  :loading="isSaving"
-                  @click="saveFullName"
-                />
-                <UButton
-                  color="neutral"
-                  variant="ghost"
-                  size="xs"
-                  icon="i-heroicons-x-mark"
-                  :disabled="isSaving"
-                  @click="cancelEditingName"
-                />
-              </div>
-
-              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                {{ user?.email || (user?.telegramId ? `Telegram ID: ${user.telegramId}` : '') }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Profile details -->
-          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                {{ t('user.username') }}
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                {{ user?.username ? `@${user.username}` : '—' }}
-              </dd>
-            </div>
-            <div>
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                {{ t('auth.email') }}
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                {{ user?.email || '—' }}
-              </dd>
-            </div>
-            <div v-if="user?.telegramId">
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                {{ t('user.telegramId') }}
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                {{ user.telegramId }}
-              </dd>
-            </div>
-            <div>
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                {{ t('auth.authMode') }}
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 dark:text-white capitalize">
-                {{ t(`auth.${authMode}Mode`) }}
-              </dd>
-            </div>
-            <div>
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                {{ t('user.role') }}
-              </dt>
-              <dd class="mt-1">
-                <UBadge
-                  :color="user?.isAdmin ? 'primary' : 'neutral'"
-                  :variant="user?.isAdmin ? 'solid' : 'outline'"
-                  size="sm"
-                >
-                  {{ user?.isAdmin ? t('user.isAdmin') : t('admin.regularUser') }}
-                </UBadge>
-              </dd>
-            </div>
-            <div>
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                {{ t('user.createdAt') }}
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                {{ formatDate(user?.createdAt) }}
-              </dd>
-            </div>
-          </dl>
-        </div>
-      </div>
-
-      <!-- Language section -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-            {{ t('settings.language') }}
-          </h2>
-        </div>
-        <div class="p-6">
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            {{ t('settings.selectLanguage', 'Select your preferred language for the interface') }}
-          </p>
-          <div class="flex flex-wrap gap-3">
+    <!-- Profile section -->
+    <UCard>
+      <template #header>
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white">
+          {{ t('auth.profile') }}
+        </h2>
+      </template>
+      
+      <!-- Avatar and basic info -->
+      <div class="flex items-start gap-4 mb-6">
+        <UAvatar
+          :src="user?.avatarUrl || undefined"
+          :alt="displayName"
+          size="xl"
+          :ui="{
+            fallback:
+              'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300',
+          }"
+        />
+        <div class="flex-1 min-w-0">
+          <!-- Name display/edit -->
+          <div v-if="!isEditingName" class="flex items-center gap-2">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+              {{ displayName }}
+            </h3>
             <UButton
-              v-for="lang in languageOptions"
-              :key="lang.value"
-              :color="locale === lang.value ? 'primary' : 'neutral'"
-              :variant="locale === lang.value ? 'solid' : 'outline'"
-              size="lg"
-              @click="changeLanguage(lang.value)"
-            >
-              {{ lang.label }}
-            </UButton>
+              variant="ghost"
+              color="gray"
+              size="xs"
+              icon="i-heroicons-pencil"
+              @click="startEditingName"
+            />
           </div>
-        </div>
-      </div>
 
-      <!-- Theme section (placeholder) -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-            {{ t('settings.theme') }}
-          </h2>
-        </div>
-        <div class="p-6">
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            {{ t('settings.themeDescription', 'Choose your preferred theme') }}
-          </p>
-          <div class="flex flex-wrap gap-3">
-            <UButton color="neutral" variant="outline" icon="i-heroicons-sun" size="lg">
-              {{ t('settings.lightTheme', 'Light') }}
-            </UButton>
-            <UButton color="neutral" variant="outline" icon="i-heroicons-moon" size="lg">
-              {{ t('settings.darkTheme', 'Dark') }}
-            </UButton>
+          <!-- Name edit form -->
+          <div v-else class="flex items-center gap-2">
+            <UInput
+              v-model="newFullName"
+              :placeholder="t('user.displayName')"
+              size="sm"
+              class="flex-1 max-w-xs"
+              @keyup.enter="saveFullName"
+              @keyup.escape="cancelEditingName"
+            />
+            <UButton
+              color="primary"
+              size="xs"
+              icon="i-heroicons-check"
+              :loading="isSaving"
+              @click="saveFullName"
+            />
             <UButton
               color="neutral"
-              variant="outline"
-              icon="i-heroicons-computer-desktop"
-              size="lg"
-            >
-              {{ t('settings.systemTheme', 'System') }}
-            </UButton>
+              variant="ghost"
+              size="xs"
+              icon="i-heroicons-x-mark"
+              :disabled="isSaving"
+              @click="cancelEditingName"
+            />
           </div>
-          <p class="text-xs text-gray-400 dark:text-gray-500 mt-3">
-            {{
-              t(
-                'settings.themeNote',
-                'Theme preference is synced with your system settings by default.'
-              )
-            }}
+
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {{ user?.email || (user?.telegramId ? `Telegram ID: ${user.telegramId}` : '') }}
           </p>
         </div>
       </div>
-    </div>
+
+      <!-- Profile details -->
+      <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            {{ t('user.username') }}
+          </dt>
+          <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+            {{ user?.username ? `@${user.username}` : '—' }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            {{ t('auth.email') }}
+          </dt>
+          <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+            {{ user?.email || '—' }}
+          </dd>
+        </div>
+        <div v-if="user?.telegramId">
+          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            {{ t('user.telegramId') }}
+          </dt>
+          <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+            {{ user.telegramId }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            {{ t('auth.authMode') }}
+          </dt>
+          <dd class="mt-1 text-sm text-gray-900 dark:text-white capitalize">
+            {{ t(`auth.${authMode}Mode`) }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            {{ t('user.role') }}
+          </dt>
+          <dd class="mt-1">
+            <UBadge
+              :color="user?.isAdmin ? 'primary' : 'neutral'"
+              :variant="user?.isAdmin ? 'solid' : 'outline'"
+              size="sm"
+            >
+              {{ user?.isAdmin ? t('user.isAdmin') : t('admin.regularUser') }}
+            </UBadge>
+          </dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            {{ t('user.createdAt') }}
+          </dt>
+          <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+            {{ formatDate(user?.createdAt) }}
+          </dd>
+        </div>
+      </dl>
+    </UCard>
+
+    <!-- Language section -->
+    <UCard>
+      <template #header>
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white">
+          {{ t('settings.language') }}
+        </h2>
+      </template>
+      
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        {{ t('settings.selectLanguage', 'Select your preferred language for the interface') }}
+      </p>
+      <div class="flex flex-wrap gap-3">
+        <UButton
+          v-for="lang in languageOptions"
+          :key="lang.value"
+          :color="locale === lang.value ? 'primary' : 'neutral'"
+          :variant="locale === lang.value ? 'solid' : 'outline'"
+          size="lg"
+          @click="changeLanguage(lang.value)"
+        >
+          {{ lang.label }}
+        </UButton>
+      </div>
+    </UCard>
+
+    <!-- Theme section -->
+    <UCard>
+      <template #header>
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white">
+          {{ t('settings.theme') }}
+        </h2>
+      </template>
+
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        {{ t('settings.themeDescription', 'Choose your preferred theme interface aesthetics.') }}
+      </p>
+      
+      <ClientOnly>
+        <div class="flex flex-wrap gap-3">
+          <UButton
+            v-for="theme in ['system', 'light', 'dark']"
+            :key="theme"
+            :color="colorMode.preference === theme ? 'primary' : 'neutral'"
+            :variant="colorMode.preference === theme ? 'solid' : 'outline'"
+            size="lg"
+            :icon="
+              theme === 'system' 
+                ? 'i-heroicons-computer-desktop' 
+                : theme === 'light' 
+                  ? 'i-heroicons-sun' 
+                  : 'i-heroicons-moon'
+            "
+            @click="colorMode.preference = theme"
+          >
+            <span class="capitalize">{{ t(`settings.${theme}Theme`, theme) }}</span>
+          </UButton>
+        </div>
+        
+        <template #fallback>
+          <div class="flex flex-wrap gap-3">
+            <USkeleton class="h-10 w-24" />
+            <USkeleton class="h-10 w-24" />
+            <USkeleton class="h-10 w-24" />
+          </div>
+        </template>
+      </ClientOnly>
+
+      <p class="text-xs text-gray-400 dark:text-gray-500 mt-3">
+        {{
+          t(
+            'settings.themeNote',
+            'System theme will automatically adapt to your device settings.'
+          )
+        }}
+      </p>
+    </UCard>
   </div>
 </template>

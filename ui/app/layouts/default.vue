@@ -11,7 +11,7 @@ function closeSidebar() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
     <!-- Header -->
     <LayoutHeader @toggle-sidebar="toggleSidebar" />
 
@@ -34,12 +34,12 @@ function closeSidebar() {
 
       <!-- Sidebar -->
       <aside
-        class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-300 lg:translate-x-0 lg:static lg:z-auto"
+        class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-300 lg:translate-x-0 lg:static lg:z-auto"
         :class="isSidebarOpen ? 'translate-x-0' : '-translate-x-full'"
       >
         <!-- Sidebar header (mobile close button) -->
         <div
-          class="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700 lg:hidden"
+          class="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-800 lg:hidden"
         >
           <span class="text-lg font-semibold text-gray-900 dark:text-white">Menu</span>
           <UButton
