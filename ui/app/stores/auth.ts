@@ -111,7 +111,7 @@ export const useAuthStore = defineStore('auth', () => {
     async function logout() {
         user.value = null;
         token.value = null;
-        navigateTo('/login');
+        navigateTo('/auth/login');
     }
 
     async function fetchMe() {

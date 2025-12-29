@@ -16,18 +16,11 @@ export default defineNuxtRouteMiddleware(async (_to) => {
     const user = await initialize()
 
     if (!user) {
-      // For browser mode, redirect to login page
-      if (authMode.value === 'browser') {
-        return navigateTo('/auth/login', {
-          redirectCode: 302,
-          replace: true,
-        })
-      }
-
-      // For Telegram/dev mode, show error
-      return abortNavigation({
-        statusCode: 401,
-        message: 'Authentication required',
+      // Always redirect to login page if we are not authenticated
+      // This allows showing the Telegram Widget on production
+      return navigateTo('/auth/login', {
+        redirectCode: 302,
+        replace: true,
       })
     }
   }

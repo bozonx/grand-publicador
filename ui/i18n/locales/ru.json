@@ -69,6 +69,7 @@
     "signUpSuccess": "Регистрация успешна! Проверьте email для подтверждения.",
     "authMode": "Режим авторизации",
     "telegramMode": "Telegram",
+    "miniAppMode": "Telegram Mini App",
     "browserMode": "Браузер",
     "devMode": "Разработка"
   },
