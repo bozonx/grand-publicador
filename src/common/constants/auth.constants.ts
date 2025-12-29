@@ -1,4 +1,3 @@
-
 /**
  * The name of the JWT strategy used by the AuthGuard.
  */

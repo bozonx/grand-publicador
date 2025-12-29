@@ -1,5 +1,5 @@
 import { Test, type TestingModule } from '@nestjs/testing';
-import { UnauthorizedException, ExecutionContext } from '@nestjs/common';
+import { UnauthorizedException, type ExecutionContext } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiKeyGuard } from '../../src/common/guards/api-key.guard.js';
 import { jest } from '@jest/globals';

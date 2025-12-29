@@ -1,4 +1,3 @@
-
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ProjectsService } from '../projects/projects.service.js';
@@ -8,125 +7,124 @@ import { CreateChannelDto, UpdateChannelDto } from './dto/index.js';
 
 @Injectable()
 export class ChannelsService {
-    constructor(
-        private prisma: PrismaService,
-        private projectsService: ProjectsService,
-        private permissions: PermissionsService,
-    ) { }
+  constructor(
+    private prisma: PrismaService,
+    private projectsService: ProjectsService,
+    private permissions: PermissionsService,
+  ) {}
 
-    /**
-     * Creates a new channel within a project.
-     * Requires OWNER, ADMIN, or EDITOR role in the project.
-     * 
-     * @param userId - The ID of the user creating the channel.
-     * @param projectId - The ID of the project.
-     * @param data - The channel creation data.
-     * @returns The created channel.
-     */
-    async create(userId: string, projectId: string, data: Omit<CreateChannelDto, 'projectId'>) {
-        await this.permissions.checkProjectPermission(
-            projectId,
-            userId,
-            [ProjectRole.OWNER, ProjectRole.ADMIN, ProjectRole.EDITOR],
-        );
+  /**
+   * Creates a new channel within a project.
+   * Requires OWNER, ADMIN, or EDITOR role in the project.
+   *
+   * @param userId - The ID of the user creating the channel.
+   * @param projectId - The ID of the project.
+   * @param data - The channel creation data.
+   * @returns The created channel.
+   */
+  async create(userId: string, projectId: string, data: Omit<CreateChannelDto, 'projectId'>) {
+    await this.permissions.checkProjectPermission(projectId, userId, [
+      ProjectRole.OWNER,
+      ProjectRole.ADMIN,
+      ProjectRole.EDITOR,
+    ]);
 
-        return this.prisma.channel.create({
-            data: {
-                projectId,
-                socialMedia: data.socialMedia,
-                name: data.name,
-                channelIdentifier: data.channelIdentifier,
-                credentials: JSON.stringify(data.credentials || {}),
-            },
-        });
+    return this.prisma.channel.create({
+      data: {
+        projectId,
+        socialMedia: data.socialMedia,
+        name: data.name,
+        channelIdentifier: data.channelIdentifier,
+        credentials: JSON.stringify(data.credentials || {}),
+      },
+    });
+  }
+
+  /**
+   * Retrieves all channels for a given project.
+   * Implicitly validates that the user is a member of the project.
+   *
+   * @param projectId - The ID of the project.
+   * @param userId - The ID of the user requesting the channels.
+   * @returns A list of channels with post counts.
+   */
+  async findAllForProject(projectId: string, userId: string) {
+    await this.projectsService.findOne(projectId, userId); // Validates membership
+    return this.prisma.channel.findMany({
+      where: { projectId },
+      include: {
+        _count: {
+          select: { posts: true },
+        },
+      },
+    });
+  }
+
+  /**
+   * Find a single channel by ID.
+   * Ensures the user has access to the project containing the channel.
+   *
+   * @param id - The ID of the channel.
+   * @param userId - The ID of the user.
+   * @returns The channel details.
+   * @throws NotFoundException if the channel does not exist.
+   */
+  async findOne(id: string, userId: string) {
+    const channel = await this.prisma.channel.findUnique({
+      where: { id },
+    });
+
+    if (!channel) {
+      throw new NotFoundException('Channel not found');
     }
 
-    /**
-     * Retrieves all channels for a given project.
-     * Implicitly validates that the user is a member of the project.
-     * 
-     * @param projectId - The ID of the project.
-     * @param userId - The ID of the user requesting the channels.
-     * @returns A list of channels with post counts.
-     */
-    async findAllForProject(projectId: string, userId: string) {
-        await this.projectsService.findOne(projectId, userId); // Validates membership
-        return this.prisma.channel.findMany({
-            where: { projectId },
-            include: {
-                _count: {
-                    select: { posts: true },
-                },
-            },
-        });
-    }
+    await this.projectsService.findOne(channel.projectId, userId);
+    return channel;
+  }
 
-    /**
-     * Find a single channel by ID.
-     * Ensures the user has access to the project containing the channel.
-     * 
-     * @param id - The ID of the channel.
-     * @param userId - The ID of the user.
-     * @returns The channel details.
-     * @throws NotFoundException if the channel does not exist.
-     */
-    async findOne(id: string, userId: string) {
-        const channel = await this.prisma.channel.findUnique({
-            where: { id },
-        });
+  /**
+   * Update an existing channel.
+   * Requires OWNER, ADMIN, or EDITOR role.
+   *
+   * @param id - The ID of the channel.
+   * @param userId - The ID of the user.
+   * @param data - The data to update.
+   */
+  async update(id: string, userId: string, data: UpdateChannelDto) {
+    const channel = await this.findOne(id, userId);
+    await this.permissions.checkProjectPermission(channel.projectId, userId, [
+      ProjectRole.OWNER,
+      ProjectRole.ADMIN,
+      ProjectRole.EDITOR,
+    ]);
 
-        if (!channel) {
-            throw new NotFoundException('Channel not found');
-        }
+    return this.prisma.channel.update({
+      where: { id },
+      data: {
+        name: data.name,
+        channelIdentifier: data.channelIdentifier,
+        credentials: data.credentials ? JSON.stringify(data.credentials) : undefined,
+        isActive: data.isActive,
+      },
+    });
+  }
 
-        await this.projectsService.findOne(channel.projectId, userId);
-        return channel;
-    }
+  /**
+   * Remove a channel.
+   * Requires OWNER or ADMIN role.
+   *
+   * @param id - The ID of the channel to remove.
+   * @param userId - The ID of the user.
+   */
+  async remove(id: string, userId: string) {
+    const channel = await this.findOne(id, userId);
+    await this.permissions.checkProjectPermission(channel.projectId, userId, [
+      ProjectRole.OWNER,
+      ProjectRole.ADMIN,
+    ]);
 
-    /**
-     * Update an existing channel.
-     * Requires OWNER, ADMIN, or EDITOR role.
-     * 
-     * @param id - The ID of the channel.
-     * @param userId - The ID of the user.
-     * @param data - The data to update.
-     */
-    async update(id: string, userId: string, data: UpdateChannelDto) {
-        const channel = await this.findOne(id, userId);
-        await this.permissions.checkProjectPermission(
-            channel.projectId,
-            userId,
-            [ProjectRole.OWNER, ProjectRole.ADMIN, ProjectRole.EDITOR],
-        );
-
-        return this.prisma.channel.update({
-            where: { id },
-            data: {
-                name: data.name,
-                channelIdentifier: data.channelIdentifier,
-                credentials: data.credentials ? JSON.stringify(data.credentials) : undefined,
-                isActive: data.isActive,
-            },
-        });
-    }
-
-    /**
-     * Remove a channel.
-     * Requires OWNER or ADMIN role.
-     * 
-     * @param id - The ID of the channel to remove.
-     * @param userId - The ID of the user.
-     */
-    async remove(id: string, userId: string) {
-        const channel = await this.findOne(id, userId);
-        await this.permissions.checkProjectPermission(
-            channel.projectId,
-            userId,
-            [ProjectRole.OWNER, ProjectRole.ADMIN],
-        );
-
-        return this.prisma.channel.delete({
-            where: { id },
-        });
-    }
+    return this.prisma.channel.delete({
+      where: { id },
+    });
+  }
 }

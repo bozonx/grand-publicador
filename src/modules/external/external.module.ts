@@ -6,4 +6,4 @@ import { PublicationsModule } from '../publications/publications.module.js';
   imports: [PublicationsModule],
   controllers: [ExternalController],
 })
-export class ExternalModule { }
+export class ExternalModule {}

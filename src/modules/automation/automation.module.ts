@@ -8,4 +8,4 @@ import { PrismaModule } from '../prisma/prisma.module.js';
   controllers: [AutomationController],
   providers: [AutomationService],
 })
-export class AutomationModule { }
+export class AutomationModule {}

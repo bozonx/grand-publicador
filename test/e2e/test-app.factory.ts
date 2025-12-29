@@ -10,10 +10,10 @@ export async function createTestApp(): Promise<NestFastifyApplication> {
   })
     .overrideProvider(PrismaService)
     .useValue({
-      $connect: async () => { },
-      $disconnect: async () => { },
-      onModuleInit: async () => { },
-      onModuleDestroy: async () => { },
+      $connect: async () => {},
+      $disconnect: async () => {},
+      onModuleInit: async () => {},
+      onModuleDestroy: async () => {},
     })
     .compile();
 

@@ -6,10 +6,10 @@ import { Expose, Type } from 'class-transformer';
  * Contains the JWT access token and user information.
  */
 export class AuthResponseDto {
-    @Expose()
-    access_token!: string;
+  @Expose()
+  access_token!: string;
 
-    @Expose()
-    @Type(() => UserDto)
-    user!: UserDto;
+  @Expose()
+  @Type(() => UserDto)
+  user!: UserDto;
 }

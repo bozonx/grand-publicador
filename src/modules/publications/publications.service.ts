@@ -1,7 +1,4 @@
-import {
-    Injectable,
-    NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PostStatus, ProjectRole, Prisma } from '@prisma/client';
 import type { CreatePublicationDto, UpdatePublicationDto } from './dto/index.js';
@@ -9,258 +6,254 @@ import { PermissionsService } from '../../common/services/permissions.service.js
 
 @Injectable()
 export class PublicationsService {
-    constructor(
-        private prisma: PrismaService,
-        private permissions: PermissionsService,
-    ) { }
+  constructor(
+    private prisma: PrismaService,
+    private permissions: PermissionsService,
+  ) {}
 
-    /**
-     * Create a new publication.
-     * If userId is provided, it checks if the user has access to the project.
-     * If userId is not provided, it assumes a system call or external integration (skipped permission check).
-     * 
-     * @param data - The publication creation data.
-     * @param userId - Optional ID of the user creating the publication.
-     * @returns The created publication.
-     */
-    async create(data: CreatePublicationDto, userId?: string) {
-        if (userId) {
-            // Check if user has access to the project
-            await this.permissions.checkProjectAccess(data.projectId, userId);
-        }
-
-        return this.prisma.publication.create({
-            data: {
-                projectId: data.projectId,
-                authorId: userId ?? null,
-                title: data.title,
-                content: data.content,
-                mediaFiles: JSON.stringify(data.mediaFiles || []),
-                tags: data.tags,
-                status: data.status || PostStatus.DRAFT,
-                meta: JSON.stringify(data.meta || {}),
-            },
-        });
+  /**
+   * Create a new publication.
+   * If userId is provided, it checks if the user has access to the project.
+   * If userId is not provided, it assumes a system call or external integration (skipped permission check).
+   *
+   * @param data - The publication creation data.
+   * @param userId - Optional ID of the user creating the publication.
+   * @returns The created publication.
+   */
+  async create(data: CreatePublicationDto, userId?: string) {
+    if (userId) {
+      // Check if user has access to the project
+      await this.permissions.checkProjectAccess(data.projectId, userId);
     }
 
-    /**
-     * Retrieve all publications for a project, optionally filtered.
-     * Validates that the user has access to the project.
-     * 
-     * @param projectId - The ID of the project.
-     * @param userId - The ID of the user.
-     * @param filters - Optional filters (status, limit, offset).
-     * @returns A list of publications with associated data (author, posts).
-     */
-    async findAll(
-        projectId: string,
-        userId: string,
-        filters?: {
-            status?: PostStatus;
-            limit?: number;
-            offset?: number;
+    return this.prisma.publication.create({
+      data: {
+        projectId: data.projectId,
+        authorId: userId ?? null,
+        title: data.title,
+        content: data.content,
+        mediaFiles: JSON.stringify(data.mediaFiles || []),
+        tags: data.tags,
+        status: data.status || PostStatus.DRAFT,
+        meta: JSON.stringify(data.meta || {}),
+      },
+    });
+  }
+
+  /**
+   * Retrieve all publications for a project, optionally filtered.
+   * Validates that the user has access to the project.
+   *
+   * @param projectId - The ID of the project.
+   * @param userId - The ID of the user.
+   * @param filters - Optional filters (status, limit, offset).
+   * @returns A list of publications with associated data (author, posts).
+   */
+  async findAll(
+    projectId: string,
+    userId: string,
+    filters?: {
+      status?: PostStatus;
+      limit?: number;
+      offset?: number;
+    },
+  ) {
+    await this.permissions.checkProjectAccess(projectId, userId);
+
+    const where: Prisma.PublicationWhereInput = { projectId };
+    if (filters?.status) {
+      where.status = filters.status;
+    }
+
+    return this.prisma.publication.findMany({
+      where,
+      include: {
+        author: {
+          select: {
+            id: true,
+            fullName: true,
+            username: true,
+            avatarUrl: true,
+          },
         },
-    ) {
-        await this.permissions.checkProjectAccess(projectId, userId);
+        posts: {
+          include: {
+            channel: true,
+          },
+        },
+        _count: {
+          select: {
+            posts: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: filters?.limit,
+      skip: filters?.offset,
+    });
+  }
 
-        const where: Prisma.PublicationWhereInput = { projectId };
-        if (filters?.status) {
-            where.status = filters.status;
-        }
+  /**
+   * Find a single publication by ID.
+   * Ensures the user has access to the project containing the publication.
+   *
+   * @param id - The ID of the publication.
+   * @param userId - The ID of the user.
+   * @returns The publication details.
+   * @throws NotFoundException if the publication does not exist.
+   */
+  async findOne(id: string, userId: string) {
+    const publication = await this.prisma.publication.findUnique({
+      where: { id },
+      include: {
+        author: {
+          select: {
+            id: true,
+            fullName: true,
+            username: true,
+            avatarUrl: true,
+          },
+        },
+        project: true,
+        posts: {
+          include: {
+            channel: true,
+          },
+        },
+      },
+    });
 
-        return this.prisma.publication.findMany({
-            where,
-            include: {
-                author: {
-                    select: {
-                        id: true,
-                        fullName: true,
-                        username: true,
-                        avatarUrl: true,
-                    },
-                },
-                posts: {
-                    include: {
-                        channel: true,
-                    },
-                },
-                _count: {
-                    select: {
-                        posts: true,
-                    },
-                },
-            },
-            orderBy: { createdAt: 'desc' },
-            take: filters?.limit,
-            skip: filters?.offset,
-        });
+    if (!publication) {
+      throw new NotFoundException('Publication not found');
     }
 
-    /**
-     * Find a single publication by ID.
-     * Ensures the user has access to the project containing the publication.
-     * 
-     * @param id - The ID of the publication.
-     * @param userId - The ID of the user.
-     * @returns The publication details.
-     * @throws NotFoundException if the publication does not exist.
-     */
-    async findOne(id: string, userId: string) {
-        const publication = await this.prisma.publication.findUnique({
-            where: { id },
-            include: {
-                author: {
-                    select: {
-                        id: true,
-                        fullName: true,
-                        username: true,
-                        avatarUrl: true,
-                    },
-                },
-                project: true,
-                posts: {
-                    include: {
-                        channel: true,
-                    },
-                },
-            },
-        });
+    await this.permissions.checkProjectAccess(publication.projectId, userId);
 
-        if (!publication) {
-            throw new NotFoundException('Publication not found');
-        }
+    return publication;
+  }
 
-        await this.permissions.checkProjectAccess(publication.projectId, userId);
+  /**
+   * Update an existing publication.
+   * Allowed for the author or project OWNER/ADMIN.
+   *
+   * @param id - The ID of the publication.
+   * @param userId - The ID of the user.
+   * @param data - The data to update.
+   */
+  async update(id: string, userId: string, data: UpdatePublicationDto) {
+    const publication = await this.findOne(id, userId);
 
-        return publication;
+    // Check if user is author or has admin rights
+    if (publication.authorId !== userId) {
+      await this.permissions.checkProjectPermission(publication.projectId, userId, [
+        ProjectRole.OWNER,
+        ProjectRole.ADMIN,
+      ]);
     }
 
-    /**
-     * Update an existing publication.
-     * Allowed for the author or project OWNER/ADMIN.
-     * 
-     * @param id - The ID of the publication.
-     * @param userId - The ID of the user.
-     * @param data - The data to update.
-     */
-    async update(id: string, userId: string, data: UpdatePublicationDto) {
-        const publication = await this.findOne(id, userId);
+    return this.prisma.publication.update({
+      where: { id },
+      data: {
+        title: data.title,
+        content: data.content,
+        mediaFiles: data.mediaFiles ? JSON.stringify(data.mediaFiles) : undefined,
+        tags: data.tags,
+        status: data.status,
+        meta: data.meta ? JSON.stringify(data.meta) : undefined,
+      },
+    });
+  }
 
-        // Check if user is author or has admin rights
-        if (publication.authorId !== userId) {
-            await this.permissions.checkProjectPermission(
-                publication.projectId,
-                userId,
-                [ProjectRole.OWNER, ProjectRole.ADMIN],
-            );
-        }
+  /**
+   * Delete a publication.
+   * Allowed for the author or project OWNER/ADMIN.
+   *
+   * @param id - The ID of the publication to remove.
+   * @param userId - The ID of the user.
+   */
+  async remove(id: string, userId: string) {
+    const publication = await this.findOne(id, userId);
 
-        return this.prisma.publication.update({
-            where: { id },
-            data: {
-                title: data.title,
-                content: data.content,
-                mediaFiles: data.mediaFiles
-                    ? JSON.stringify(data.mediaFiles)
-                    : undefined,
-                tags: data.tags,
-                status: data.status,
-                meta: data.meta ? JSON.stringify(data.meta) : undefined,
-            },
-        });
+    // Check if user is author or has admin rights
+    if (publication.authorId !== userId) {
+      await this.permissions.checkProjectPermission(publication.projectId, userId, [
+        ProjectRole.OWNER,
+        ProjectRole.ADMIN,
+      ]);
     }
 
-    /**
-     * Delete a publication.
-     * Allowed for the author or project OWNER/ADMIN.
-     * 
-     * @param id - The ID of the publication to remove.
-     * @param userId - The ID of the user.
-     */
-    async remove(id: string, userId: string) {
-        const publication = await this.findOne(id, userId);
+    return this.prisma.publication.delete({
+      where: { id },
+    });
+  }
 
-        // Check if user is author or has admin rights
-        if (publication.authorId !== userId) {
-            await this.permissions.checkProjectPermission(
-                publication.projectId,
-                userId,
-                [ProjectRole.OWNER, ProjectRole.ADMIN],
-            );
-        }
+  /**
+   * Generate individual posts for specified channels from a publication.
+   * Verifies that all channels belong to the same project as the publication.
+   *
+   * @param publicationId - The ID of the source publication.
+   * @param channelIds - List of channel IDs to create posts for.
+   * @param userId - Optional user ID (if authenticated request).
+   * @param scheduledAt - Optional schedule time for the posts.
+   * @returns The created posts.
+   */
+  async createPostsFromPublication(
+    publicationId: string,
+    channelIds: string[],
+    userId?: string,
+    scheduledAt?: Date,
+  ) {
+    // Fetch publication without auth check initially, but check later if userId present
+    // Or if userId is needed for finding it...
 
-        return this.prisma.publication.delete({
-            where: { id },
-        });
+    let publication;
+
+    if (userId) {
+      publication = await this.findOne(publicationId, userId);
+    } else {
+      // System/External fetch
+      publication = await this.prisma.publication.findUnique({
+        where: { id: publicationId },
+      });
+      if (!publication) {
+        throw new NotFoundException('Publication not found');
+      }
     }
 
-    /**
-     * Generate individual posts for specified channels from a publication.
-     * Verifies that all channels belong to the same project as the publication.
-     * 
-     * @param publicationId - The ID of the source publication.
-     * @param channelIds - List of channel IDs to create posts for.
-     * @param userId - Optional user ID (if authenticated request).
-     * @param scheduledAt - Optional schedule time for the posts.
-     * @returns The created posts.
-     */
-    async createPostsFromPublication(
-        publicationId: string,
-        channelIds: string[],
-        userId?: string,
-        scheduledAt?: Date,
-    ) {
-        // Fetch publication without auth check initially, but check later if userId present
-        // Or if userId is needed for finding it...
+    // Verify all channels belong to the same project
+    const channels = await this.prisma.channel.findMany({
+      where: {
+        id: { in: channelIds },
+        projectId: publication.projectId,
+      },
+    });
 
-        let publication;
-
-        if (userId) {
-            publication = await this.findOne(publicationId, userId);
-        } else {
-            // System/External fetch
-            publication = await this.prisma.publication.findUnique({
-                where: { id: publicationId },
-            });
-            if (!publication) {
-                throw new NotFoundException('Publication not found');
-            }
-        }
-
-        // Verify all channels belong to the same project
-        const channels = await this.prisma.channel.findMany({
-            where: {
-                id: { in: channelIds },
-                projectId: publication.projectId,
-            },
-        });
-
-        if (channels.length !== channelIds.length) {
-            throw new NotFoundException('Some channels not found or do not belong to this project');
-        }
-
-        // Create posts for each channel
-        const posts = await Promise.all(
-            channels.map((channel) =>
-                this.prisma.post.create({
-                    data: {
-                        publicationId: publication.id,
-                        channelId: channel.id,
-                        authorId: userId ?? null,
-                        content: publication.content,
-                        socialMedia: channel.socialMedia,
-                        postType: 'POST',
-                        title: publication.title,
-                        tags: publication.tags,
-                        mediaFiles: publication.mediaFiles,
-                        status: scheduledAt ? PostStatus.SCHEDULED : PostStatus.DRAFT,
-                        scheduledAt,
-                        meta: publication.meta,
-                    },
-                }),
-            ),
-        );
-
-        return posts;
+    if (channels.length !== channelIds.length) {
+      throw new NotFoundException('Some channels not found or do not belong to this project');
     }
+
+    // Create posts for each channel
+    const posts = await Promise.all(
+      channels.map(channel =>
+        this.prisma.post.create({
+          data: {
+            publicationId: publication.id,
+            channelId: channel.id,
+            authorId: userId ?? null,
+            content: publication.content,
+            socialMedia: channel.socialMedia,
+            postType: 'POST',
+            title: publication.title,
+            tags: publication.tags,
+            mediaFiles: publication.mediaFiles,
+            status: scheduledAt ? PostStatus.SCHEDULED : PostStatus.DRAFT,
+            scheduledAt,
+            meta: publication.meta,
+          },
+        }),
+      ),
+    );
+
+    return posts;
+  }
 }

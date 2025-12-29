@@ -1,4 +1,3 @@
-
 import { Test, type TestingModule } from '@nestjs/testing';
 import { ForbiddenException, NotFoundException, Logger } from '@nestjs/common';
 import { ProjectsService } from '../../src/modules/projects/projects.service.js';
@@ -53,7 +52,7 @@ describe('ProjectsService (unit)', () => {
     permissions = moduleRef.get<PermissionsService>(PermissionsService);
 
     // Silence logger for tests
-    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => { });
+    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
   });
 
   afterAll(async () => {
@@ -147,9 +146,7 @@ describe('ProjectsService (unit)', () => {
 
       mockPermissionsService.getUserProjectRole.mockResolvedValue(null);
 
-      await expect(service.findOne(projectId, userId)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(service.findOne(projectId, userId)).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -187,9 +184,9 @@ describe('ProjectsService (unit)', () => {
         new ForbiddenException('Insufficient permissions'),
       );
 
-      await expect(
-        service.update(projectId, userId, updateData),
-      ).rejects.toThrow(ForbiddenException);
+      await expect(service.update(projectId, userId, updateData)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -220,9 +217,7 @@ describe('ProjectsService (unit)', () => {
         new ForbiddenException('Insufficient permissions'),
       );
 
-      await expect(service.remove(projectId, userId)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(service.remove(projectId, userId)).rejects.toThrow(ForbiddenException);
     });
   });
 });

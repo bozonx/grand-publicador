@@ -6,7 +6,7 @@ import { UsersService } from './users.service.js';
  * Provides services for user retrieval and updates.
  */
 @Module({
-    providers: [UsersService],
-    exports: [UsersService],
+  providers: [UsersService],
+  exports: [UsersService],
 })
-export class UsersModule { }
+export class UsersModule {}

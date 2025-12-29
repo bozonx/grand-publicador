@@ -1,4 +1,3 @@
-
 import { registerAs } from '@nestjs/config';
 import { IsInt, IsString, IsIn, Min, Max, validateSync, IsOptional } from 'class-validator';
 import { plainToClass } from 'class-transformer';

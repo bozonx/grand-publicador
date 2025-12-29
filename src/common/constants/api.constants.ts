@@ -1,4 +1,3 @@
-
 /**
  * The current API version of the application.
  */

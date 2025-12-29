@@ -1,5 +1,13 @@
-
-import { Controller, Post, Body, HttpCode, HttpStatus, Get, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  Get,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { AuthService } from './auth.service.js';
 import { TelegramLoginDto } from './dto/index.js';
 import { AuthGuard } from '@nestjs/passport';
@@ -11,25 +19,25 @@ import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
  */
 @Controller('auth')
 export class AuthController {
-    constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
-    /**
-     * Log in using Telegram Mini App init data.
-     * Returns a JWT token upon successful validation.
-     */
-    @Post('telegram')
-    @HttpCode(HttpStatus.OK)
-    async login(@Body() loginDto: TelegramLoginDto) {
-        return this.authService.loginWithTelegram(loginDto.initData);
-    }
+  /**
+   * Log in using Telegram Mini App init data.
+   * Returns a JWT token upon successful validation.
+   */
+  @Post('telegram')
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() loginDto: TelegramLoginDto) {
+    return this.authService.loginWithTelegram(loginDto.initData);
+  }
 
-    /**
-     * Get the authenticated user's profile.
-     * Requires a valid JWT token.
-     */
-    @UseGuards(AuthGuard(JWT_STRATEGY))
-    @Get('me')
-    async getProfile(@Request() req: AuthenticatedRequest) {
-        return this.authService.getProfile(req.user.sub);
-    }
+  /**
+   * Get the authenticated user's profile.
+   * Requires a valid JWT token.
+   */
+  @UseGuards(AuthGuard(JWT_STRATEGY))
+  @Get('me')
+  async getProfile(@Request() req: AuthenticatedRequest) {
+    return this.authService.getProfile(req.user.sub);
+  }
 }
