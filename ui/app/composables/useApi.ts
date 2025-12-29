@@ -3,7 +3,11 @@ export const useApi = () => {
     const token = useCookie('auth_token');
 
     // Base path for API, matching NestJS global prefix
-    const apiBase = `${config.public.apiBase}/api/v1`;
+    // If apiBase is empty (production), use current host + /api/v1
+    // If apiBase is set (development), use it + /api/v1
+    const apiBase = config.public.apiBase
+        ? `${config.public.apiBase}/api/v1`
+        : '/api/v1';
 
     const request = async <T>(url: string, options: any = {}) => {
         const headers = {

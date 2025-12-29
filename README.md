@@ -71,29 +71,36 @@ pnpm dev
 Интерфейс будет доступен на `http://localhost:3000`.
 
 ### Продакшн (Production)
-Сборка оптимизированных бандлов и запуск.
 
-**Бэкенд:**
+**Рекомендуемый способ: Docker**
+
+См. подробное руководство: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+
+Быстрый старт:
 ```bash
-# Сборка
-npm run build
-
-# Применение миграций (без изменения схемы)
-npx prisma migrate deploy
-
-# Запуск
-npm run start:prod
+cd docker
+# Отредактируйте docker-compose.yml (JWT_SECRET, TELEGRAM_BOT_TOKEN, API_KEY)
+docker-compose up -d
 ```
 
-**Фронтенд:**
+Приложение будет доступно на `http://localhost:8080`
+
+**Альтернатива: Ручная сборка**
+
+Бэкенд:
+```bash
+pnpm build
+npx prisma migrate deploy
+pnpm start:prod
+```
+
+Фронтенд:
 ```bash
 cd ui
-# Сборка
 pnpm build
-
-# Запуск (через node или preview)
-node .output/server/index.mjs
+# Статика будет в ui/.output/public и раздается бэкендом
 ```
+
 
 ## Переменные окружения
 

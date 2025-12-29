@@ -51,15 +51,11 @@ export default defineNuxtConfig({
       devMode: process.env.VITE_DEV_MODE || 'false',
       devTelegramId: process.env.VITE_DEV_TELEGRAM_ID || '',
       appName: process.env.VITE_APP_NAME || 'Grand Publicador',
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8080',
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || '',
     },
   },
 
-  nitro: {
-    routeRules: {
-      '/api/**': { proxy: `${process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8080'}/api/**` },
-    },
-  },
+
 
   devtools: { enabled: true }
 })

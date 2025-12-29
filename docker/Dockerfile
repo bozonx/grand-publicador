@@ -11,7 +11,7 @@ ENV LISTEN_HOST=0.0.0.0
 ENV LISTEN_PORT=8080
 ENV TZ=UTC
 ENV LOG_LEVEL=warn
-ENV DATABASE_URL=file:/app/data/app.db
+ENV DATABASE_URL=file:/data/app.db
 
 # Install pnpm
 RUN corepack enable
