@@ -1,15 +1,15 @@
 {
-  "semi": false,
   "singleQuote": true,
+  "trailingComma": "all",
   "tabWidth": 2,
-  "trailingComma": "es5",
-  "printWidth": 120,
+  "semi": true,
+  "printWidth": 100,
   "endOfLine": "lf",
   "bracketSpacing": true,
-  "arrowParens": "always",
-  "htmlWhitespaceSensitivity": "css",
-  "vueIndentScriptAndStyle": false,
+  "bracketSameLine": false,
+  "arrowParens": "avoid",
+  "quoteProps": "as-needed",
   "proseWrap": "preserve",
-  "bracketSameLine": true,
-  "plugins": ["prettier-plugin-tailwindcss"]
+  "htmlWhitespaceSensitivity": "css",
+  "embeddedLanguageFormatting": "auto"
 }
