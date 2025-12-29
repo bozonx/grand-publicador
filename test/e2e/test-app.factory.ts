@@ -2,11 +2,20 @@ import { Test } from '@nestjs/testing';
 import { ValidationPipe } from '@nestjs/common';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
 import { AppModule } from '../../src/app.module.js';
+import { PrismaService } from '../../src/modules/prisma/prisma.service.js';
 
 export async function createTestApp(): Promise<NestFastifyApplication> {
   const moduleRef = await Test.createTestingModule({
     imports: [AppModule],
-  }).compile();
+  })
+    .overrideProvider(PrismaService)
+    .useValue({
+      $connect: async () => { },
+      $disconnect: async () => { },
+      onModuleInit: async () => { },
+      onModuleDestroy: async () => { },
+    })
+    .compile();
 
   const app = moduleRef.createNestApplication<NestFastifyApplication>(
     new FastifyAdapter({

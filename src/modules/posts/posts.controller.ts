@@ -14,7 +14,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { PostsService } from './posts.service.js';
 import { CreatePostDto, UpdatePostDto } from './dto/index.js';
-import { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
+import type { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
 import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
 
 /**

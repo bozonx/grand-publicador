@@ -16,7 +16,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { ProjectsService } from './projects.service.js';
 import { CreateProjectDto, UpdateProjectDto } from './dto/index.js';
-import { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
+import type { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
 import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
 
 /**

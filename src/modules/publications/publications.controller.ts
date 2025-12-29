@@ -17,7 +17,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { PublicationsService } from './publications.service.js';
 import { CreatePublicationDto, UpdatePublicationDto, CreatePostsDto } from './dto/index.js';
 import { PostStatus } from '@prisma/client';
-import { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
+import type { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
 import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
 
 /**

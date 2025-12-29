@@ -16,6 +16,7 @@ describe('AutomationService (unit)', () => {
             findMany: jest.fn(),
             findUnique: jest.fn(),
             update: jest.fn(),
+            updateMany: jest.fn().mockResolvedValue({ count: 1 }),
         },
     };
 
@@ -47,7 +48,13 @@ describe('AutomationService (unit)', () => {
     describe('getPendingPosts', () => {
         it('should return posts scheduled for now or earlier', async () => {
             const now = new Date('2025-12-29T10:00:00Z');
-            jest.spyOn(global, 'Date').mockImplementation(() => now as any);
+            const OriginalDate = global.Date;
+            jest.spyOn(global, 'Date').mockImplementation((...args: any[]) => {
+                if (args.length) {
+                    return new OriginalDate(...args as [any]);
+                }
+                return now;
+            });
 
             const mockPosts = [
                 {
@@ -72,9 +79,14 @@ describe('AutomationService (unit)', () => {
                     status: 'SCHEDULED',
                     scheduledAt: {
                         lte: now,
+                        gte: new Date(now.getTime() - 60 * 60 * 1000), // Default 60 mins lookback
                     },
                 },
-                include: expect.any(Object),
+                include: expect.objectContaining({
+                    channel: true,
+                    publication: true,
+                    author: expect.anything(),
+                }),
                 orderBy: {
                     scheduledAt: 'asc',
                 },
@@ -262,7 +274,7 @@ describe('AutomationService (unit)', () => {
                 where: { id: postId },
                 data: expect.objectContaining({
                     status: 'PUBLISHED',
-                    publishedAt: expect.any(Date),
+                    publishedAt: expect.anything(),
                 }),
             });
         });

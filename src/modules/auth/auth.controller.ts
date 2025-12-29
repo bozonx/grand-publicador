@@ -3,7 +3,7 @@ import { Controller, Post, Body, HttpCode, HttpStatus, Get, UseGuards, Request }
 import { AuthService } from './auth.service.js';
 import { TelegramLoginDto } from './dto/index.js';
 import { AuthGuard } from '@nestjs/passport';
-import { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
+import type { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
 import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
 
 /**
