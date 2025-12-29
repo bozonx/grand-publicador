@@ -99,7 +99,7 @@ node .output/server/index.mjs
 
 | Переменная | Описание |
 |------------|----------|
-| `DATABASE_URL` | Путь к БД SQLite (например, `file:./dev.db`). В Prisma 7 настраивается в `prisma.config.ts`. |
+| `DATABASE_URL` | Путь к БД SQLite (например, `file:./dev.db`) |
 | `JWT_SECRET` | Соль для подписи JWT токенов |
 | `TELEGRAM_BOT_TOKEN` | Токен бота от @BotFather для валидации данных |
 | `API_KEY` | API ключ для External и Automation API |

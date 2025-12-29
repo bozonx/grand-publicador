@@ -1,7 +1,19 @@
 import { PrismaClient, ProjectRole, SocialMedia, PostType, PostStatus } from '@prisma/client';
-import "dotenv/config";
+import { config } from 'dotenv';
+import path from 'path';
 
-const prisma = new PrismaClient();
+// Manual env loading for the script since we removed prisma.config.ts
+const nodeEnv = process.env.NODE_ENV || 'development';
+config({ path: path.resolve(process.cwd(), `.env.${nodeEnv}`) });
+config();
+
+const prisma = new PrismaClient({
+    datasources: {
+        db: {
+            url: process.env.DATABASE_URL,
+        },
+    },
+});
 
 async function main() {
     console.log('🌱 Starting seeding...');

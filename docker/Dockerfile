@@ -29,9 +29,8 @@ COPY dist ./dist
 # Copy pre-built frontend application
 COPY ui/.output ./ui/.output
 
-# Copy prisma schema, migrations and config
+# Copy prisma schema and migrations
 COPY prisma ./prisma
-COPY prisma.config.ts ./
 
 # Copy entrypoint script
 COPY docker/entrypoint.sh /entrypoint.sh
