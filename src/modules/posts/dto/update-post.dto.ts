@@ -36,6 +36,11 @@ export class UpdatePostDto {
   @Type(() => Date)
   @IsDate()
   @IsOptional()
+  postDate?: Date;
+
+  @Type(() => Date)
+  @IsDate()
+  @IsOptional()
   scheduledAt?: Date;
 
   @Type(() => Date)

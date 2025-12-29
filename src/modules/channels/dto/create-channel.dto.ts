@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString, IsEnum, IsObject } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsEnum, IsObject, IsBoolean } from 'class-validator';
 import { SocialMedia } from '@prisma/client';
 
 /**
@@ -24,4 +24,8 @@ export class CreateChannelDto {
   @IsObject()
   @IsOptional()
   credentials?: Record<string, any>;
+
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
 }

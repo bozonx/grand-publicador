@@ -15,8 +15,8 @@ export class CreatePostDto {
   content!: string;
 
   @IsString()
-  @IsNotEmpty()
-  socialMedia!: string;
+  @IsOptional()
+  socialMedia?: string;
 
   @IsEnum(PostType)
   @IsNotEmpty()
@@ -40,6 +40,11 @@ export class CreatePostDto {
 
   @IsOptional()
   mediaFiles?: any;
+
+  @Type(() => Date)
+  @IsDate()
+  @IsOptional()
+  postDate?: Date;
 
   @Type(() => Date)
   @IsDate()

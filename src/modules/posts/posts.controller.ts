@@ -22,7 +22,7 @@ import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
 @Controller('posts')
 @UseGuards(AuthGuard(JWT_STRATEGY))
 export class PostsController {
-  constructor(private readonly postsService: PostsService) {}
+  constructor(private readonly postsService: PostsService) { }
 
   @Post()
   create(@Request() req: AuthenticatedRequest, @Body() createPostDto: CreatePostDto) {
@@ -31,8 +31,18 @@ export class PostsController {
   }
 
   @Get()
-  findAll(@Request() req: AuthenticatedRequest, @Query('channelId') channelId: string) {
-    return this.postsService.findAllForChannel(channelId, req.user.sub);
+  findAll(
+    @Request() req: AuthenticatedRequest,
+    @Query('channelId') channelId?: string,
+    @Query('projectId') projectId?: string,
+  ) {
+    if (projectId) {
+      return this.postsService.findAllForProject(projectId, req.user.sub);
+    }
+    if (channelId) {
+      return this.postsService.findAllForChannel(channelId, req.user.sub);
+    }
+    return [];
   }
 
   @Get(':id')

@@ -39,7 +39,7 @@ const formData = reactive({
   title: props.post?.title || '',
   description: props.post?.description || '',
   authorComment: props.post?.authorComment || '',
-  tags: props.post?.tags?.join(', ') || '',
+  tags: props.post?.tags || '',
   postDate: props.post?.postDate || '',
   status: (props.post?.status || 'draft') as PostStatusEnum,
   scheduledAt: props.post?.scheduledAt || '',

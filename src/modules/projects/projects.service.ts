@@ -11,7 +11,7 @@ export class ProjectsService {
   constructor(
     private prisma: PrismaService,
     private permissions: PermissionsService,
-  ) {}
+  ) { }
 
   /**
    * Creates a new project and assigns the creator as the owner.
@@ -59,7 +59,7 @@ export class ProjectsService {
     const take = options?.limit ?? 50;
     const skip = options?.offset ?? 0;
 
-    return this.prisma.project.findMany({
+    const projects = await this.prisma.project.findMany({
       where: {
         members: {
           some: {
@@ -77,6 +77,16 @@ export class ProjectsService {
       skip,
       orderBy: { createdAt: 'desc' },
     });
+
+    return projects.map(project => {
+      const userMember = project.members.find(m => m.userId === userId);
+      return {
+        ...project,
+        role: userMember?.role?.toLowerCase(),
+        channelCount: project._count.channels,
+        memberCount: project.members.length,
+      };
+    });
   }
 
   /**
@@ -89,7 +99,7 @@ export class ProjectsService {
    * @throws ForbiddenException if the user is not a member.
    * @throws NotFoundException if the project does not exist.
    */
-  async findOne(projectId: string, userId: string): Promise<Project & { role: string }> {
+  async findOne(projectId: string, userId: string): Promise<any> {
     const role = await this.permissions.getUserProjectRole(projectId, userId);
 
     if (!role) {
@@ -112,7 +122,12 @@ export class ProjectsService {
       throw new NotFoundException('Project not found');
     }
 
-    return { ...project, role };
+    return {
+      ...project,
+      role: role.toLowerCase(),
+      channelCount: project.channels.length,
+      memberCount: project.members.length,
+    };
   }
 
   /**

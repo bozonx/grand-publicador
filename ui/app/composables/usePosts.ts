@@ -13,7 +13,7 @@ export interface Post {
     title: string | null
     description: string | null
     authorComment: string | null
-    tags: string[] | null
+    tags: string | null
     postDate: string | null
     status: PostStatus
     scheduledAt: string | null
@@ -41,10 +41,11 @@ export interface PostCreateInput {
     channelId: string
     content: string
     postType: PostType
+    socialMedia?: string
     title?: string
     description?: string
     authorComment?: string
-    tags?: string[]
+    tags?: string | string[]
     postDate?: string
     status?: PostStatus
     scheduledAt?: string
@@ -53,10 +54,11 @@ export interface PostCreateInput {
 export interface PostUpdateInput {
     content?: string
     postType?: PostType
+    socialMedia?: string
     title?: string
     description?: string
     authorComment?: string
-    tags?: string[]
+    tags?: string | string[]
     postDate?: string
     status?: PostStatus
     scheduledAt?: string
@@ -120,7 +122,13 @@ export function usePosts() {
         error.value = null
 
         try {
-            const post = await api.post<Post>('/posts', data)
+            // Transform tags if they are an array
+            const payload = { ...data }
+            if (Array.isArray(payload.tags)) {
+                payload.tags = payload.tags.join(', ')
+            }
+
+            const post = await api.post<Post>('/posts', payload)
             toast.add({
                 title: t('common.success'),
                 description: t('post.createSuccess'),
@@ -145,7 +153,13 @@ export function usePosts() {
         error.value = null
 
         try {
-            const post = await api.patch<Post>(`/posts/${postId}`, data)
+            // Transform tags if they are an array
+            const payload = { ...data }
+            if (Array.isArray(payload.tags)) {
+                payload.tags = payload.tags.join(', ')
+            }
+
+            const post = await api.patch<Post>(`/posts/${postId}`, payload)
             toast.add({
                 title: t('common.success'),
                 description: t('post.updateSuccess'),

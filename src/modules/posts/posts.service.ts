@@ -10,7 +10,7 @@ export class PostsService {
     private prisma: PrismaService,
     private channelsService: ChannelsService,
     private permissions: PermissionsService,
-  ) {}
+  ) { }
 
   /**
    * Create a new post in a specific channel.
@@ -26,13 +26,14 @@ export class PostsService {
     channelId: string,
     data: {
       content: string;
-      socialMedia: string;
+      socialMedia?: string;
       postType: PostType;
       title?: string;
       description?: string;
       authorComment?: string;
       tags?: string;
       mediaFiles?: any;
+      postDate?: Date;
       scheduledAt?: Date;
       status?: PostStatus;
     },
@@ -49,16 +50,60 @@ export class PostsService {
         channelId,
         authorId: userId,
         content: data.content,
-        socialMedia: data.socialMedia,
+        socialMedia: data.socialMedia || channel.socialMedia,
         postType: data.postType,
         title: data.title,
         description: data.description,
         authorComment: data.authorComment,
         tags: data.tags,
         mediaFiles: JSON.stringify(data.mediaFiles || []),
+        postDate: data.postDate,
         scheduledAt: data.scheduledAt,
         status: data.status || PostStatus.DRAFT,
       },
+    });
+  }
+
+  /**
+   * Retrieve all posts for a specific project.
+   * Validates that the user has access to the project.
+   *
+   * @param projectId - The ID of the project.
+   * @param userId - The ID of the user.
+   * @returns A list of posts for all channels in the project.
+   */
+  async findAllForProject(projectId: string, userId: string) {
+    // Check project permission (owner/admin/editor/viewer)
+    const role = await this.permissions.getUserProjectRole(projectId, userId);
+    if (!role) {
+      throw new ForbiddenException('You are not a member of this project');
+    }
+
+    return this.prisma.post.findMany({
+      where: {
+        channel: {
+          projectId,
+        },
+      },
+      include: {
+        channel: {
+          select: {
+            id: true,
+            name: true,
+            projectId: true,
+            socialMedia: true,
+          },
+        },
+        author: {
+          select: {
+            id: true,
+            fullName: true,
+            username: true,
+            avatarUrl: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
@@ -74,6 +119,24 @@ export class PostsService {
     await this.channelsService.findOne(channelId, userId); // Validates access
     return this.prisma.post.findMany({
       where: { channelId },
+      include: {
+        channel: {
+          select: {
+            id: true,
+            name: true,
+            projectId: true,
+            socialMedia: true,
+          },
+        },
+        author: {
+          select: {
+            id: true,
+            fullName: true,
+            username: true,
+            avatarUrl: true,
+          },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -90,6 +153,24 @@ export class PostsService {
   async findOne(id: string, userId: string) {
     const post = await this.prisma.post.findUnique({
       where: { id },
+      include: {
+        channel: {
+          select: {
+            id: true,
+            name: true,
+            projectId: true,
+            socialMedia: true,
+          },
+        },
+        author: {
+          select: {
+            id: true,
+            fullName: true,
+            username: true,
+            avatarUrl: true,
+          },
+        },
+      },
     });
 
     if (!post) {

@@ -27,6 +27,7 @@ export interface ChannelCreateInput {
     socialMedia: SocialMedia
     channelIdentifier: string
     isActive?: boolean
+    credentials?: Record<string, any>
 }
 
 export interface ChannelUpdateInput {
