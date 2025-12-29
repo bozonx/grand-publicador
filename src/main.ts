@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module.js';
 import type { AppConfig } from './config/app.config.js';
+import { SpaFallbackFilter } from './common/filters/spa-fallback.filter.js';
 
 // Solves "Do not know how to serialize a BigInt" error
 (BigInt.prototype as any).toJSON = function () {
@@ -51,6 +52,9 @@ async function bootstrap() {
   const globalPrefix = appConfig.basePath ? `${appConfig.basePath}/api/v1` : 'api/v1';
   app.setGlobalPrefix(globalPrefix);
 
+  // Register SPA fallback filter to serve 200.html for non-API 404s
+  app.useGlobalFilters(new SpaFallbackFilter(globalPrefix));
+
   // Serve static assets from ui/dist (Nuxt static build)
   // We resolve the path relative to the current file location
   const __filename = fileURLToPath(import.meta.url);
@@ -62,23 +66,10 @@ async function bootstrap() {
   await app.register(fastifyStatic, {
     root: staticRoot,
     prefix: '/',
-    wildcard: false,
+    wildcard: false, // Disable wildcard, we handle SPA fallback via exception filter
   });
 
-  // SPA fallback: serve 200.html for all non-API routes
-  // This allows client-side routing to work properly
-  app.getHttpAdapter().getInstance().setNotFoundHandler((request, reply) => {
-    const url = request.url;
 
-    // Don't intercept API routes - let NestJS handle them
-    if (url.startsWith(`/${globalPrefix}`)) {
-      reply.code(404).send({ statusCode: 404, message: 'Not Found' });
-      return;
-    }
-
-    // For all other routes, serve the SPA fallback
-    reply.sendFile('200.html');
-  });
 
 
   // Enable graceful shutdown hooks to handle signals (SIGINT, SIGTERM) correctly
