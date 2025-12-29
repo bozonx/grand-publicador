@@ -17,5 +17,6 @@ export const useAuth = () => {
         loginWithTelegram: authStore.loginWithTelegram,
         signOut: authStore.logout,
         refreshUser: authStore.fetchMe,
+        initialize: authStore.fetchMe,
     };
 };

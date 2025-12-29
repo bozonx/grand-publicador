@@ -56,12 +56,23 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     async function fetchMe() {
-        if (!token.value) return;
+        if (!token.value) {
+            isInitialized.value = true;
+            return null;
+        }
 
         try {
-            // In a real app, verify the token
+            const userData = await api.get<User>('/auth/me');
+            user.value = userData;
+            isInitialized.value = true;
+            return userData;
         } catch (err) {
-            logout();
+            console.error('Fetch me failed', err);
+            user.value = null;
+            // Only logout if 401
+            // logout(); 
+        } finally {
+            isInitialized.value = true;
         }
     }
 

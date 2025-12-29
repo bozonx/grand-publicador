@@ -361,8 +361,8 @@ const activeStatusOptions = [
             :channel="channelToEdit"
             @success="handleUpdateSuccess"
             @cancel="
-              isEditModalOpen = false
-              channelToEdit = null
+              isEditModalOpen = false;
+              channelToEdit = null;
             "
           />
         </div>
@@ -403,8 +403,8 @@ const activeStatusOptions = [
               variant="ghost"
               :disabled="isDeleting"
               @click="
-                isDeleteModalOpen = false
-                channelToDelete = null
+                isDeleteModalOpen = false;
+                channelToDelete = null;
               "
             >
               {{ t('common.cancel') }}

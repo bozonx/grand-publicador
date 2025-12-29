@@ -69,4 +69,20 @@ export class AuthService {
 
         return calculatedHash === hash;
     }
+
+    async getProfile(userId: string) {
+        const user = await this.usersService.findById(userId);
+        if (!user) {
+            throw new UnauthorizedException('User not found');
+        }
+
+        return {
+            id: user.id,
+            telegramId: user.telegramId?.toString(),
+            username: user.username,
+            fullName: user.fullName,
+            avatarUrl: user.avatarUrl,
+            isAdmin: user.isAdmin,
+        };
+    }
 }
