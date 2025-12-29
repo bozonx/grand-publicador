@@ -60,6 +60,7 @@
     "signInWithGoogle": "Sign in with Google",
     "signInWithGithub": "Sign in with GitHub",
     "signInWithTelegram": "Sign in with Telegram",
+    "widgetHint": "Use the official Telegram widget to authorize in your browser",
     "openInTelegram": "Open the app in Telegram for automatic login",
     "passwordMismatch": "Passwords do not match",
     "weakPassword": "Password must be at least 6 characters",

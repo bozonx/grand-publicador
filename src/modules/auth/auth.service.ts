@@ -1,10 +1,10 @@
 import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { createHmac } from 'node:crypto';
+import { createHmac, createHash } from 'node:crypto';
 import { UsersService } from '../users/users.service.js';
 import { plainToInstance } from 'class-transformer';
-import { AuthResponseDto } from './dto/auth-response.dto.js';
+import { AuthResponseDto, TelegramWidgetLoginDto } from './dto/index.js';
 import { UserDto } from '../users/dto/user.dto.js';
 
 /**
@@ -86,6 +86,78 @@ export class AuthService {
       },
       { excludeExtraneousValues: true },
     );
+  }
+
+  /**
+   * Authenticate a user via Telegram Login Widget data.
+   * Validates the data signature and creates/updates the user.
+   *
+   * @param widgetData - The data object received from the Telegram Login Widget.
+   * @returns An object containing the JWT access token and user details.
+   * @throws UnauthorizedException if data validation fails.
+   */
+  async loginWithTelegramWidget(
+    widgetData: TelegramWidgetLoginDto,
+  ): Promise<AuthResponseDto> {
+    const isValid = this.validateTelegramWidgetData(widgetData);
+    if (!isValid) {
+      this.logger.warn('Invalid Telegram widget data');
+      throw new UnauthorizedException('Invalid Telegram widget data');
+    }
+
+    const user = await this.usersService.findOrCreateTelegramUser({
+      telegramId: BigInt(widgetData.id),
+      username: widgetData.username,
+      firstName: widgetData.first_name,
+      lastName: widgetData.last_name,
+      avatarUrl: widgetData.photo_url,
+    });
+
+    const payload = {
+      sub: user.id,
+      telegramId: user.telegramId?.toString(),
+      username: user.username,
+    };
+
+    return plainToInstance(
+      AuthResponseDto,
+      {
+        access_token: this.jwtService.sign(payload),
+        user: user,
+      },
+      { excludeExtraneousValues: true },
+    );
+  }
+
+  /**
+   * Validate the integrity of data received from Telegram Login Widget.
+   * Implements the HMAC-SHA256 signature verification described in Telegram documentation.
+   *
+   * @param data - The data object to validate.
+   * @returns true if the signature is valid and not expired, false otherwise.
+   */
+  private validateTelegramWidgetData(data: TelegramWidgetLoginDto): boolean {
+    const { hash, ...rest } = data;
+
+    // Check if auth_date is older than 24 hours
+    const now = Math.floor(Date.now() / 1000);
+    if (now - data.auth_date > 86400) {
+      this.logger.warn('Telegram widget data expired');
+      return false;
+    }
+
+    const dataCheckArr = Object.entries(rest)
+      .filter(([_, value]) => value !== undefined && value !== null)
+      .map(([key, value]) => `${key}=${value}`)
+      .sort()
+      .join('\n');
+
+    const secretKey = createHash('sha256').update(this.botToken).digest();
+    const calculatedHash = createHmac('sha256', secretKey)
+      .update(dataCheckArr)
+      .digest('hex');
+
+    return calculatedHash === hash;
   }
 
   /**

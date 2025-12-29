@@ -10,7 +10,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
-import { TelegramLoginDto } from './dto/index.js';
+import { TelegramLoginDto, TelegramWidgetLoginDto } from './dto/index.js';
 import { AuthGuard } from '@nestjs/passport';
 import type { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
 import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
@@ -30,6 +30,16 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: TelegramLoginDto) {
     return this.authService.loginWithTelegram(loginDto.initData);
+  }
+
+  /**
+   * Log in using Telegram Login Widget data.
+   * Returns a JWT token upon successful validation.
+   */
+  @Post('telegram-widget')
+  @HttpCode(HttpStatus.OK)
+  async loginWidget(@Body() loginDto: TelegramWidgetLoginDto) {
+    return this.authService.loginWithTelegramWidget(loginDto);
   }
 
   /**

@@ -60,6 +60,7 @@
     "signInWithGoogle": "Войти через Google",
     "signInWithGithub": "Войти через GitHub",
     "signInWithTelegram": "Войти через Telegram",
+    "widgetHint": "Используйте официальный виджет Telegram для автоматического входа в браузере",
     "openInTelegram": "Откройте приложение в Telegram для автоматического входа",
     "passwordMismatch": "Пароли не совпадают",
     "weakPassword": "Пароль должен содержать минимум 6 символов",

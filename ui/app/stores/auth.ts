@@ -57,6 +57,26 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
+    async function loginWithTelegramWidget(widgetData: any) {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            const response = await api.post<AuthResponse>('/auth/telegram-widget', widgetData);
+
+            token.value = response.accessToken;
+            user.value = response.user;
+            isInitialized.value = true;
+
+            return response;
+        } catch (err: any) {
+            error.value = err.message;
+            console.error('Widget login failed', err);
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
 
 
     async function loginWithDev() {
@@ -124,6 +144,7 @@ export const useAuthStore = defineStore('auth', () => {
         isAdmin,
         displayName,
         loginWithTelegram,
+        loginWithTelegramWidget,
         loginWithDev,
         logout,
         fetchMe,
