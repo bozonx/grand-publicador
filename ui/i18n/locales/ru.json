@@ -1,5 +1,6 @@
 {
   "common": {
+    "appName": "Grand Publicador",
     "loading": "Загрузка...",
     "save": "Сохранить",
     "cancel": "Отмена",

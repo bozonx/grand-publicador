@@ -65,15 +65,31 @@ docker-compose down
 
 ## Environment Variables
 
-### Production Defaults (from nuxt.config.ts)
-- `VITE_DEV_MODE=false` - Production mode
-- `VITE_APP_NAME="Grand Publicador"` - App name
+### Backend Runtime (docker-compose.yml or .env.production)
+These variables are used by the backend when running:
+- `NODE_ENV=production` - Environment mode
+- `LISTEN_HOST=0.0.0.0` - Host to bind
+- `LISTEN_PORT=8080` - Port to listen on
+- `LOG_LEVEL=warn` - Logging level
+- `DATABASE_URL=file:/data/app.db` - SQLite database path
+- `JWT_SECRET` - Secret for JWT tokens (REQUIRED)
+- `TELEGRAM_BOT_TOKEN` - Telegram bot token (REQUIRED)
+- `API_KEY` - API key for External/Automation API (REQUIRED)
+
+### Frontend Build-time (ui/.env.production or CI/CD)
+These variables are embedded into the static bundle during `pnpm build`:
+- `VITE_DEV_MODE=false` - Disable dev features
 - `NUXT_PUBLIC_API_BASE=""` - Empty = use same host as frontend
+
+**Note**: Frontend variables are NOT needed at runtime. They are only used during the build process and become part of the static JavaScript files.
+
+**App Name**: The application name is defined in i18n locales (`ui/i18n/locales/*.json` under `common.appName`) and can be different for each language.
 
 ### Development Override (ui/.env)
 - `VITE_DEV_MODE=true` - Enable dev features
 - `VITE_DEV_TELEGRAM_ID=<your-id>` - Auto-login in dev
 - `NUXT_PUBLIC_API_BASE=http://localhost:8080` - Separate backend URL
+
 
 ## API Endpoints
 
