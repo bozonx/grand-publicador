@@ -65,6 +65,22 @@ async function bootstrap() {
     wildcard: false,
   });
 
+  // SPA fallback: serve 200.html for all non-API routes
+  // This allows client-side routing to work properly
+  app.getHttpAdapter().getInstance().setNotFoundHandler((request, reply) => {
+    const url = request.url;
+
+    // Don't intercept API routes - let NestJS handle them
+    if (url.startsWith(`/${globalPrefix}`)) {
+      reply.code(404).send({ statusCode: 404, message: 'Not Found' });
+      return;
+    }
+
+    // For all other routes, serve the SPA fallback
+    reply.sendFile('200.html');
+  });
+
+
   // Enable graceful shutdown hooks to handle signals (SIGINT, SIGTERM) correctly
   app.enableShutdownHooks();
 

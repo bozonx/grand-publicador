@@ -1,48 +1,73 @@
-# Инструкция по настройке деплоя под subpath
+# Инструкция по настройке деплоя (корень или subpath)
 
 ## Проблема
-- API работает: `https://services-gp.p-libereco.org/gran-p/api/v1/health` ✅
-- Frontend не работает: `https://services-gp.p-libereco.org/gran-p/` ❌ (404)
+- API работает: `https://services-gp.p-libereco.org/api/v1/health` ✅
+- Frontend не работает: `https://services-gp.p-libereco.org/` ❌ (404)
 
 ## Причина
-Nuxt генерирует статические файлы для корневого пути `/`, а не для `/gran-p/`.
+Две проблемы:
+1. **Nuxt использовал `build` вместо `generate`** - создавался SSR build вместо полностью статического сайта
+2. **Отсутствовал SPA fallback** - NestJS не возвращал `200.html` для клиентских маршрутов
 
 ## Решение
 
-### 1. Настройка GitHub Actions
+### Что было исправлено в коде:
 
-В вашем репозитории на GitHub:
-1. Перейдите в **Settings** → **Secrets and variables** → **Actions** → **Variables**
-2. Создайте новую переменную:
-   - Name: `NUXT_APP_BASE_URL`
-   - Value: `/gran-p/`
+1. **GitHub Actions workflow** - изменена команда с `pnpm build` на `pnpm generate`
+2. **main.ts** - добавлен `setNotFoundHandler` для возврата `200.html` для всех не-API маршрутов
+3. **nuxt.config.ts** - добавлен `baseURL` для поддержки deployment под subpath (опционально)
 
-### 2. Пересоберите Docker образ
 
-После добавления переменной запустите новый build в GitHub Actions. Workflow автоматически использует эту переменную при сборке frontend.
 
-### 3. Обновите Docker образ на сервере
+### Для деплоя в корне (/)
+
+Просто пересоберите и задеплойте новый Docker образ:
 
 ```bash
-# На вашем сервере
-cd /path/to/your/deployment
+# Запустите новый build в GitHub Actions (push в main)
+git push origin main
+
+# На сервере обновите образ
 docker-compose pull
 docker-compose up -d
 ```
 
-## Что было изменено в коде
+### Для деплоя под subpath (например, /gran-p/)
+
+1. **Настройте GitHub Actions переменную**:
+   - Перейдите в **Settings** → **Secrets and variables** → **Actions** → **Variables**
+   - Создайте переменную `NUXT_APP_BASE_URL` со значением `/gran-p/`
+
+2. **Пересоберите и задеплойте**:
+   ```bash
+   # Запустите новый build в GitHub Actions
+   git push origin main
+   
+   # На сервере обновите образ
+   docker-compose pull
+   docker-compose up -d
+   ```
+
+## Технические детали изменений
 
 1. **ui/nuxt.config.ts**: Добавлен `baseURL: process.env.NUXT_APP_BASE_URL || '/'`
-2. **.github/workflows/docker-image.yml**: Добавлена env переменная `NUXT_APP_BASE_URL` в шаг сборки frontend
-3. **ui/.env.production.example**: Добавлена документация для `NUXT_APP_BASE_URL`
+2. **src/main.ts**: Добавлен `setNotFoundHandler` для SPA fallback на `200.html`
+3. **.github/workflows/docker-image.yml**: 
+   - Изменена команда с `pnpm build` на `pnpm generate`
+   - Добавлена env переменная `NUXT_APP_BASE_URL`
 4. **docs/DEPLOYMENT.md**: Добавлена секция "Deploying Under a Subpath"
 
 ## Проверка
 
 После деплоя проверьте:
+- `https://services-gp.p-libereco.org/` - должен показать frontend ✅
+- `https://services-gp.p-libereco.org/api/v1/health` - должен продолжать работать ✅
+
+Или для subpath:
 - `https://services-gp.p-libereco.org/gran-p/` - должен показать frontend ✅
 - `https://services-gp.p-libereco.org/gran-p/api/v1/health` - должен продолжать работать ✅
 
 ## Важно
 
 `NUXT_APP_BASE_URL` должен быть установлен **во время сборки** (build-time), а не во время запуска (runtime).
+

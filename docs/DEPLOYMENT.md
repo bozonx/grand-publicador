@@ -77,7 +77,7 @@ These variables are used by the backend when running:
 - `API_KEY` - API key for External/Automation API (REQUIRED)
 
 ### Frontend Build-time (Optional)
-These variables can be set during `pnpm build` to override defaults from `nuxt.config.ts`:
+These variables can be set during `pnpm generate` (static site generation) to override defaults from `nuxt.config.ts`:
 - `VITE_DEV_MODE` - Default: `'false'` (production mode)
 - `NUXT_PUBLIC_API_BASE` - Default: `''` (empty = same host as frontend)
 - `NUXT_APP_BASE_URL` - Default: `'/'` (root path). Set to `/gran-p/` if deploying under a subpath
@@ -175,7 +175,7 @@ Or in your GitHub Actions workflow:
 
 ```yaml
 - name: Build UI
-  run: pnpm build
+  run: pnpm generate
   working-directory: ./ui
   env:
     NUXT_APP_BASE_URL: /gran-p/
