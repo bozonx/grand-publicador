@@ -46,8 +46,7 @@ CHANGELOG.md
 .gitattributes
 
 # Docker
-docker/
-Dockerfile*
+docker/Dockerfile*
 docker-compose*.yml
 .dockerignore
 
