@@ -206,28 +206,20 @@ function formatDate(date: string | null | undefined): string {
           </dd>
         </div>
 
-        <!-- Role -->
-        <div>
-          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-            {{ t('user.role') }}
-          </dt>
-          <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-            {{ t('admin.regularUser') }}
-          </dd>
-        </div>
 
         <!-- Admin Status -->
-        <div>
+        <!-- Admin Status -->
+        <div v-if="user?.isAdmin">
           <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
             {{ t('user.adminStatus') }}
           </dt>
           <dd class="mt-1">
             <UBadge
-              :color="user?.isAdmin ? 'primary' : 'neutral'"
-              :variant="user?.isAdmin ? 'solid' : 'outline'"
+              color="primary"
+              variant="solid"
               size="sm"
             >
-              {{ user?.isAdmin ? t('user.isAdmin') : t('admin.regularUser') }}
+              {{ t('user.isAdmin') }}
             </UBadge>
           </dd>
         </div>
