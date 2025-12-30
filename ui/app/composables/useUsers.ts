@@ -24,14 +24,14 @@ export function useUsers() {
         store.setError(null)
 
         try {
-            const query = {
+            const params = {
                 page: pagination.value.page,
                 perPage: pagination.value.perPage,
                 ...filter.value,
             }
 
             const { data, meta } = await api.get<{ data: UserWithStats[]; meta: { total: number } }>('/users', {
-                query,
+                params,
             })
 
             store.setUsers(data)

@@ -66,4 +66,86 @@ export class UsersService {
       },
     });
   }
+
+  /**
+   * Find all users with pagination and filtering.
+   * Returns users with their statistics (projects count, posts count).
+   */
+  async findAll(options: {
+    page: number;
+    perPage: number;
+    isAdmin?: boolean;
+    search?: string;
+  }) {
+    const { page, perPage, isAdmin, search } = options;
+    const skip = (page - 1) * perPage;
+
+    // Build where clause
+    const where: any = {};
+
+    if (isAdmin !== undefined) {
+      where.isAdmin = isAdmin;
+    }
+
+    if (search) {
+      where.OR = [
+        { fullName: { contains: search, mode: 'insensitive' } },
+        { username: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    // Get total count
+    const total = await this.prisma.user.count({ where });
+
+    // Get users with statistics
+    const users = await this.prisma.user.findMany({
+      where,
+      skip,
+      take: perPage,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        _count: {
+          select: {
+            ownedProjects: true,
+            posts: true,
+          },
+        },
+      },
+    });
+
+    // Transform users to include statistics
+    const usersWithStats = users.map(user => ({
+      id: user.id,
+      telegramId: user.telegramId?.toString(),
+      email: user.email,
+      username: user.username,
+      full_name: user.fullName,
+      avatar_url: user.avatarUrl,
+      is_admin: user.isAdmin,
+      created_at: user.createdAt,
+      updated_at: user.updatedAt,
+      projectsCount: user._count.ownedProjects,
+      postsCount: user._count.posts,
+    }));
+
+    return {
+      data: usersWithStats,
+      meta: {
+        total,
+        page,
+        perPage,
+      },
+    };
+  }
+
+  /**
+   * Update admin status for a user.
+   */
+  async updateAdminStatus(userId: string, isAdmin: boolean): Promise<User> {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { isAdmin },
+    });
+  }
 }
