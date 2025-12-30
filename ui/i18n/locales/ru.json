@@ -33,7 +33,7 @@
   "navigation": {
     "home": "Главная",
     "dashboard": "Панель управления",
-    "blogs": "Блоги",
+    "projects": "Проекты",
     "channels": "Каналы",
     "posts": "Публикации",
     "users": "Пользователи",
@@ -121,14 +121,14 @@
     "updateSuccess": "Проект успешно обновлён",
     "deleteSuccess": "Проект успешно удалён"
   },
-  "blogMember": {
+  "projectMember": {
     "title": "Участник",
     "titlePlural": "Участники",
     "invite": "Пригласить участника",
     "changeRole": "Изменить роль",
     "remove": "Удалить участника",
     "removeConfirm": "Вы уверены, что хотите удалить этого участника?",
-    "cannotRemoveOwner": "Невозможно удалить владельца блога",
+    "cannotRemoveOwner": "Невозможно удалить владельца проекта",
     "addSuccess": "Участник успешно добавлен",
     "updateSuccess": "Роль участника обновлена",
     "removeSuccess": "Участник успешно удалён",

@@ -33,7 +33,7 @@
   "navigation": {
     "home": "Home",
     "dashboard": "Dashboard",
-    "blogs": "Blogs",
+    "projects": "Projects",
     "channels": "Channels",
     "posts": "Posts",
     "users": "Users",
@@ -121,14 +121,14 @@
     "updateSuccess": "Project updated successfully",
     "deleteSuccess": "Project deleted successfully"
   },
-  "blogMember": {
+  "projectMember": {
     "title": "Member",
     "titlePlural": "Members",
     "invite": "Invite member",
     "changeRole": "Change role",
     "remove": "Remove member",
     "removeConfirm": "Are you sure you want to remove this member?",
-    "cannotRemoveOwner": "Cannot remove blog owner",
+    "cannotRemoveOwner": "Cannot remove project owner",
     "addSuccess": "Member added successfully",
     "updateSuccess": "Member role updated successfully",
     "removeSuccess": "Member removed successfully",
