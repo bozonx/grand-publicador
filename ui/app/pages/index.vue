@@ -19,20 +19,36 @@ const isLoading = computed(() => projectsLoading.value || postsLoading.value)
 
 // Fetch data on mount
 onMounted(async () => {
-  await fetchProjects()
+  try {
+    const data = await fetchProjects()
+    if (!data || data.length === 0) return
 
-  // Fetch posts from all user's projects
-  if (projects.value.length > 0) {
+    // Fetch posts from all user's projects
     const allPosts: PostWithRelations[] = []
-    for (const project of projects.value.slice(0, 3)) {
-      // Limit to first 3 projects
-      const projectPosts = await fetchPostsByProject(project.id)
-      allPosts.push(...projectPosts.slice(0, 5)) // Limit posts per project
+    // Limit to first 3 projects to avoid too many requests
+    const topProjects = projects.value.slice(0, 3)
+    
+    for (const project of topProjects) {
+      try {
+        const projectPosts = await fetchPostsByProject(project.id)
+        if (projectPosts && Array.isArray(projectPosts)) {
+          allPosts.push(...projectPosts.slice(0, 5))
+        }
+      } catch (e) {
+        console.error(`Failed to fetch posts for project ${project.id}:`, e)
+      }
     }
+
     // Sort by creation date and take top 5
     recentPosts.value = allPosts
-      .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+      .sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+        return dateB - dateA
+      })
       .slice(0, 5)
+  } catch (err) {
+    console.error('Dashboard initialization error:', err)
   }
 })
 
@@ -47,7 +63,8 @@ function formatDate(date: string | null): string {
 /**
  * Truncate content for preview
  */
-function truncateContent(content: string, maxLength = 100): string {
+function truncateContent(content: string | null | undefined, maxLength = 100): string {
+  if (!content) return ''
   const text = content.replace(/<[^>]*>/g, '').trim()
   if (text.length <= maxLength) return text
   return text.slice(0, maxLength) + '...'

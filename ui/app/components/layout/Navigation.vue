@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const { isAdmin } = useAuth()
-const route = useRoute()
 
 interface NavItem {
   label: string
@@ -37,13 +36,6 @@ const navItems = computed<NavItem[]>(() => [
 const visibleNavItems = computed(() =>
   navItems.value.filter((item) => !item.adminOnly || isAdmin.value)
 )
-
-function isActive(to: string): boolean {
-  if (to === '/') {
-    return route.path === '/'
-  }
-  return route.path.startsWith(to)
-}
 </script>
 
 <template>
@@ -52,12 +44,8 @@ function isActive(to: string): boolean {
       v-for="item in visibleNavItems"
       :key="item.to"
       :to="item.to"
-      class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-      :class="[
-        isActive(item.to)
-          ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
-          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white',
-      ]"
+      class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+      active-class="bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 !text-primary-700 dark:!text-primary-300"
     >
       <UIcon :name="item.icon" class="w-5 h-5" />
       <span>{{ item.label }}</span>
