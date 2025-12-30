@@ -34,11 +34,10 @@ export class AuthService {
     private configService: ConfigService,
     private usersService: UsersService,
   ) {
-    this.botToken =
-      this.configService.get<string>('AUTH_TELEGRAM_BOT_TOKEN') ??
-      this.configService.get<string>('TELEGRAM_BOT_TOKEN')!;
+    this.botToken = this.configService.get<string>('app.telegramBotToken')!;
+
     if (!this.botToken) {
-      throw new Error('AUTH_TELEGRAM_BOT_TOKEN is not defined in config');
+      throw new Error('Telegram Bot Token is not defined in config (app.telegramBotToken)');
     }
   }
 

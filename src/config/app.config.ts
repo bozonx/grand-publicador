@@ -1,6 +1,10 @@
 import { registerAs } from '@nestjs/config';
 import { IsInt, IsString, IsIn, Min, Max, validateSync, IsOptional } from 'class-validator';
 import { plainToClass } from 'class-transformer';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import * as yaml from 'js-yaml';
+import { getDataDir } from './database.config.js';
 
 /**
  * Application configuration schema.
@@ -67,18 +71,70 @@ export class AppConfig {
   @IsString()
   @IsOptional()
   public adminTelegramId?: string;
+
+  /**
+   * Telegram Bot Token.
+   */
+  @IsString()
+  @IsOptional()
+  public telegramBotToken?: string;
+
+  /**
+   * JWT Secret for auth.
+   */
+  @IsString()
+  @IsOptional()
+  public jwtSecret?: string;
 }
 
 export default registerAs('app', (): AppConfig => {
-  // Transform environment variables to a typed configuration object
+  const dataDir = getDataDir();
+  const configFileName = 'app-config.yaml';
+  const defaultConfigFileName = 'app-config-default.yaml';
+
+  const configPath = path.join(path.resolve(process.cwd(), dataDir), configFileName);
+  const defaultPath = path.resolve(process.cwd(), defaultConfigFileName);
+
+  let fileContent = '';
+
+  // Ensure config file exists
+  if (!fs.existsSync(configPath)) {
+    if (fs.existsSync(defaultPath)) {
+      fs.copyFileSync(defaultPath, configPath);
+    }
+  }
+
+  // Read config file
+  if (fs.existsSync(configPath)) {
+    fileContent = fs.readFileSync(configPath, 'utf8');
+  } else if (fs.existsSync(defaultPath)) {
+    // Fallback if copy failed or something weird happened, use default directly
+    fileContent = fs.readFileSync(defaultPath, 'utf8');
+  }
+
+  // Substitute environment variables
+  const substitutedContent = fileContent.replace(/\${(\w+)(?::-([^}]*))?}/g, (_, varName, defaultValue) => {
+    return process.env[varName] || defaultValue || '';
+  });
+
+  // Parse YAML
+  const fileConfig: Record<string, any> = yaml.load(substitutedContent) as Record<string, any> || {};
+
+  // Transform environment variables and file config to a typed configuration object
   const config = plainToClass(AppConfig, {
+    // System/Env config (Process Env has priority for these infrastructural settings)
     port: parseInt(process.env.SERVER_PORT ?? '8080', 10),
     host: process.env.SERVER_HOST ?? '0.0.0.0',
     basePath: (process.env.SERVER_BASE_PATH ?? '').replace(/^\/+|\/+$/g, ''),
     nodeEnv: process.env.NODE_ENV ?? 'production',
     logLevel: process.env.LOG_LEVEL ?? 'warn',
-    apiKey: process.env.AUTH_API_KEY ?? process.env.API_KEY, // Fallback for backward compatibility
-    adminTelegramId: process.env.TELEGRAM_ADMIN_ID,
+
+    // Application Config (File has priority, but fallback to env if missing in file is reasonable, 
+    // though here we assume file controls these values via placeholders)
+    apiKey: fileConfig.apiKey ?? process.env.AUTH_API_KEY ?? process.env.API_KEY,
+    adminTelegramId: fileConfig.telegramAdminId?.toString(), // Map from camelCase in yaml
+    telegramBotToken: fileConfig.telegramBotToken,
+    jwtSecret: fileConfig.jwtSecret,
   });
 
   // Perform synchronous validation of the configuration object

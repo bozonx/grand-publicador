@@ -19,7 +19,7 @@ import { UsersModule } from '../users/users.module.js';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),
+        secret: configService.get<string>('app.jwtSecret'),
         signOptions: { expiresIn: '7d' },
       }),
     }),
@@ -29,4 +29,4 @@ import { UsersModule } from '../users/users.module.js';
   providers: [AuthService, JwtStrategy],
   exports: [AuthService],
 })
-export class AuthModule {}
+export class AuthModule { }
