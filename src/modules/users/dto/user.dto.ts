@@ -1,5 +1,5 @@
 import { Exclude, Expose, Transform } from 'class-transformer';
-import { IsBoolean } from 'class-validator';
+import { IsBoolean, IsString, IsOptional } from 'class-validator';
 
 export class UserDto {
   @Expose()
@@ -38,8 +38,15 @@ export class UserDto {
   preferences!: string; // Internal use
 }
 
+
 export class UpdateUserAdminDto {
   @IsBoolean()
   isAdmin!: boolean;
+}
+
+export class UpdateUserProfileDto {
+  @IsString()
+  @IsOptional()
+  fullName?: string;
 }
 

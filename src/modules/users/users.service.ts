@@ -148,4 +148,16 @@ export class UsersService {
       data: { isAdmin },
     });
   }
+
+  /**
+   * Update user profile data.
+   */
+  async updateProfile(userId: string, data: { fullName?: string }): Promise<User> {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(data.fullName !== undefined && { fullName: data.fullName }),
+      },
+    });
+  }
 }

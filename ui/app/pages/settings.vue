@@ -8,10 +8,8 @@ const { user, displayName, authMode, refreshUser } = useAuth()
 const toast = useToast()
 const colorMode = useColorMode()
 
-// Edit mode state
-const isEditingName = ref(false)
-const newFullName = ref('')
-const isSaving = ref(false)
+const api = useApi()
+const isSyncing = ref(false)
 
 // Language options
 const languageOptions = computed(() =>
@@ -22,96 +20,70 @@ const languageOptions = computed(() =>
 )
 
 /**
- * Start editing name
+ * Sync name from Telegram or fallbacks and update in backend
  */
-function startEditingName() {
-  newFullName.value = user.value?.fullName || ''
-  isEditingName.value = true
-}
-
-/**
- * Cancel editing name
- */
-function cancelEditingName() {
-  isEditingName.value = false
-  newFullName.value = ''
-}
-
-/**
- * Sync name from Telegram or fallbacks
- */
-function syncName() {
-  // Try to get from Telegram WebApp
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const tgUser = (window as any).Telegram?.WebApp?.initDataUnsafe?.user
+async function syncName() {
+  isSyncing.value = true
   
-  if (tgUser) {
-    const first = tgUser.first_name || ''
-    const last = tgUser.last_name || ''
-    const full = [first, last].filter(Boolean).join(' ')
-    if (full) {
-      newFullName.value = full
-      return
-    }
-    
-    if (tgUser.username) {
-      newFullName.value = tgUser.username
-      return
-    }
-  }
-  
-  // Fallback to existing username
-  if (user.value?.username) {
-    newFullName.value = user.value.username
-    return
-  }
-  
-  // Fallback to ID
-  if (user.value?.id) {
-    newFullName.value = user.value.id
-  }
-}
-
-/**
- * Save new name
- */
-async function saveFullName() {
-  if (!user.value?.id || !newFullName.value.trim()) {
-    return
-  }
-
-  isSaving.value = true
-
   try {
-    // TODO: Implement update user profile in backend
-    // const { error } = await api.put('/users/me', { full_name: newFullName.value.trim() })
+    let nameToSave = ''
+
+    // Try to get from Telegram WebApp
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tgUser = (window as any).Telegram?.WebApp?.initDataUnsafe?.user
     
-    // Simulating success for now or warning
-    await new Promise(resolve => setTimeout(resolve, 500))
+    if (tgUser) {
+      const first = tgUser.first_name || ''
+      const last = tgUser.last_name || ''
+      const full = [first, last].filter(Boolean).join(' ')
+      if (full) {
+        nameToSave = full
+      } else if (tgUser.username) {
+        nameToSave = tgUser.username
+      }
+    }
+    
+    // Fallback if no Telegram WebApp data found (dev mode or just missing)
+    if (!nameToSave) {
+      // Fallback to existing username
+      if (user.value?.username) {
+        nameToSave = user.value.username
+      } 
+      // Fallback to ID
+      else if (user.value?.id) {
+        nameToSave = user.value.id
+      }
+    }
+
+    if (!nameToSave) {
+        toast.add({
+            title: t('common.warning'),
+            description: t('settings.noNameFound', 'Could not determine name from Telegram'),
+            color: 'warning',
+        })
+        return
+    }
+
+    // Call API to update profile
+    await api.patch('/users/me', { fullName: nameToSave })
+    
+    // Refresh user data locally
+    await refreshUser()
     
     toast.add({
-      title: t('common.warning'),
-      description: 'Update profile not implemented in backend yet',
-      color: 'warning',
+      title: t('common.success'),
+      description: t('settings.nameSynced', 'Name updated from Telegram'),
+      color: 'success',
     })
-
-    // Refresh user data (would work if we actually updated)
-    // await refreshUser()
-
-    // eslint-disable-next-line no-console
-    console.warn('Profile update not implemented')
-
-    isEditingName.value = false
-    newFullName.value = ''
   } catch (err) {
-    console.error('Failed to save name:', err)
+    console.error('Failed to sync name:', err)
     toast.add({
       title: t('common.error'),
-      description: t('settings.nameSaveError', 'Failed to save name'),
+      description: t('settings.syncError', 'Failed to sync name'),
       color: 'error',
     })
   } finally {
-    isSaving.value = false
+    isSyncing.value = false
   }
 }
 
@@ -168,54 +140,22 @@ function formatDate(date: string | null | undefined): string {
           }"
         />
         <div class="flex-1 min-w-0">
-          <!-- Name display/edit -->
-          <div v-if="!isEditingName" class="flex items-center gap-2">
+          <!-- Name display & Sync Button -->
+          <div class="flex items-center gap-2">
             <h3 class="text-lg font-medium text-gray-900 dark:text-white">
               {{ displayName }}
             </h3>
-            <UButton
-              variant="ghost"
-              color="neutral"
-              size="xs"
-              icon="i-heroicons-pencil"
-              @click="startEditingName"
-            />
-          </div>
-
-          <!-- Name edit form -->
-          <div v-else class="flex items-center gap-2">
-            <UInput
-              v-model="newFullName"
-              :placeholder="t('user.displayName')"
-              size="sm"
-              class="flex-1 max-w-xs"
-              @keyup.enter="saveFullName"
-              @keyup.escape="cancelEditingName"
-            />
-            <UTooltip :text="t('settings.syncName', 'Sync from Telegram')">
+            
+            <UTooltip :text="t('settings.syncName', 'Sync name from Telegram')">
               <UButton
                 color="neutral"
                 variant="ghost"
                 size="xs"
                 icon="i-heroicons-arrow-path"
+                :loading="isSyncing"
                 @click="syncName"
               />
             </UTooltip>
-            <UButton
-              color="primary"
-              size="xs"
-              icon="i-heroicons-check"
-              :loading="isSaving"
-              @click="saveFullName"
-            />
-            <UButton
-              color="neutral"
-              variant="ghost"
-              size="xs"
-              icon="i-heroicons-x-mark"
-              :disabled="isSaving"
-              @click="cancelEditingName"
-            />
           </div>
 
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">

@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service.js';
-import { UpdateUserAdminDto } from './dto/user.dto.js';
+import { UpdateUserAdminDto, UpdateUserProfileDto } from './dto/user.dto.js';
 import type { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
 import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
 
@@ -75,6 +75,18 @@ export class UsersController {
             throw new ForbiddenException('Cannot remove your own admin status');
         }
 
+
         return this.usersService.updateAdminStatus(userId, updateDto.isAdmin);
+    }
+
+    /**
+     * Update current user profile.
+     */
+    @Patch('me')
+    async updateProfile(
+        @Request() req: AuthenticatedRequest,
+        @Body() updateDto: UpdateUserProfileDto,
+    ) {
+        return this.usersService.updateProfile(req.user.sub, updateDto);
     }
 }
