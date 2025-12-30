@@ -27,6 +27,7 @@ async function syncName() {
   
   try {
     let nameToSave = ''
+    let avatarToSave = ''
 
     // Try to get from Telegram WebApp
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -40,6 +41,10 @@ async function syncName() {
         nameToSave = full
       } else if (tgUser.username) {
         nameToSave = tgUser.username
+      }
+      
+      if (tgUser.photo_url) {
+        avatarToSave = tgUser.photo_url
       }
     }
     
@@ -65,14 +70,17 @@ async function syncName() {
     }
 
     // Call API to update profile
-    await api.patch('/users/me', { fullName: nameToSave })
+    await api.patch('/users/me', { 
+        fullName: nameToSave,
+        ...(avatarToSave && { avatarUrl: avatarToSave })
+    })
     
     // Refresh user data locally
     await refreshUser()
     
     toast.add({
       title: t('common.success'),
-      description: t('settings.nameSynced', 'Name updated from Telegram'),
+      description: t('settings.syncedSuccess', 'Profile synced with Telegram'),
       color: 'success',
     })
   } catch (err) {

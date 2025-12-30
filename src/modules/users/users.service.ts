@@ -40,7 +40,12 @@ export class UsersService {
     lastName?: string;
     avatarUrl?: string;
   }): Promise<User> {
-    const fullName = [userData.firstName, userData.lastName].filter(Boolean).join(' ') || null;
+    let fullName = [userData.firstName, userData.lastName].filter(Boolean).join(' ') || null;
+
+    // Fallback to username if no full name can be constructed
+    if (!fullName && userData.username) {
+      fullName = userData.username;
+    }
 
     // Check if this user should be an admin based on environment variable
     const adminId = this.configService.get<AppConfig>('app')?.adminTelegramId;
@@ -152,11 +157,12 @@ export class UsersService {
   /**
    * Update user profile data.
    */
-  async updateProfile(userId: string, data: { fullName?: string }): Promise<User> {
+  async updateProfile(userId: string, data: { fullName?: string; avatarUrl?: string }): Promise<User> {
     return this.prisma.user.update({
       where: { id: userId },
       data: {
         ...(data.fullName !== undefined && { fullName: data.fullName }),
+        ...(data.avatarUrl !== undefined && { avatarUrl: data.avatarUrl }),
       },
     });
   }
