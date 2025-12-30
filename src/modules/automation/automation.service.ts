@@ -12,21 +12,52 @@ export class AutomationService {
    * Get posts that are ready to be published.
    * Criteria: Status is SCHEDULED and scheduledAt is in the past (up to a lookback window).
    * Also marks posts older than the lookback window as EXPIRED.
+   * Filters by user's owned projects and token scope.
    *
    * @param limit - Maximum number of posts to retrieve.
    * @param lookbackMinutes - Window in minutes to check for pending posts.
+   * @param userId - The ID of the user making the request.
+   * @param scopeProjectIds - Array of project IDs in the token's scope (empty = all projects).
    * @returns A list of pending posts with related data.
    */
-  async getPendingPosts(limit: number = 10, lookbackMinutes: number = 60) {
+  async getPendingPosts(
+    limit: number = 10,
+    lookbackMinutes: number = 60,
+    userId: string,
+    scopeProjectIds: string[],
+  ) {
     const now = new Date();
     const lookbackDate = new Date(now.getTime() - lookbackMinutes * 60 * 1000);
 
-    // 1. Mark overdue posts as EXPIRED
+    // Get user's owned projects
+    const ownedProjects = await this.prisma.project.findMany({
+      where: { ownerId: userId },
+      select: { id: true },
+    });
+
+    const ownedProjectIds = ownedProjects.map((p) => p.id);
+
+    // Filter by scope if specified
+    const allowedProjectIds =
+      scopeProjectIds.length > 0
+        ? ownedProjectIds.filter((id) => scopeProjectIds.includes(id))
+        : ownedProjectIds;
+
+    if (allowedProjectIds.length === 0) {
+      return []; // No projects accessible with this token
+    }
+
+    // 1. Mark overdue posts as EXPIRED (only for allowed projects)
     await this.prisma.post.updateMany({
       where: {
         status: PostStatus.SCHEDULED,
         scheduledAt: {
           lt: lookbackDate,
+        },
+        channel: {
+          projectId: {
+            in: allowedProjectIds,
+          },
         },
       },
       data: {
@@ -38,13 +69,18 @@ export class AutomationService {
       },
     });
 
-    // 2. Get pending posts within the window
+    // 2. Get pending posts within the window (only for allowed projects)
     return this.prisma.post.findMany({
       where: {
         status: PostStatus.SCHEDULED,
         scheduledAt: {
           lte: now,
           gte: lookbackDate,
+        },
+        channel: {
+          projectId: {
+            in: allowedProjectIds,
+          },
         },
       },
       include: {

@@ -16,6 +16,7 @@ import { PublicationsModule } from './modules/publications/publications.module.j
 import { ExternalModule } from './modules/external/external.module.js';
 import { AutomationModule } from './modules/automation/automation.module.js';
 import { PermissionsModule } from './common/services/permissions.module.js';
+import { ApiTokensModule } from './modules/api-tokens/api-tokens.module.js';
 import pkg from '../package.json' with { type: 'json' };
 
 @Module({
@@ -114,6 +115,7 @@ import pkg from '../package.json' with { type: 'json' };
     ExternalModule,
     AutomationModule,
     SystemConfigModule,
+    ApiTokensModule,
   ],
   controllers: [],
   providers: [

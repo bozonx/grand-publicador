@@ -1,49 +1,78 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  UnauthorizedException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { FastifyRequest } from 'fastify';
-import type { AppConfig } from '../../config/app.config.js';
+import { ApiTokensService } from '../../modules/api-tokens/api-tokens.service.js';
 
 /**
- * Guard to protect External and Automation API endpoints with API key
+ * Guard to protect External and Automation API endpoints with user API tokens.
+ * Validates the token and adds user information to the request.
  */
 @Injectable()
-export class ApiKeyGuard implements CanActivate {
-  constructor(private configService: ConfigService) {}
+export class ApiTokenGuard implements CanActivate {
+  constructor(private apiTokensService: ApiTokensService) { }
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<FastifyRequest>();
-    const apiKey = this.extractApiKey(request);
+    const token = this.extractToken(request);
 
-    if (!apiKey) {
-      throw new UnauthorizedException('API key is missing');
+    if (!token) {
+      throw new UnauthorizedException('API token is missing');
     }
 
-    const validApiKey = this.configService.get<AppConfig>('app')?.apiKey;
+    const tokenData = await this.apiTokensService.validateToken(token);
 
-    if (!validApiKey) {
-      throw new UnauthorizedException('API key authentication is not configured');
+    if (!tokenData) {
+      throw new UnauthorizedException('Invalid API token');
     }
 
-    if (apiKey !== validApiKey) {
-      throw new UnauthorizedException('Invalid API key');
-    }
+    // Add user info and scope to request for use in controllers
+    (request as any).user = {
+      userId: tokenData.userId,
+      scopeProjectIds: tokenData.scopeProjectIds,
+      tokenId: tokenData.tokenId,
+    };
+
+    // Update last used timestamp asynchronously (don't block the request)
+    this.apiTokensService.updateLastUsed(tokenData.tokenId).catch(() => {
+      // Silently fail - this is not critical
+    });
 
     return true;
   }
 
-  private extractApiKey(request: FastifyRequest): string | undefined {
-    // Try to get API key from header
+  private extractToken(request: FastifyRequest): string | undefined {
+    // Try to get token from x-api-key header
     const headerKey = request.headers['x-api-key'];
     if (headerKey) {
       return Array.isArray(headerKey) ? headerKey[0] : headerKey;
     }
 
-    // Try to get API key from Authorization header
+    // Try to get token from Authorization header (Bearer)
     const authHeader = request.headers['authorization'];
     if (authHeader && !Array.isArray(authHeader) && authHeader.startsWith('Bearer ')) {
       return authHeader.substring(7);
     }
 
     return undefined;
+  }
+
+  /**
+   * Helper method to check if a project is in the token's scope.
+   * Can be called from controllers to validate project access.
+   */
+  static validateProjectScope(projectId: string, scopeProjectIds: string[]): void {
+    // Empty scope means all projects are allowed
+    if (scopeProjectIds.length === 0) {
+      return;
+    }
+
+    if (!scopeProjectIds.includes(projectId)) {
+      throw new ForbiddenException('Access denied: project not in token scope');
+    }
   }
 }

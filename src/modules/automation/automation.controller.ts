@@ -9,31 +9,35 @@ import {
   UseGuards,
   ParseIntPipe,
   DefaultValuePipe,
+  Request,
 } from '@nestjs/common';
-import { ApiKeyGuard } from '../../common/guards/api-key.guard.js';
+import { ApiTokenGuard } from '../../common/guards/api-key.guard.js';
 import { AutomationService } from './automation.service.js';
 import { UpdatePostStatusDto } from './dto/automation.dto.js';
 
 /**
  * Automation API for polling and updating scheduled posts.
  * Designed for use by the background worker service.
- * Protected by API key authentication.
+ * Protected by API token authentication.
  */
 @Controller('automation/v1')
-@UseGuards(ApiKeyGuard)
+@UseGuards(ApiTokenGuard)
 export class AutomationController {
-  constructor(private readonly automationService: AutomationService) {}
+  constructor(private readonly automationService: AutomationService) { }
 
   /**
    * Get posts that are ready to be published
    * GET /api/automation/v1/posts/pending?limit=10
+   * Only returns posts from projects within the token's scope
    */
   @Get('posts/pending')
   async getPendingPosts(
+    @Request() req: any,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
     @Query('lookback', new DefaultValuePipe(60), ParseIntPipe) lookback: number,
   ) {
-    return this.automationService.getPendingPosts(limit, lookback);
+    const { userId, scopeProjectIds } = req.user;
+    return this.automationService.getPendingPosts(limit, lookback, userId, scopeProjectIds);
   }
 
   /**

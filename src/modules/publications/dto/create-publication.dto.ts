@@ -32,4 +32,8 @@ export class CreatePublicationDto {
   @IsObject()
   @IsOptional()
   meta?: Record<string, any>;
+
+  @IsString()
+  @IsOptional()
+  authorId?: string;
 }

@@ -56,13 +56,6 @@ export class AppConfig {
   public logLevel!: string;
 
   /**
-   * API Key for basic protection or internal communication.
-   * Defined by AUTH_API_KEY or API_KEY environment variable.
-   */
-  @IsString()
-  public apiKey!: string;
-
-  /**
    * Telegram ID of the super administrator.
    * Users with this ID will automatically be granted administrative privileges.
    * Defined by TELEGRAM_ADMIN_ID environment variable.
@@ -127,7 +120,6 @@ export default registerAs('app', (): AppConfig => {
 
     // Application Config (File has priority, but fallback to env if missing in file is reasonable, 
     // though here we assume file controls these values via placeholders)
-    apiKey: fileConfig.apiKey ?? process.env.AUTH_API_KEY ?? process.env.API_KEY,
     adminTelegramId: fileConfig.telegramAdminId?.toString() ?? process.env.TELEGRAM_ADMIN_ID,
     telegramBotToken: fileConfig.telegramBotToken ?? process.env.TELEGRAM_BOT_TOKEN,
     jwtSecret: fileConfig.jwtSecret ?? process.env.JWT_SECRET,

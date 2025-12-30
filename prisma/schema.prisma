@@ -28,6 +28,7 @@ model User {
   projectMembers ProjectMember[]
   posts          Post[]
   publications   Publication[]
+  apiTokens      ApiToken[]
 
   @@map("users")
 }
@@ -167,4 +168,20 @@ enum PostStatus {
   PUBLISHED
   FAILED
   EXPIRED
+}
+
+model ApiToken {
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  name            String
+  encryptedToken  String    @unique @map("encrypted_token")
+  scopeProjectIds String    @default("[]") @map("scope_project_ids")
+  lastUsedAt      DateTime? @map("last_used_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("api_tokens")
 }
