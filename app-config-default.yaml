@@ -9,5 +9,4 @@ TelegramBotToken: ${TELEGRAM_BOT_TOKEN}
 JwtSecret: ${JWT_SECRET}
 ApiKey: ${API_KEY}
 
-# Logging
-LogLevel: ${LOG_LEVEL:-warn}
+
