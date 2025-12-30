@@ -47,7 +47,7 @@ export default defineNuxtConfig({
   },
 
   experimental: {
-    viewTransition: true,
+    viewTransition: false,
   },
 
   runtimeConfig: {

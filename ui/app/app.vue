@@ -1,12 +1,10 @@
 <template>
-  <div>
+  <UApp>
     <NuxtRouteAnnouncer />
-    <UApp>
-      <NuxtLayout>
-        <NuxtPage />
-      </NuxtLayout>
-    </UApp>
-  </div>
+    <NuxtLayout>
+      <NuxtPage :page-key="route => route.fullPath" />
+    </NuxtLayout>
+  </UApp>
 </template>
 
 <script setup lang="ts">

@@ -120,6 +120,7 @@ export const useAuthStore = defineStore('auth', () => {
             return null;
         }
 
+        isLoading.value = true;
         try {
             const userData = await api.get<User>('/auth/me');
             user.value = userData;
@@ -128,9 +129,8 @@ export const useAuthStore = defineStore('auth', () => {
         } catch (err) {
             console.error('Fetch me failed', err);
             user.value = null;
-            // Only logout if 401
-            // logout(); 
         } finally {
+            isLoading.value = false;
             isInitialized.value = true;
         }
     }
