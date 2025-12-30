@@ -71,7 +71,8 @@
     "telegramMode": "Telegram",
     "miniAppMode": "Telegram Mini App",
     "browserMode": "Browser",
-    "devMode": "Development"
+    "devMode": "Development",
+    "authModeHelp": "Shows the current session type (Browser, Telegram Mini App, or Developer Mode)"
   },
   "user": {
     "username": "Username",
@@ -80,6 +81,7 @@
     "displayName": "Display name",
     "telegramId": "Telegram ID",
     "role": "Role",
+    "adminStatus": "Admin Status",
     "isAdmin": "Administrator",
     "createdAt": "Registration date"
   },

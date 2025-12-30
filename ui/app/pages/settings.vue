@@ -191,17 +191,25 @@ function formatDate(date: string | null | undefined): string {
             {{ user.telegramId }}
           </dd>
         </div>
+        <!-- Auth Mode -->
         <div>
-          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-            {{ t('auth.authMode') }}
-          </dt>
+          <div class="flex items-center gap-1">
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+              {{ t('auth.authMode') }}
+            </dt>
+            <UTooltip :text="t('auth.authModeHelp')">
+              <UIcon name="i-heroicons-information-circle" class="w-4 h-4 text-gray-400" />
+            </UTooltip>
+          </div>
           <dd class="mt-1 text-sm text-gray-900 dark:text-white capitalize">
             {{ t(`auth.${authMode}Mode`) }}
           </dd>
         </div>
+
+        <!-- Admin Status -->
         <div>
           <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-            {{ t('user.role') }}
+            {{ t('user.adminStatus') }}
           </dt>
           <dd class="mt-1">
             <UBadge

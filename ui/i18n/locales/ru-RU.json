@@ -71,7 +71,8 @@
     "telegramMode": "Telegram",
     "miniAppMode": "Telegram Mini App",
     "browserMode": "Браузер",
-    "devMode": "Разработка"
+    "devMode": "Разработка",
+    "authModeHelp": "Показывает тип текущей сессии (Браузер, Telegram Mini App или режим разработки)"
   },
   "user": {
     "username": "Имя пользователя",
@@ -80,6 +81,7 @@
     "displayName": "Отображаемое имя",
     "telegramId": "Telegram ID",
     "role": "Роль",
+    "adminStatus": "Статус администратора",
     "isAdmin": "Администратор",
     "createdAt": "Дата регистрации"
   },
