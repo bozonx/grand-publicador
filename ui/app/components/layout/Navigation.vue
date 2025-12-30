@@ -115,17 +115,12 @@ function getChannelLink(projectId: string, channelId: string) {
     </NuxtLink>
 
     <!-- Projects Header -->
-    <div class="mt-4 mb-2 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider flex justify-between items-center">
-      <span>{{ t('navigation.projects') }}</span>
-      <UButton
-        icon="i-heroicons-plus"
-        size="xs"
-        color="neutral"
-        variant="ghost"
-        to="/projects/new"
-        class="rounded-full"
-      />
-    </div>
+    <NuxtLink 
+      to="/projects"
+      class="mt-4 mb-2 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-300 transition-colors cursor-pointer"
+    >
+      {{ t('navigation.projects') }}
+    </NuxtLink>
 
     <!-- Projects List -->
     <div class="flex-1 overflow-y-auto space-y-1 min-h-0">
@@ -158,40 +153,71 @@ function getChannelLink(projectId: string, channelId: string) {
             />
           </div>
 
-          <!-- Channels List -->
+          <!-- Channels List (Horizontal Icons) -->
           <div 
             v-if="expandedProjects.has(project.id)"
-            class="pl-4 space-y-1"
+            class="pl-4 px-3 py-2"
           >
-            <div v-if="areChannelsLoading[project.id]" class="px-3 py-1 text-xs text-gray-500">
+            <div v-if="areChannelsLoading[project.id]" class="text-xs text-gray-500">
               {{ t('common.loading') }}...
             </div>
             
-            <template v-else-if="projectChannels[project.id]?.length">
-              <NuxtLink
+            <div v-else-if="projectChannels[project.id]?.length" class="flex items-center gap-2 flex-wrap">
+              <UTooltip
                 v-for="channel in projectChannels[project.id]"
                 :key="channel.id"
-                :to="getChannelLink(project.id, channel.id)"
-                class="flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
-                :class="{ 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/10': route.query.channelId === channel.id }"
+                :text="channel.name"
               >
-                <div class="relative w-4 h-4 shrink-0 flex items-center justify-center">
-                   <!-- Simple icon mapping or use component if available, here using generic or specialized icons -->
-                   <UIcon 
-                     v-if="channel.socialMedia === 'telegram'" name="i-simple-icons-telegram" class="w-3.5 h-3.5 text-blue-500" 
-                   />
-                   <UIcon 
-                     v-else-if="channel.socialMedia === 'instagram'" name="i-simple-icons-instagram" class="w-3.5 h-3.5 text-pink-600" 
-                   />
-                   <UIcon 
-                     v-else name="i-heroicons-hashtag" class="w-3.5 h-3.5" 
-                   />
-                </div>
-                <span class="truncate">{{ channel.name }}</span>
-              </NuxtLink>
-            </template>
+                <NuxtLink
+                  :to="getChannelLink(project.id, channel.id)"
+                  class="flex items-center justify-center w-8 h-8 rounded-lg transition-all hover:bg-gray-100 dark:hover:bg-gray-800"
+                  :class="{ 'bg-primary-100 dark:bg-primary-900 ring-2 ring-primary-500': route.query.channelId === channel.id }"
+                >
+                  <UIcon 
+                    v-if="channel.socialMedia === 'telegram'" 
+                    name="i-simple-icons-telegram" 
+                    class="w-5 h-5 text-blue-500" 
+                  />
+                  <UIcon 
+                    v-else-if="channel.socialMedia === 'instagram'" 
+                    name="i-simple-icons-instagram" 
+                    class="w-5 h-5 text-pink-600" 
+                  />
+                  <UIcon 
+                    v-else-if="channel.socialMedia === 'facebook'" 
+                    name="i-simple-icons-facebook" 
+                    class="w-5 h-5 text-blue-600" 
+                  />
+                  <UIcon 
+                    v-else-if="channel.socialMedia === 'x'" 
+                    name="i-simple-icons-x" 
+                    class="w-5 h-5 text-gray-900 dark:text-white" 
+                  />
+                  <UIcon 
+                    v-else-if="channel.socialMedia === 'youtube'" 
+                    name="i-simple-icons-youtube" 
+                    class="w-5 h-5 text-red-600" 
+                  />
+                  <UIcon 
+                    v-else-if="channel.socialMedia === 'vk'" 
+                    name="i-simple-icons-vk" 
+                    class="w-5 h-5 text-blue-700" 
+                  />
+                  <UIcon 
+                    v-else-if="channel.socialMedia === 'tiktok'" 
+                    name="i-simple-icons-tiktok" 
+                    class="w-5 h-5 text-gray-900 dark:text-white" 
+                  />
+                  <UIcon 
+                    v-else 
+                    name="i-heroicons-globe-alt" 
+                    class="w-5 h-5 text-gray-500" 
+                  />
+                </NuxtLink>
+              </UTooltip>
+            </div>
             
-            <div v-else class="px-3 py-1 text-xs text-gray-400 italic">
+            <div v-else class="text-xs text-gray-400 italic">
               {{ t('channel.noChannelsFound') }}
             </div>
           </div>
