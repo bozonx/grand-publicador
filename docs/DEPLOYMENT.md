@@ -19,13 +19,13 @@ cd grand-publicador
 Edit `docker/docker-compose.yml` and set:
 - `JWT_SECRET` - Generate a strong random secret (min 32 characters)
 - `TELEGRAM_BOT_TOKEN` - Your bot token from @BotFather
-- `API_KEY` - Generate a strong random key for External/Automation API
 
 ```bash
-# Generate secrets (Linux/macOS):
+# Generate secret (Linux/macOS):
 openssl rand -base64 32  # For JWT_SECRET
-openssl rand -base64 32  # For API_KEY
 ```
+
+**Note**: API tokens for External/Automation API are now created by users through the Settings UI.
 
 3. **Create data directory**
 ```bash
@@ -74,7 +74,6 @@ These variables are used by the backend when running:
 - `DATA_DIR=/data` - Directory for database storage (database filename: `grand-publicador.db`)
 - `JWT_SECRET` - Secret for JWT tokens (REQUIRED)
 - `TELEGRAM_BOT_TOKEN` - Telegram bot token (REQUIRED)
-- `API_KEY` - API key for External/Automation API (REQUIRED)
 
 ### Frontend Build-time (Optional)
 These variables can be set during `pnpm generate` (static site generation) to override defaults from `nuxt.config.ts`:
@@ -106,9 +105,12 @@ All endpoints are served from the same host:
 - `POST /api/v1/auth/telegram` - Login with Telegram initData
 - `GET /api/v1/auth/me` - Get current user (requires JWT)
 
-### External API (requires API_KEY header)
-- `POST /api/external/v1/publications` - Create publication
+### External API (requires user API token)
+- `POST /api/external/publications` - Create publication
+- `POST /api/automation/v1/posts/pending` - Get pending posts
 - See [docs/api-external.md](../docs/api-external.md)
+
+**Creating API tokens**: Users create API tokens through Settings > API Tokens in the UI.
 
 ## Reverse Proxy Setup (Optional)
 

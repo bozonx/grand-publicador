@@ -7,4 +7,3 @@ telegramBotToken: ${TELEGRAM_BOT_TOKEN}
 
 # Security and Auth
 jwtSecret: ${JWT_SECRET}
-apiKey: ${API_KEY}

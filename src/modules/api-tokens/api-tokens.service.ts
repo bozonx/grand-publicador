@@ -2,13 +2,13 @@ import { Injectable, NotFoundException, ForbiddenException, ConflictException } 
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateApiTokenDto, UpdateApiTokenDto, ApiTokenDto } from './dto/api-token.dto.js';
 import { plainToInstance } from 'class-transformer';
-import { randomBytes, createCipheriv, createDecipheriv } from 'crypto';
+import { randomBytes, createCipheriv, createDecipheriv, createHash } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import type { AppConfig } from '../../config/app.config.js';
 
 /**
  * Service for managing user API tokens.
- * Tokens are encrypted using AES-256-CBC with JWT_SECRET as the key.
+ * Uses SHA-256 hashing for token lookup and AES-256-CBC encryption for storing plaintext tokens.
  */
 @Injectable()
 export class ApiTokensService {
@@ -22,6 +22,13 @@ export class ApiTokensService {
         // Use JWT_SECRET as encryption key (must be 32 bytes for AES-256)
         const jwtSecret = this.configService.get<AppConfig>('app')?.jwtSecret || '';
         this.encryptionKey = Buffer.from(jwtSecret.padEnd(32, '0').slice(0, 32));
+    }
+
+    /**
+     * Hash a plain token using SHA-256 for database lookup
+     */
+    private hashToken(plainToken: string): string {
+        return createHash('sha256').update(plainToken).digest('hex');
     }
 
     /**
@@ -61,6 +68,7 @@ export class ApiTokensService {
      */
     async create(userId: string, dto: CreateApiTokenDto): Promise<ApiTokenDto> {
         const plainToken = this.generateToken();
+        const hashedToken = this.hashToken(plainToken);
         const encryptedToken = this.encryptToken(plainToken);
 
         const scopeProjectIds = JSON.stringify(dto.scopeProjectIds || []);
@@ -70,6 +78,7 @@ export class ApiTokensService {
                 data: {
                     userId,
                     name: dto.name,
+                    hashedToken,
                     encryptedToken,
                     scopeProjectIds,
                 },
@@ -170,10 +179,10 @@ export class ApiTokensService {
         scopeProjectIds: string[];
         tokenId: string;
     } | null> {
-        const encryptedToken = this.encryptToken(plainToken);
+        const hashedToken = this.hashToken(plainToken);
 
         const token = await this.prisma.apiToken.findUnique({
-            where: { encryptedToken },
+            where: { hashedToken },
         });
 
         if (!token) {

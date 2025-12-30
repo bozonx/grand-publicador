@@ -23,7 +23,6 @@ TelegramBotToken: ${TELEGRAM_BOT_TOKEN}
 
 # Security and Auth
 JwtSecret: ${JWT_SECRET}
-ApiKey: ${API_KEY}
 ```
 
 ### Подстановка переменных окружения

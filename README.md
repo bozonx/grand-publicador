@@ -48,6 +48,7 @@ _Отредактируйте `.env`, указав ваш `TELEGRAM_BOT_TOKEN` �
 # Для разработки (создает миграцию)
 node prisma-wrapper.mjs migrate dev --name init
 
+node prisma-wrapper.mjs migrate deploy
 # Наполнение базы тестовыми данными (опционально)
 node prisma-wrapper.mjs db seed
 
@@ -82,7 +83,7 @@ pnpm dev
 Быстрый старт:
 ```bash
 cd docker
-# Отредактируйте docker-compose.yml (JWT_SECRET, TELEGRAM_BOT_TOKEN, API_KEY)
+# Отредактируйте docker-compose.yml (JWT_SECRET, TELEGRAM_BOT_TOKEN)
 docker-compose up -d
 ```
 
@@ -124,7 +125,6 @@ pnpm build
 | `DATA_DIR` | Папка для данных (БД, конфиг и др.) |
 | `JWT_SECRET` | Соль для JWT (используется как `${JWT_SECRET}` в конфиге) |
 | `TELEGRAM_BOT_TOKEN` | Токен бота (используется как `${TELEGRAM_BOT_TOKEN}` в конфиге) |
-| `API_KEY` | Ключ доступа к API (используется как `${API_KEY}` в конфиге) |
 | `TELEGRAM_ADMIN_ID` | Telegram ID главного администратора |
 | `VITE_DEV_MODE` | `true` для пропуска проверки подписи Telegram в dev-режиме |
 | `VITE_DEV_TELEGRAM_ID` | Mock ID пользователя для dev-режима |
@@ -161,20 +161,22 @@ curl -X POST http://localhost:8080/api/v1/auth/telegram \
 - **Publications**: `/api/v1/publications` - управление публикациями
 - **Posts**: `/api/v1/posts` - управление постами
 
-### External API (требует API Key)
+### External API (требует пользовательский API токен)
 Для интеграции с n8n и другими системами автоматизации:
-- `POST /api/external/v1/publications` - создание публикации
-- `POST /api/external/v1/publications/:id/schedule` - планирование публикации
+- `POST /api/external/publications` - создание публикации
+- `POST /api/external/publications/schedule` - планирование публикации
 
-См. [External API Documentation](docs/EXTERNAL_API.md)
+**Создание токенов**: Пользователи создают API токены через Настройки > API Tokens в UI.
 
-### Automation API (требует API Key)
+См. [External API Documentation](docs/api-external.md)
+
+### Automation API (требует пользовательский API токен)
 Для автоматической публикации по расписанию:
 - `GET /api/automation/v1/posts/pending` - получить посты готовые к публикации
 - `POST /api/automation/v1/posts/:id/claim` - забрать пост для публикации
 - `PATCH /api/automation/v1/posts/:id/status` - обновить статус после публикации
 
-См. [Automation API Documentation](docs/AUTOMATION_API.md)
+См. [Automation API Documentation](docs/api-external.md)
 
 ## Структура проекта
 - `src/` — исходный код NestJS.
