@@ -30,6 +30,7 @@ model User {
   publications   Publication[]
   apiTokens      ApiToken[]
 
+  @@index([telegramUsername])
   @@map("users")
 }
 

@@ -99,7 +99,9 @@ describe('PublicationsService (unit)', () => {
 
     it('should throw ForbiddenException when user does not have access', async () => {
       mockPermissionsService.checkProjectAccess.mockRejectedValue(new ForbiddenException());
-      await expect(service.create({ projectId: 'p1', content: 'c' } as any, 'u')).rejects.toThrow(ForbiddenException);
+      await expect(service.create({ projectId: 'p1', content: 'c' } as any, 'u')).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -118,9 +120,11 @@ describe('PublicationsService (unit)', () => {
       });
 
       expect(result).toHaveLength(1);
-      expect(mockPrismaService.publication.findMany).toHaveBeenCalledWith(expect.objectContaining({
-        where: { projectId, status: PostStatus.DRAFT }
-      }));
+      expect(mockPrismaService.publication.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { projectId, status: PostStatus.DRAFT },
+        }),
+      );
     });
   });
 
@@ -147,7 +151,10 @@ describe('PublicationsService (unit)', () => {
 
     it('should allow admin to update others publication', async () => {
       const userId = 'admin-user';
-      mockPrismaService.publication.findUnique.mockResolvedValue({ authorId: 'other', projectId: 'p1' });
+      mockPrismaService.publication.findUnique.mockResolvedValue({
+        authorId: 'other',
+        projectId: 'p1',
+      });
       mockPermissionsService.checkProjectAccess.mockResolvedValue(undefined);
       mockPermissionsService.checkProjectPermission.mockResolvedValue(undefined); // Admin has perm
       mockPrismaService.publication.update.mockResolvedValue({});
@@ -173,10 +180,19 @@ describe('PublicationsService (unit)', () => {
 
       mockPrismaService.publication.findUnique.mockResolvedValue(mockPublication);
       mockPermissionsService.checkProjectAccess.mockResolvedValue(undefined);
-      mockPrismaService.channel.findMany.mockResolvedValue([{ id: 'channel-1', projectId: 'project-1' }]);
-      mockPrismaService.post.create.mockImplementation(({ data }: any) => Promise.resolve({ id: 'p1', ...data }));
+      mockPrismaService.channel.findMany.mockResolvedValue([
+        { id: 'channel-1', projectId: 'project-1' },
+      ]);
+      mockPrismaService.post.create.mockImplementation(({ data }: any) =>
+        Promise.resolve({ id: 'p1', ...data }),
+      );
 
-      const result = await service.createPostsFromPublication(publicationId, channelIds, userId, scheduledAt);
+      const result = await service.createPostsFromPublication(
+        publicationId,
+        channelIds,
+        userId,
+        scheduledAt,
+      );
 
       expect(result).toHaveLength(1);
       expect(result[0].status).toBe(PostStatus.SCHEDULED);
@@ -187,7 +203,9 @@ describe('PublicationsService (unit)', () => {
       mockPrismaService.publication.findUnique.mockResolvedValue({ projectId: 'p1' });
       mockPermissionsService.checkProjectAccess.mockResolvedValue(undefined);
       mockPrismaService.channel.findMany.mockResolvedValue([]);
-      await expect(service.createPostsFromPublication('p1', ['c1'], 'u')).rejects.toThrow(NotFoundException);
+      await expect(service.createPostsFromPublication('p1', ['c1'], 'u')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 

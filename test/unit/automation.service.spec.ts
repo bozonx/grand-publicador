@@ -9,7 +9,7 @@ describe('AutomationService (unit)', () => {
   let moduleRef: TestingModule;
 
   const mockPrismaService = {
-    $transaction: jest.fn((callback: (tx: any) => Promise<any>) =>
+    $transaction: jest.fn((callback: (tx: any) => Promise<any>, _options?: any) =>
       callback(mockPrismaService),
     ) as any,
     post: {

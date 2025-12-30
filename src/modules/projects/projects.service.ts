@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ProjectRole, type Project } from '@prisma/client';
 
+import { TRANSACTION_TIMEOUT } from '../../common/constants/database.constants.js';
 import { PermissionsService } from '../../common/services/permissions.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { CreateProjectDto, UpdateProjectDto } from './dto/index.js';
@@ -25,27 +26,35 @@ export class ProjectsService {
   public async create(userId: string, data: CreateProjectDto): Promise<Project> {
     this.logger.log(`Creating project "${data.name}" for user ${userId}`);
 
-    return this.prisma.$transaction(async tx => {
-      const project = await tx.project.create({
-        data: {
-          name: data.name,
-          description: data.description,
-          ownerId: userId,
-        },
-      });
+    return this.prisma.$transaction(
+      async tx => {
+        const project = await tx.project.create({
+          data: {
+            name: data.name,
+            description: data.description,
+            ownerId: userId,
+          },
+        });
 
-      // Keep adding owner as a member to simplify queries like findAllForUser
-      // that rely on checking the members relation
-      await tx.projectMember.create({
-        data: {
-          projectId: project.id,
-          userId: userId,
-          role: ProjectRole.OWNER,
-        },
-      });
+        // Keep adding owner as a member to simplify queries like findAllForUser
+        // that rely on checking the members relation
+        await tx.projectMember.create({
+          data: {
+            projectId: project.id,
+            userId: userId,
+            role: ProjectRole.OWNER,
+          },
+        });
 
-      return project;
-    });
+        this.logger.log(`Project "${data.name}" (${project.id}) created successfully`);
+
+        return project;
+      },
+      {
+        maxWait: TRANSACTION_TIMEOUT.MAX_WAIT,
+        timeout: TRANSACTION_TIMEOUT.TIMEOUT,
+      },
+    );
   }
 
   /**

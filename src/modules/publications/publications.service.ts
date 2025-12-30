@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PostStatus, PostType, Prisma, ProjectRole } from '@prisma/client';
 
 import { PermissionsService } from '../../common/services/permissions.service.js';
@@ -7,6 +7,8 @@ import type { CreatePublicationDto, UpdatePublicationDto } from './dto/index.js'
 
 @Injectable()
 export class PublicationsService {
+  private readonly logger = new Logger(PublicationsService.name);
+
   constructor(
     private prisma: PrismaService,
     private permissions: PermissionsService,
@@ -27,7 +29,7 @@ export class PublicationsService {
       await this.permissions.checkProjectAccess(data.projectId, userId);
     }
 
-    return this.prisma.publication.create({
+    const publication = await this.prisma.publication.create({
       data: {
         projectId: data.projectId,
         authorId: userId ?? null,
@@ -39,6 +41,13 @@ export class PublicationsService {
         meta: JSON.stringify(data.meta ?? {}),
       },
     });
+
+    const author = userId ? `user ${userId}` : 'external system';
+    this.logger.log(
+      `Publication "${publication.title ?? publication.id}" created in project ${data.projectId} by ${author}`,
+    );
+
+    return publication;
   }
 
   /**
@@ -204,6 +213,11 @@ export class PublicationsService {
     userId?: string,
     scheduledAt?: Date,
   ) {
+    // Validate channelIds is not empty
+    if (!channelIds || channelIds.length === 0) {
+      throw new BadRequestException('At least one channel must be specified');
+    }
+
     // Fetch publication without auth check initially, but check later if userId present
     // Or if userId is needed for finding it...
 

@@ -36,6 +36,18 @@ export class ApiTokensService {
   }
 
   /**
+   * Safely parse scopeProjectIds from JSON string
+   */
+  private parseScopeProjectIds(scopeString: string): string[] {
+    try {
+      const parsed = JSON.parse(scopeString);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  /**
    * Hash a plain token using SHA-256 for database lookup
    */
   private hashToken(plainToken: string): string {
@@ -202,7 +214,7 @@ export class ApiTokensService {
 
     return {
       userId: token.userId,
-      scopeProjectIds: JSON.parse(token.scopeProjectIds),
+      scopeProjectIds: this.parseScopeProjectIds(token.scopeProjectIds),
       tokenId: token.id,
     };
   }

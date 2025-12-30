@@ -46,12 +46,16 @@ export class ExternalController {
     @Request() req: ApiTokenRequest,
     @Body() dto: SchedulePublicationDto,
   ) {
-    const { userId } = req.user;
+    const { userId, scopeProjectIds } = req.user;
+
+    // Validate that the publication belongs to a project in the token's scope
+    const publication = await this.publicationsService.findOne(dto.publicationId, userId);
+    ApiTokenGuard.validateProjectScope(publication.projectId, scopeProjectIds);
 
     return this.publicationsService.createPostsFromPublication(
       dto.publicationId,
       dto.channelIds,
-      userId, // Use userId from token
+      userId,
       dto.scheduledAt,
     );
   }

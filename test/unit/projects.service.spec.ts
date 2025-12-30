@@ -48,7 +48,7 @@ describe('ProjectsService (unit)', () => {
     service = moduleRef.get<ProjectsService>(ProjectsService);
 
     // Silence logger for tests
-    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => { });
+    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
   });
 
   afterAll(async () => {
