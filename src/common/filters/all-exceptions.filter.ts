@@ -7,8 +7,7 @@ import {
   Inject,
 } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
-import { ConfigService } from '@nestjs/config';
-import type { AppConfig } from '../../config/app.config.js';
+
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
 /**
@@ -19,7 +18,6 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 export class AllExceptionsFilter implements ExceptionFilter {
   constructor(
     @Inject(PinoLogger) private readonly logger: PinoLogger,
-    private readonly configService: ConfigService,
   ) {
     logger.setContext(AllExceptionsFilter.name);
   }
@@ -40,13 +38,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const message = this.extractMessage(exception);
     const errorResponse = this.buildErrorResponse(exception);
 
-    const appConfig = this.configService.get<AppConfig>('app')!;
-    const apiBasePath = appConfig.basePath ? `${appConfig.basePath}/api/v1` : 'api/v1';
 
-    if (status === HttpStatus.NOT_FOUND && !request.url.startsWith(`/${apiBasePath}`)) {
-      void response.sendFile('index.html');
-      return;
-    }
 
     // Log error for internal tracking
     if (status >= 500) {
