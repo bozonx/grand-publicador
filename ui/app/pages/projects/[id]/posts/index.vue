@@ -66,6 +66,19 @@ watch([selectedStatus, selectedType, selectedChannel, searchQuery], () => {
   fetchPostsByProject(projectId.value)
 })
 
+// Watch for route query changes (for sidebar navigation)
+watch(
+  () => route.query.channelId,
+  (newChannelId) => {
+    if (newChannelId) {
+      selectedChannel.value = newChannelId as string
+    } else {
+      selectedChannel.value = null
+    }
+  },
+  { immediate: true }
+)
+
 // Watch for page changes
 watch(
   () => pagination.value.page,
