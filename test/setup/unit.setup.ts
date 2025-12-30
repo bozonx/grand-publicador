@@ -16,6 +16,12 @@ import { beforeAll, afterEach, afterAll } from '@jest/globals';
 
 // Block all external network calls; allow localhost for tests that use local adapters
 beforeAll(() => {
+  // Set required environment variables for tests
+  process.env.DATA_DIR = './test-data';
+  process.env.JWT_SECRET = 'test-secret';
+  process.env.TELEGRAM_BOT_TOKEN = 'test-token';
+  process.env.TELEGRAM_ADMIN_ID = '123456789';
+
   nock.disableNetConnect();
   nock.enableNetConnect('127.0.0.1');
 });

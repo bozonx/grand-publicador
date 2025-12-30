@@ -132,9 +132,9 @@ export default registerAs('app', (): AppConfig => {
     // Application Config (File has priority, but fallback to env if missing in file is reasonable, 
     // though here we assume file controls these values via placeholders)
     apiKey: fileConfig.apiKey ?? process.env.AUTH_API_KEY ?? process.env.API_KEY,
-    adminTelegramId: fileConfig.telegramAdminId?.toString(), // Map from camelCase in yaml
-    telegramBotToken: fileConfig.telegramBotToken,
-    jwtSecret: fileConfig.jwtSecret,
+    adminTelegramId: fileConfig.telegramAdminId?.toString() ?? process.env.TELEGRAM_ADMIN_ID,
+    telegramBotToken: fileConfig.telegramBotToken ?? process.env.TELEGRAM_BOT_TOKEN,
+    jwtSecret: fileConfig.jwtSecret ?? process.env.JWT_SECRET,
   });
 
   // Perform synchronous validation of the configuration object

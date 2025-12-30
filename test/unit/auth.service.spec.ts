@@ -26,7 +26,11 @@ describe('AuthService (unit)', () => {
 
   const mockConfigService = {
     get: jest.fn((key: string) => {
-      if (key === 'AUTH_TELEGRAM_BOT_TOKEN' || key === 'TELEGRAM_BOT_TOKEN') {
+      if (
+        key === 'AUTH_TELEGRAM_BOT_TOKEN' ||
+        key === 'TELEGRAM_BOT_TOKEN' ||
+        key === 'app.telegramBotToken'
+      ) {
         return mockBotToken;
       }
       return null;

@@ -6,6 +6,12 @@ import { AppModule } from '../../src/app.module.js';
 import { PrismaService } from '../../src/modules/prisma/prisma.service.js';
 
 export async function createTestApp(): Promise<NestFastifyApplication> {
+  // Ensure critical env vars are set before module compilation
+  process.env.DATA_DIR = process.env.DATA_DIR || './test-data';
+  process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret';
+  process.env.TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || 'test-token';
+  process.env.TELEGRAM_ADMIN_ID = process.env.TELEGRAM_ADMIN_ID || '123456789';
+
   const moduleRef = await Test.createTestingModule({
     imports: [AppModule],
   })
@@ -32,8 +38,16 @@ export async function createTestApp(): Promise<NestFastifyApplication> {
             nodeEnv: 'test',
             logLevel: 'silent',
             apiKey: 'test-api-key',
+            jwtSecret: 'test-secret-key',
+            telegramBotToken: 'test-bot-token',
+            adminTelegramId: '123456789',
           },
         };
+        // Flatten keys manually for the mock or handle simple dot notation
+        if (key.startsWith('app.')) {
+          const subKey = key.split('.')[1];
+          return config.app[subKey];
+        }
         return config[key];
       },
     })
