@@ -120,7 +120,7 @@
     "addSuccess": "Member added successfully",
     "updateSuccess": "Member role updated successfully",
     "removeSuccess": "Member removed successfully",
-    "searchPlaceholderUsername": "@username",
+    "searchPlaceholderUsername": "{'@'}username",
     "userUsername": "Telegram Username"
   },
   "roles": {

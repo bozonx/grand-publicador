@@ -98,7 +98,7 @@ export class PostsService {
           select: {
             id: true,
             fullName: true,
-            username: true,
+            telegramUsername: true,
             avatarUrl: true,
           },
         },
@@ -132,7 +132,7 @@ export class PostsService {
           select: {
             id: true,
             fullName: true,
-            username: true,
+            telegramUsername: true,
             avatarUrl: true,
           },
         },
@@ -166,7 +166,7 @@ export class PostsService {
           select: {
             id: true,
             fullName: true,
-            username: true,
+            telegramUsername: true,
             avatarUrl: true,
           },
         },

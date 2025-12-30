@@ -6,7 +6,7 @@ import { PostStatus, Prisma } from '@prisma/client';
 export class AutomationService {
   private readonly logger = new Logger(AutomationService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   /**
    * Get posts that are ready to be published.
@@ -54,7 +54,7 @@ export class AutomationService {
           select: {
             id: true,
             fullName: true,
-            username: true,
+            telegramUsername: true,
           },
         },
       },

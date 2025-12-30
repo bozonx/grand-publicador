@@ -15,7 +15,7 @@ const isSyncing = ref(false)
 const languageOptions = computed(() =>
   availableLocales.map((loc: string) => ({
     value: loc,
-    label: loc === 'ru' ? 'Русский' : 'English',
+    label: loc === 'ru-RU' ? 'Русский' : 'English',
   }))
 )
 
@@ -99,7 +99,7 @@ async function syncName() {
  * Change language
  */
 function changeLanguage(newLocale: string) {
-  setLocale(newLocale as 'ru' | 'en')
+  setLocale(newLocale as any)
   // Save to localStorage for persistence
   localStorage.setItem('locale', newLocale)
   toast.add({

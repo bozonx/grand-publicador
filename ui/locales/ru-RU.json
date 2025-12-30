@@ -120,7 +120,7 @@
     "addSuccess": "Участник успешно добавлен",
     "updateSuccess": "Роль участника обновлена",
     "removeSuccess": "Участник успешно удалён",
-    "searchPlaceholderUsername": "@username",
+    "searchPlaceholderUsername": "{'@'}username",
     "userUsername": "Имя пользователя Telegram"
   },
   "roles": {

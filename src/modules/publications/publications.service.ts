@@ -9,7 +9,7 @@ export class PublicationsService {
   constructor(
     private prisma: PrismaService,
     private permissions: PermissionsService,
-  ) {}
+  ) { }
 
   /**
    * Create a new publication.
@@ -72,7 +72,7 @@ export class PublicationsService {
           select: {
             id: true,
             fullName: true,
-            username: true,
+            telegramUsername: true,
             avatarUrl: true,
           },
         },
@@ -110,7 +110,7 @@ export class PublicationsService {
           select: {
             id: true,
             fullName: true,
-            username: true,
+            telegramUsername: true,
             avatarUrl: true,
           },
         },
