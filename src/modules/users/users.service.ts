@@ -54,7 +54,7 @@ export class UsersService {
     return this.prisma.user.upsert({
       where: { telegramId: userData.telegramId },
       update: {
-        username: userData.username,
+        telegramUsername: userData.username,
         fullName: fullName,
         avatarUrl: userData.avatarUrl,
         // Only promote to admin if the env variable matches.
@@ -64,7 +64,7 @@ export class UsersService {
       },
       create: {
         telegramId: userData.telegramId,
-        username: userData.username,
+        telegramUsername: userData.username,
         fullName: fullName,
         avatarUrl: userData.avatarUrl,
         isAdmin: isAdmin,
@@ -95,7 +95,7 @@ export class UsersService {
     if (search) {
       where.OR = [
         { fullName: { contains: search, mode: 'insensitive' } },
-        { username: { contains: search, mode: 'insensitive' } },
+        { telegramUsername: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
       ];
     }
@@ -124,7 +124,7 @@ export class UsersService {
       id: user.id,
       telegramId: user.telegramId?.toString(),
       email: user.email,
-      username: user.username,
+      telegram_username: user.telegramUsername,
       full_name: user.fullName,
       avatar_url: user.avatarUrl,
       is_admin: user.isAdmin,

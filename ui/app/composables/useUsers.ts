@@ -91,7 +91,7 @@ export function useUsers() {
     }
 
     function getUserDisplayName(user: UserWithStats): string {
-        return user.full_name || user.username || 'User'
+        return user.full_name || user.telegram_username || 'User'
     }
 
     function getUserInitials(user: UserWithStats): string {

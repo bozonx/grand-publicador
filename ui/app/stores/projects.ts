@@ -24,7 +24,7 @@ export interface ProjectWithOwner extends Project {
   owner?: {
     id: string
     fullName: string | null
-    username: string | null
+    telegramUsername: string | null
   } | null
 }
 
@@ -39,7 +39,7 @@ export interface ProjectMemberWithUser extends ProjectMember {
   user: {
     id: string
     fullName: string | null
-    username: string | null
+    telegramUsername: string | null
     email: string | null
     avatarUrl: string | null
   }

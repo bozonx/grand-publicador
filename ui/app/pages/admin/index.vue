@@ -329,7 +329,7 @@ const hasActiveFilters = computed(() => {
                 <div class="font-medium text-gray-900 dark:text-white">
                   {{ row.original.full_name || '-' }}
                 </div>
-                <div class="text-sm text-gray-500">@{{ row.original.username || 'no-username' }}</div>
+                <div class="text-sm text-gray-500">@{{ row.original.telegram_username || 'no-username' }}</div>
               </div>
             </div>
           </template>
@@ -515,7 +515,7 @@ const hasActiveFilters = computed(() => {
                 {{ getUserDisplayName(userToToggle) }}
               </div>
               <div class="text-sm text-gray-500">
-                {{ userToToggle.email || userToToggle.username }}
+                {{ userToToggle.email || userToToggle.telegram_username }}
               </div>
             </div>
           </div>

@@ -74,7 +74,7 @@ export class AuthService {
     const payload = {
       sub: user.id,
       telegramId: user.telegramId?.toString(),
-      username: user.username,
+      telegramUsername: user.telegramUsername,
     };
 
     return plainToInstance(
@@ -115,7 +115,7 @@ export class AuthService {
     const payload = {
       sub: user.id,
       telegramId: user.telegramId?.toString(),
-      username: user.username,
+      telegramUsername: user.telegramUsername,
     };
 
     return plainToInstance(
@@ -206,7 +206,7 @@ export class AuthService {
     const payload = {
       sub: user.id,
       telegramId: user.telegramId?.toString(),
-      username: user.username,
+      telegramUsername: user.telegramUsername,
     };
 
     return plainToInstance(

@@ -116,12 +116,12 @@ async function handleRemove(row: any) {
         <div class="flex items-center gap-3">
           <UAvatar
             :src="row.original.user.avatarUrl ?? undefined"
-            :alt="row.original.user.username ?? row.original.user.fullName ?? undefined"
+            :alt="row.original.user.telegramUsername ?? row.original.user.fullName ?? undefined"
             size="sm"
           />
           <div>
             <div class="font-medium text-gray-900 dark:text-white text-sm">
-              {{ row.original.user.fullName || row.original.user.username }}
+              {{ row.original.user.fullName || row.original.user.telegramUsername }}
             </div>
             <div class="text-xs text-gray-500">
               {{ row.original.user.email }}

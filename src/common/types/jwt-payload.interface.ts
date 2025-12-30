@@ -8,7 +8,7 @@ export interface JwtPayload {
   /** The Telegram ID of the user (optional). */
   telegramId?: string;
   /** The username of the user (optional). */
-  username?: string;
+  telegramUsername?: string;
   /** Issued at timestamp. */
   iat?: number;
   /** Expiration timestamp. */

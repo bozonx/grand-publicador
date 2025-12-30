@@ -4,7 +4,7 @@ import { defineStore } from 'pinia';
 export interface User {
     id: string;
     telegramId?: string; // Backend sends string for BigInt
-    username?: string;
+    telegramUsername?: string;
     fullName?: string;
     avatarUrl?: string;
     email?: string;
@@ -31,7 +31,7 @@ export const useAuthStore = defineStore('auth', () => {
     const isAdmin = computed(() => user.value?.isAdmin === true);
     const displayName = computed(() => {
         if (user.value?.fullName) return user.value.fullName;
-        if (user.value?.username) return user.value.username;
+        if (user.value?.telegramUsername) return user.value.telegramUsername;
         return 'User';
     });
 

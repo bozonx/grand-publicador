@@ -12,7 +12,7 @@ export class UserDto {
   fullName?: string | null;
 
   @Expose()
-  username?: string | null;
+  telegramUsername?: string | null;
 
   @Expose()
   avatarUrl?: string | null;

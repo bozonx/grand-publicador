@@ -30,7 +30,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return {
       sub: payload.sub,
       telegramId: payload.telegramId,
-      username: payload.username,
+      telegramUsername: payload.telegramUsername,
       iat: payload.iat,
       exp: payload.exp,
     };

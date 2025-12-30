@@ -226,7 +226,7 @@ export type Database = {
           id: string
           telegram_id: number | null
           email: string | null
-          username: string | null
+          telegram_username: string | null
           full_name: string | null
           avatar_url: string | null
           is_admin: boolean | null
@@ -237,7 +237,7 @@ export type Database = {
           id?: string
           telegram_id?: number | null
           email?: string | null
-          username?: string | null
+          telegram_username?: string | null
           full_name?: string | null
           avatar_url?: string | null
           is_admin?: boolean | null
@@ -248,7 +248,7 @@ export type Database = {
           id?: string
           telegram_id?: number | null
           email?: string | null
-          username?: string | null
+          telegram_username?: string | null
           full_name?: string | null
           avatar_url?: string | null
           is_admin?: boolean | null
@@ -273,7 +273,7 @@ export type Database = {
           id: string
           telegram_id: number | null
           email: string | null
-          username: string | null
+          telegram_username: string | null
           full_name: string | null
           avatar_url: string | null
           is_admin: boolean | null

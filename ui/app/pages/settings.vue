@@ -51,8 +51,8 @@ async function syncName() {
     // Fallback if no Telegram WebApp data found (dev mode or just missing)
     if (!nameToSave) {
       // Fallback to existing username
-      if (user.value?.username) {
-        nameToSave = user.value.username
+      if (user.value?.telegramUsername) {
+        nameToSave = user.value.telegramUsername
       } 
       // Fallback to ID
       else if (user.value?.id) {
@@ -179,7 +179,7 @@ function formatDate(date: string | null | undefined): string {
             {{ t('user.username') }}
           </dt>
           <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-            {{ user?.username ? `@${user.username}` : '—' }}
+            {{ user?.telegramUsername ? `@${user.telegramUsername}` : '—' }}
           </dd>
         </div>
         <div>
