@@ -8,10 +8,10 @@ definePageMeta({
 })
 
 const { t } = useI18n()
-const { displayName, isAdmin } = useAuth()
+const { displayName } = useAuth()
 
 const { projects, fetchProjects, isLoading: projectsLoading } = useProjects()
-const { posts: _posts, fetchPostsByProject, isLoading: postsLoading } = usePosts()
+const { fetchPostsByProject, isLoading: postsLoading } = usePosts()
 
 // State
 const recentPosts = ref<PostWithRelations[]>([])
@@ -148,29 +148,6 @@ const totalPosts = computed(() =>
       </div>
     </div>
 
-    <!-- Quick actions -->
-    <div class="mb-8">
-      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        {{ t('dashboard.quickActions') }}
-      </h2>
-      <div class="flex flex-wrap gap-3">
-        <UButton icon="i-heroicons-plus" color="primary" to="/projects/new">
-          {{ t('project.createProject') }}
-        </UButton>
-        <UButton
-          v-if="isAdmin"
-          icon="i-heroicons-users"
-          color="neutral"
-          variant="outline"
-          to="/admin/users"
-        >
-          {{ t('admin.userManagement') }}
-        </UButton>
-        <UButton icon="i-heroicons-cog-6-tooth" color="neutral" variant="outline" to="/settings">
-          {{ t('settings.title') }}
-        </UButton>
-      </div>
-    </div>
 
     <!-- Content grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">

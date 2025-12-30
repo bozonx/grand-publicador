@@ -1,38 +1,10 @@
 <script setup lang="ts">
 const { t } = useI18n()
-const { displayName, authMode, signOut, isAdmin, user } = useAuth()
+const { displayName, authMode, isAdmin, user } = useAuth()
 
 const emit = defineEmits<{
   toggleSidebar: []
 }>()
-
-interface UserMenuItem {
-  label: string
-  icon: string
-  to?: string
-  click?: () => void | Promise<void>
-}
-
-const userMenuItems = computed<UserMenuItem[]>(() => {
-  const items: UserMenuItem[] = [
-    {
-      label: t('navigation.settings'),
-      icon: 'i-heroicons-cog-6-tooth',
-      to: '/settings',
-    },
-  ]
-
-  // Add logout only for browser mode (Telegram users can't logout)
-  if (authMode.value === 'browser') {
-    items.push({
-      label: t('auth.logout'),
-      icon: 'i-heroicons-arrow-right-on-rectangle',
-      click: signOut,
-    })
-  }
-
-  return items
-})
 </script>
 
 <template>
@@ -55,13 +27,15 @@ const userMenuItems = computed<UserMenuItem[]>(() => {
         </NuxtLink>
       </div>
 
-      <!-- Right side: Language switcher + User menu -->
-      <div class="flex items-center gap-3">
-        <UiLanguageSwitcher />
-
-        <!-- User menu -->
-        <UDropdownMenu :items="userMenuItems">
-          <UButton variant="ghost" color="neutral" class="flex items-center gap-2">
+      <!-- Right side: User avatar -->
+      <div class="flex items-center">
+        <UTooltip :text="t('navigation.settings')">
+          <UButton
+            to="/settings"
+            variant="ghost"
+            color="neutral"
+            class="p-0.5 rounded-full"
+          >
             <UAvatar
               :alt="displayName"
               size="sm"
@@ -70,12 +44,8 @@ const userMenuItems = computed<UserMenuItem[]>(() => {
                   'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300',
               }"
             />
-            <span class="hidden sm:inline text-sm font-medium text-gray-700 dark:text-gray-300">
-              {{ displayName }}
-            </span>
-            <UIcon name="i-heroicons-chevron-down" class="w-4 h-4 text-gray-500" />
           </UButton>
-        </UDropdownMenu>
+        </UTooltip>
       </div>
     </div>
 
