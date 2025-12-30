@@ -3,7 +3,7 @@ import type { Database } from '~/types/database.types'
 type User = Database['public']['Tables']['users']['Row']
 
 export interface UserWithStats extends User {
-  blogsCount?: number
+  projectsCount?: number
   postsCount?: number
 }
 

@@ -28,38 +28,38 @@ export type Database = {
   }
   public: {
     Tables: {
-      blog_members: {
+      project_members: {
         Row: {
-          blog_id: string
+          project_id: string
           created_at: string | null
           id: string
-          role: Database['public']['Enums']['blog_role'] | null
+          role: Database['public']['Enums']['project_role'] | null
           user_id: string
         }
         Insert: {
-          blog_id: string
+          project_id: string
           created_at?: string | null
           id?: string
-          role?: Database['public']['Enums']['blog_role'] | null
+          role?: Database['public']['Enums']['project_role'] | null
           user_id: string
         }
         Update: {
-          blog_id?: string
+          project_id?: string
           created_at?: string | null
           id?: string
-          role?: Database['public']['Enums']['blog_role'] | null
+          role?: Database['public']['Enums']['project_role'] | null
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: 'blog_members_blog_id_fkey'
-            columns: ['blog_id']
+            foreignKeyName: 'project_members_project_id_fkey'
+            columns: ['project_id']
             isOneToOne: false
-            referencedRelation: 'blogs'
+            referencedRelation: 'projects'
             referencedColumns: ['id']
           },
           {
-            foreignKeyName: 'blog_members_user_id_fkey'
+            foreignKeyName: 'project_members_user_id_fkey'
             columns: ['user_id']
             isOneToOne: false
             referencedRelation: 'users'
@@ -67,7 +67,7 @@ export type Database = {
           },
         ]
       }
-      blogs: {
+      projects: {
         Row: {
           id: string
           name: string
@@ -94,7 +94,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'blogs_owner_id_fkey'
+            foreignKeyName: 'projects_owner_id_fkey'
             columns: ['owner_id']
             isOneToOne: false
             referencedRelation: 'users'
@@ -104,7 +104,7 @@ export type Database = {
       }
       channels: {
         Row: {
-          blog_id: string
+          project_id: string
           created_at: string | null
           credentials: Json | null
           id: string
@@ -115,7 +115,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          blog_id: string
+          project_id: string
           created_at?: string | null
           credentials?: Json | null
           id?: string
@@ -126,7 +126,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          blog_id?: string
+          project_id?: string
           created_at?: string | null
           credentials?: Json | null
           id?: string
@@ -138,10 +138,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'channels_blog_id_fkey'
-            columns: ['blog_id']
+            foreignKeyName: 'channels_project_id_fkey'
+            columns: ['project_id']
             isOneToOne: false
-            referencedRelation: 'blogs'
+            referencedRelation: 'projects'
             referencedColumns: ['id']
           },
         ]
@@ -289,18 +289,18 @@ export type Database = {
       }
     }
     Enums: {
-      blog_role: 'owner' | 'admin' | 'editor' | 'viewer'
+      project_role: 'owner' | 'admin' | 'editor' | 'viewer'
       post_status_enum: 'draft' | 'scheduled' | 'published' | 'failed'
       post_type_enum: 'post' | 'article' | 'news' | 'video' | 'short'
       social_media_enum:
-        | 'telegram'
-        | 'instagram'
-        | 'vk'
-        | 'youtube'
-        | 'tiktok'
-        | 'x'
-        | 'facebook'
-        | 'site'
+      | 'telegram'
+      | 'instagram'
+      | 'vk'
+      | 'youtube'
+      | 'tiktok'
+      | 'x'
+      | 'facebook'
+      | 'site'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -314,114 +314,114 @@ type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
+  | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
-    : never = never,
+  ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
+    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
       Row: infer R
     }
-    ? R
-    : never
+  ? R
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
-    ? (DefaultSchema['Tables'] & DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
-    : never
+  ? (DefaultSchema['Tables'] & DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
+    Row: infer R
+  }
+  ? R
+  : never
+  : never
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof DefaultSchema['Tables']
+  | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
-    : never = never,
+  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
-      Insert: infer I
-    }
-    ? I
-    : never
+    Insert: infer I
+  }
+  ? I
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
-    : never
+  ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+    Insert: infer I
+  }
+  ? I
+  : never
+  : never
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof DefaultSchema['Tables']
+  | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
-    : never = never,
+  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
-      Update: infer U
-    }
-    ? U
-    : never
+    Update: infer U
+  }
+  ? U
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
-    : never
+  ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+    Update: infer U
+  }
+  ? U
+  : never
+  : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema['Enums']
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof DefaultSchema['Enums']
+  | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
-    : never = never,
+  ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
+  : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
-    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
-    : never
+  ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
+  : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema['CompositeTypes']
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof DefaultSchema['CompositeTypes']
+  | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
-    : never = never,
+  ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
+  : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
-    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
-    : never
+  ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
+  : never
 
 export const Constants = {
   graphql_public: {
@@ -429,7 +429,7 @@ export const Constants = {
   },
   public: {
     Enums: {
-      blog_role: ['owner', 'admin', 'editor', 'viewer'],
+      project_role: ['owner', 'admin', 'editor', 'viewer'],
       post_status_enum: ['draft', 'scheduled', 'published', 'failed'],
       post_type_enum: ['post', 'article', 'news', 'video', 'short'],
       social_media_enum: [

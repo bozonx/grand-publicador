@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { UserWithStats } from '~/stores/users'
+import type { TableColumn } from '@nuxt/ui'
 
 
 definePageMeta({
@@ -8,14 +9,14 @@ definePageMeta({
 
 const { t, d } = useI18n()
 
-const columns = [
-  { key: 'user', label: t('user.username') },
-  { key: 'email', label: t('auth.email') },
-  { key: 'role', label: t('user.role') },
-  { key: 'stats', label: t('admin.statistics') },
-  { key: 'created_at', label: t('user.createdAt') },
-  { key: 'actions', label: t('common.actions') }
-]
+const columns = computed<TableColumn<UserWithStats>[]>(() => [
+  { accessorKey: 'user', header: t('user.username') },
+  { accessorKey: 'email', header: t('auth.email') },
+  { accessorKey: 'role', header: t('user.role') },
+  { accessorKey: 'stats', header: t('admin.statistics') },
+  { accessorKey: 'created_at', header: t('user.createdAt') },
+  { accessorKey: 'actions', header: t('common.actions') }
+])
 
 const {
   users,
@@ -122,12 +123,8 @@ const hasActiveFilters = computed(() => {
   return selectedAdminFilter.value !== null || searchQuery.value
 })
 
-const rows = computed<UserWithStats[]>(() => users.value)
-
-// Helper to cast row type for template
-function getRow(row: unknown): UserWithStats {
-  return row as UserWithStats
-}
+// UI v3 table uses 'data' prop instead of 'rows'
+// and rows in slots are Row<T> where data is in row.original
 </script>
 
 <template>
@@ -228,72 +225,72 @@ function getRow(row: unknown): UserWithStats {
     <!-- Users table -->
     <div v-else class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
       <UTable
-        :rows="rows"
-        :columns="(columns as any)"
+        :data="users"
+        :columns="columns"
         :loading="isLoading"
       >
         <!-- User info column -->
-        <template #user-data="{ row }">
+        <template #user-cell="{ row }">
           <div class="flex items-center gap-3">
             <UAvatar
-              :src="getRow(row).avatar_url ?? undefined"
-              :alt="getUserDisplayName(getRow(row))"
+              :src="row.original.avatar_url ?? undefined"
+              :alt="getUserDisplayName(row.original)"
               size="sm"
             >
               <template #fallback>
-                <span class="text-xs">{{ getUserInitials(getRow(row)) }}</span>
+                <span class="text-xs">{{ getUserInitials(row.original) }}</span>
               </template>
             </UAvatar>
             <div>
               <div class="font-medium text-gray-900 dark:text-white">
-                {{ getRow(row).full_name || '-' }}
+                {{ row.original.full_name || '-' }}
               </div>
-              <div class="text-sm text-gray-500">@{{ getRow(row).username || 'no-username' }}</div>
+              <div class="text-sm text-gray-500">@{{ row.original.username || 'no-username' }}</div>
             </div>
           </div>
         </template>
 
         <!-- Role column -->
-        <template #role-data="{ row }">
+        <template #role-cell="{ row }">
           <UBadge
-            :color="getRow(row).is_admin ? 'primary' : 'neutral'"
-            :variant="getRow(row).is_admin ? 'solid' : 'outline'"
+            :color="row.original.is_admin ? 'primary' : 'neutral'"
+            :variant="row.original.is_admin ? 'solid' : 'outline'"
             size="sm"
           >
-            {{ getRow(row).is_admin ? t('user.isAdmin') : t('admin.regularUser') }}
+            {{ row.original.is_admin ? t('user.isAdmin') : t('admin.regularUser') }}
           </UBadge>
         </template>
 
         <!-- Statistics column -->
-        <template #stats-data="{ row }">
+        <template #stats-cell="{ row }">
           <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
             <span class="flex items-center gap-1">
-              <UIcon name="i-heroicons-book-open" class="w-4 h-4" />
-              {{ getRow(row).blogsCount || 0 }} {{ t('blog.titlePlural').toLowerCase() }}
+              <UIcon name="i-heroicons-briefcase" class="w-4 h-4" />
+              {{ row.original.projectsCount || 0 }} {{ t('project.titlePlural').toLowerCase() }}
             </span>
             <span class="flex items-center gap-1">
               <UIcon name="i-heroicons-document-text" class="w-4 h-4" />
-              {{ getRow(row).postsCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
+              {{ row.original.postsCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
             </span>
           </div>
         </template>
 
         <!-- Created at column -->
-        <template #created_at-data="{ row }">
-          {{ getRow(row).created_at ? d(new Date(getRow(row).created_at!), 'long') : '-' }}
+        <template #created_at-cell="{ row }">
+          {{ row.original.created_at ? d(new Date(row.original.created_at!), 'long') : '-' }}
         </template>
 
         <!-- Actions column -->
-        <template #actions-data="{ row }">
+        <template #actions-cell="{ row }">
           <div class="text-right">
             <UButton
-              :color="getRow(row).is_admin ? 'warning' : 'success'"
+              :color="row.original.is_admin ? 'warning' : 'success'"
               variant="ghost"
               size="sm"
-              :icon="getRow(row).is_admin ? 'i-heroicons-shield-exclamation' : 'i-heroicons-shield-check'"
-              @click="confirmToggleAdmin(getRow(row))"
+              :icon="row.original.is_admin ? 'i-heroicons-shield-exclamation' : 'i-heroicons-shield-check'"
+              @click="confirmToggleAdmin(row.original)"
             >
-              {{ getRow(row).is_admin ? t('admin.revokeAdmin') : t('admin.grantAdmin') }}
+              {{ row.original.is_admin ? t('admin.revokeAdmin') : t('admin.grantAdmin') }}
             </UButton>
           </div>
         </template>

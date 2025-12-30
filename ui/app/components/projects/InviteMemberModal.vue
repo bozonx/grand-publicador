@@ -2,7 +2,7 @@
 import type { Database } from '~/types/database.types'
 import { useProjects } from '~/composables/useProjects'
 
-type ProjectRole = Database['public']['Enums']['blog_role']
+type ProjectRole = Database['public']['Enums']['project_role']
 
 const props = defineProps<{
   modelValue: boolean
@@ -69,22 +69,22 @@ function closeModal() {
       </div>
 
       <form class="space-y-4" @submit.prevent="handleInvite">
-        <UFormGroup :label="t('projectMember.userEmailOrUsername')" required>
+        <UFormField :label="t('projectMember.userEmailOrUsername')" required>
           <UInput
             v-model="emailOrUsername"
             :placeholder="t('projectMember.searchPlaceholder')"
             autofocus
           />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup :label="t('common.role')">
+        <UFormField :label="t('common.role')">
           <USelectMenu
             v-model="selectedRole"
             :options="roleOptions"
             option-attribute="label"
             value-attribute="value"
           />
-        </UFormGroup>
+        </UFormField>
 
         <div class="flex justify-end gap-3 mt-6">
           <UButton color="neutral" variant="ghost" @click="closeModal">

@@ -54,8 +54,7 @@ function getActionItems(row: any) {
   const actions = []
 
   // Role change actions
-  // TODO: Update Database type to 'project_role' if backend changed it, otherwise keep 'blog_role' alias or cast
-  const roles: Database['public']['Enums']['blog_role'][] = ['admin', 'editor', 'viewer']
+  const roles: Database['public']['Enums']['project_role'][] = ['admin', 'editor', 'viewer']
   const roleActions = roles
     .filter((r) => r !== row.role)
     .map((role) => ({

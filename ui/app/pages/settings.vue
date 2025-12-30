@@ -38,6 +38,41 @@ function cancelEditingName() {
 }
 
 /**
+ * Sync name from Telegram or fallbacks
+ */
+function syncName() {
+  // Try to get from Telegram WebApp
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tgUser = (window as any).Telegram?.WebApp?.initDataUnsafe?.user
+  
+  if (tgUser) {
+    const first = tgUser.first_name || ''
+    const last = tgUser.last_name || ''
+    const full = [first, last].filter(Boolean).join(' ')
+    if (full) {
+      newFullName.value = full
+      return
+    }
+    
+    if (tgUser.username) {
+      newFullName.value = tgUser.username
+      return
+    }
+  }
+  
+  // Fallback to existing username
+  if (user.value?.username) {
+    newFullName.value = user.value.username
+    return
+  }
+  
+  // Fallback to ID
+  if (user.value?.id) {
+    newFullName.value = user.value.id
+  }
+}
+
+/**
  * Save new name
  */
 async function saveFullName() {
@@ -157,6 +192,15 @@ function formatDate(date: string | null | undefined): string {
               @keyup.enter="saveFullName"
               @keyup.escape="cancelEditingName"
             />
+            <UTooltip :text="t('settings.syncName', 'Sync from Telegram')">
+              <UButton
+                color="neutral"
+                variant="ghost"
+                size="xs"
+                icon="i-heroicons-arrow-path"
+                @click="syncName"
+              />
+            </UTooltip>
             <UButton
               color="primary"
               size="xs"
