@@ -11,6 +11,7 @@ import { ProjectsModule } from './modules/projects/projects.module.js';
 import { ChannelsModule } from './modules/channels/channels.module.js';
 import { PostsModule } from './modules/posts/posts.module.js';
 import appConfig, { AppConfig } from './config/app.config.js';
+import { SystemConfigModule } from './modules/system-config/system-config.module.js';
 import { PublicationsModule } from './modules/publications/publications.module.js';
 import { ExternalModule } from './modules/external/external.module.js';
 import { AutomationModule } from './modules/automation/automation.module.js';
@@ -42,15 +43,15 @@ import pkg from '../package.json' with { type: 'json' };
             // Use pino-pretty for better readability in development
             transport: isDev
               ? {
-                  target: 'pino-pretty',
-                  options: {
-                    colorize: true,
-                    singleLine: false,
-                    translateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss.l'Z'",
-                    ignore: 'pid,hostname',
-                    messageFormat: '[{context}] {msg}',
-                  },
-                }
+                target: 'pino-pretty',
+                options: {
+                  colorize: true,
+                  singleLine: false,
+                  translateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss.l'Z'",
+                  ignore: 'pid,hostname',
+                  messageFormat: '[{context}] {msg}',
+                },
+              }
               : undefined,
             serializers: {
               req: req => ({
@@ -112,6 +113,7 @@ import pkg from '../package.json' with { type: 'json' };
     PublicationsModule,
     ExternalModule,
     AutomationModule,
+    SystemConfigModule,
   ],
   controllers: [],
   providers: [
@@ -125,4 +127,4 @@ import pkg from '../package.json' with { type: 'json' };
  * The root module of the application.
  * Configures global imports, providers, and modules.
  */
-export class AppModule {}
+export class AppModule { }

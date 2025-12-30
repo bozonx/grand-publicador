@@ -36,6 +36,7 @@ export const useApi = () => {
         get: <T>(url: string, options: any = {}) => request<T>(url, { ...options, method: 'GET' }),
         post: <T>(url: string, body?: any, options: any = {}) => request<T>(url, { ...options, method: 'POST', body }),
         patch: <T>(url: string, body?: any, options: any = {}) => request<T>(url, { ...options, method: 'PATCH', body }),
+        put: <T>(url: string, body?: any, options: any = {}) => request<T>(url, { ...options, method: 'PUT', body }),
         delete: <T>(url: string, options: any = {}) => request<T>(url, { ...options, method: 'DELETE' }),
     };
 };

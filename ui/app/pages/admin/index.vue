@@ -7,6 +7,7 @@ definePageMeta({
 })
 
 const { t, d } = useI18n()
+const toast = useToast()
 
 // Tab management
 const selectedTab = ref('users')
@@ -23,13 +24,46 @@ const tabs = computed<AdminTab[]>(() => [
     label: t('admin.tabs.users'),
     icon: 'i-heroicons-users',
   },
-  // Future tabs can be added here
-  // {
-  //   key: 'settings',
-  //   label: t('admin.tabs.settings'),
-  //   icon: 'i-heroicons-cog-6-tooth',
-  // },
+  {
+    key: 'config',
+    label: t('admin.tabs.config', 'Configuration'),
+    icon: 'i-heroicons-cog-6-tooth',
+  },
 ])
+
+const { fetchConfig, updateConfig, loading: configLoading, error: configError } = useConfig()
+const yamlContent = ref('')
+const isSaving = ref(false)
+
+async function loadYamlConfig() {
+  try {
+    yamlContent.value = await fetchConfig()
+  } catch (e) {
+    console.error('Failed to load config', e)
+  }
+}
+
+async function handleSaveConfig() {
+  isSaving.value = true
+  try {
+    await updateConfig(yamlContent.value)
+    toast.add({
+      title: t('common.success'),
+      description: t('admin.config.saved', 'Configuration saved and applied'),
+      color: 'success',
+    })
+  } catch (e) {
+    console.error('Failed to save config', e)
+  } finally {
+    isSaving.value = false
+  }
+}
+
+watch(selectedTab, (newTab) => {
+  if (newTab === 'config' && !yamlContent.value) {
+    loadYamlConfig()
+  }
+})
 
 // Users management
 const columns = computed<TableColumn<UserWithStats>[]>(() => [
@@ -370,6 +404,50 @@ const hasActiveFilters = computed(() => {
           size="sm"
           @click="setPage(pagination.page + 1)"
         />
+      </div>
+    </div>
+
+    <!-- Config Tab -->
+    <div v-if="selectedTab === 'config'">
+      <div class="mb-6">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+          {{ t('admin.tabs.config') }}
+        </h2>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          {{ t('admin.config.description', 'Edit application configuration (app-config.yaml). Changes are applied immediately.') }}
+        </p>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div v-if="configLoading && !yamlContent" class="flex items-center justify-center py-12">
+          <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-gray-400 animate-spin" />
+        </div>
+        
+        <div v-else>
+          <div v-if="configError" class="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <p class="text-red-700 dark:text-red-300">{{ configError }}</p>
+          </div>
+
+          <div class="mb-4">
+            <UTextarea
+              v-model="yamlContent"
+              :rows="20"
+              class="font-mono text-sm w-full"
+              :placeholder="t('admin.config.placeholder', 'Paste your YAML config here...')"
+            />
+          </div>
+
+          <div class="flex justify-end">
+            <UButton
+              color="primary"
+              :loading="isSaving"
+              icon="i-heroicons-check-circle"
+              @click="handleSaveConfig"
+            >
+              {{ t('common.save') }}
+            </UButton>
+          </div>
+        </div>
       </div>
     </div>
 
