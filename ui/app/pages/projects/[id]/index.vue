@@ -78,7 +78,7 @@ async function handleUpdate(data: { name: string; description: string }) {
   isSaving.value = true
   const result = await updateProject(projectId.value, {
     name: data.name,
-    description: data.description || null,
+    description: data.description,
   })
   isSaving.value = false
 

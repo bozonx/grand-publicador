@@ -31,7 +31,11 @@ async function bootstrap() {
     }),
     {
       bufferLogs: true,
-      cors: true,
+      cors: {
+        origin: true,
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+        credentials: true,
+      },
     },
   );
 
