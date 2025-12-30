@@ -233,27 +233,27 @@ const hasActiveFilters = computed(() => {
         <!-- Status filter -->
         <USelectMenu
           v-model="selectedStatus"
-          :options="statusFilterOptions"
-          value-attribute="value"
-          option-attribute="label"
+          :items="statusFilterOptions"
+          value-key="value"
+          label-key="label"
           :placeholder="t('post.status')"
         />
 
         <!-- Type filter -->
         <USelectMenu
           v-model="selectedType"
-          :options="typeFilterOptions"
-          value-attribute="value"
-          option-attribute="label"
+          :items="typeFilterOptions"
+          value-key="value"
+          label-key="label"
           :placeholder="t('post.postType')"
         />
 
         <!-- Channel filter -->
         <USelectMenu
           v-model="selectedChannel"
-          :options="channelOptions"
-          value-attribute="value"
-          option-attribute="label"
+          :items="channelOptions"
+          value-key="value"
+          label-key="label"
           :placeholder="t('channel.title')"
         />
       </div>

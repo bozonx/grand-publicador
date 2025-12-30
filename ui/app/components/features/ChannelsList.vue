@@ -188,9 +188,9 @@ const activeStatusFilterOptions = computed(() => {
         <!-- Social media filter -->
         <USelectMenu
           v-model="selectedSocialMedia"
-          :options="socialMediaFilterOptions"
-          value-attribute="value"
-          option-attribute="label"
+          :items="socialMediaFilterOptions"
+          value-key="value"
+          label-key="label"
           :placeholder="t('channel.socialMedia')"
           class="w-full"
         />
@@ -198,9 +198,9 @@ const activeStatusFilterOptions = computed(() => {
         <!-- Active status filter -->
         <USelectMenu
           v-model="selectedActiveStatus"
-          :options="activeStatusFilterOptions"
-          value-attribute="value"
-          option-attribute="label"
+          :items="activeStatusFilterOptions"
+          value-key="value"
+          label-key="label"
           :placeholder="t('channel.isActive')"
           class="w-full"
         />

@@ -177,9 +177,9 @@ const isFormValid = computed(() => {
         <UFormField :label="t('channel.title')" required>
           <USelectMenu
             v-model="formData.channelId"
-            :options="channelOptions"
-            value-attribute="value"
-            option-attribute="label"
+            :items="channelOptions"
+            value-key="value"
+            label-key="label"
             :placeholder="t('post.selectChannel', 'Select a channel')"
             class="w-full"
             size="lg"
@@ -215,9 +215,9 @@ const isFormValid = computed(() => {
         <UFormField :label="t('post.postType')" required>
           <USelectMenu
             v-model="formData.postType"
-            :options="typeOptions"
-            value-attribute="value"
-            option-attribute="label"
+            :items="typeOptions"
+            value-key="value"
+            label-key="label"
             class="w-full"
           />
         </UFormField>
@@ -225,9 +225,9 @@ const isFormValid = computed(() => {
         <UFormField :label="t('post.status')" required>
           <USelectMenu
             v-model="formData.status"
-            :options="availableStatusOptions"
-            value-attribute="value"
-            option-attribute="label"
+            :items="availableStatusOptions"
+            value-key="value"
+            label-key="label"
             class="w-full"
           />
         </UFormField>

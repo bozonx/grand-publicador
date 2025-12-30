@@ -80,9 +80,9 @@ function closeModal() {
         <UFormField :label="t('common.role')">
           <USelectMenu
             v-model="selectedRole"
-            :options="roleOptions"
-            value-attribute="value"
-            option-attribute="label"
+            :items="roleOptions"
+            value-key="value"
+            label-key="label"
           />
         </UFormField>
 

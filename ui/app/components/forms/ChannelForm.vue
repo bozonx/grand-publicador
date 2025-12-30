@@ -147,9 +147,9 @@ const currentSocialMedia = computed(() => (isEditMode.value ? props.channel?.soc
         <UFormField :label="t('channel.socialMedia')" required>
           <USelectMenu
             v-model="state.socialMedia"
-            :options="socialMediaOptions"
-            value-attribute="value"
-            option-attribute="label"
+            :items="socialMediaOptions"
+            value-key="value"
+            label-key="label"
             class="w-full"
           />
         </UFormField>
