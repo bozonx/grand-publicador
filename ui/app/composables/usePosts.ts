@@ -243,22 +243,22 @@ export function usePosts() {
     ])
 
     // Helpers
-    function getStatusDisplayName(status: PostStatus): string {
-        return t(`postStatus.${status}`)
+    function getStatusDisplayName(status: string): string {
+        return t(`postStatus.${status.toLowerCase()}`)
     }
 
-    function getTypeDisplayName(type: PostType): string {
-        return t(`postType.${type}`)
+    function getTypeDisplayName(type: string): string {
+        return t(`postType.${type.toLowerCase()}`)
     }
 
-    function getStatusColor(status: PostStatus): 'neutral' | 'warning' | 'success' | 'error' {
-        const colors: Record<PostStatus, 'neutral' | 'warning' | 'success' | 'error'> = {
+    function getStatusColor(status: string): 'neutral' | 'warning' | 'success' | 'error' {
+        const colors: Record<string, 'neutral' | 'warning' | 'success' | 'error'> = {
             draft: 'neutral',
             scheduled: 'warning',
             published: 'success',
             failed: 'error',
         }
-        return colors[status] || 'neutral'
+        return colors[status.toLowerCase()] || 'neutral'
     }
 
     function canDelete(post: PostWithRelations): boolean {

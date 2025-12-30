@@ -269,7 +269,7 @@ const totalPosts = computed(() =>
                       {{ post.title || t('post.untitled') }}
                     </h3>
                     <UBadge :color="getStatusColor(post.status)" size="xs" variant="subtle">
-                      {{ t(`postStatus.${post.status || 'draft'}`) }}
+                      {{ t(`postStatus.${(post.status || 'draft').toLowerCase()}`) }}
                     </UBadge>
                   </div>
                   <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
