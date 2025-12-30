@@ -48,6 +48,7 @@ export class UsersService {
     }
 
     // Check if this user should be an admin based on environment variable
+    // (Trigger rebuild)
     const adminId = this.configService.get<AppConfig>('app')?.adminTelegramId;
     const isAdmin = adminId ? BigInt(adminId) === userData.telegramId : false;
 
