@@ -168,44 +168,11 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
                   <UIcon name="i-heroicons-user" class="w-4 h-4" />
                   {{ project.owner.fullName || project.owner.username || 'Unknown' }}
                 </span>
-                <span class="flex items-center gap-1">
-                  <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
-                  {{ formatDate(project.createdAt) }}
-                </span>
+
               </div>
             </div>
 
-            <!-- Actions dropdown -->
-            <div class="ml-4" @click.stop>
-              <UDropdownMenu
-                :items="[
-                  [
-                    {
-                      label: t('common.edit'),
-                      icon: 'i-heroicons-pencil-square',
-                      disabled: !canEdit(project),
-                      click: () => goToEditProject(project.id),
-                    },
-                  ],
-                  [
-                    {
-                      label: t('common.delete'),
-                      icon: 'i-heroicons-trash',
-                      disabled: !canDelete(project),
-                      color: 'error' as const,
-                      click: () => confirmDelete(project.id),
-                    },
-                  ],
-                ]"
-              >
-                <UButton
-                  color="neutral"
-                  variant="ghost"
-                  icon="i-heroicons-ellipsis-vertical"
-                  :aria-label="t('common.actions')"
-                />
-              </UDropdownMenu>
-            </div>
+
           </div>
         </div>
       </div>
