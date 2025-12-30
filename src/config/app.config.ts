@@ -60,8 +60,7 @@ export class AppConfig {
    * Defined by AUTH_API_KEY or API_KEY environment variable.
    */
   @IsString()
-  @IsOptional()
-  public apiKey?: string;
+  public apiKey!: string;
 
   /**
    * Telegram ID of the super administrator.
@@ -69,22 +68,19 @@ export class AppConfig {
    * Defined by TELEGRAM_ADMIN_ID environment variable.
    */
   @IsString()
-  @IsOptional()
-  public adminTelegramId?: string;
+  public adminTelegramId!: string;
 
   /**
    * Telegram Bot Token.
    */
   @IsString()
-  @IsOptional()
-  public telegramBotToken?: string;
+  public telegramBotToken!: string;
 
   /**
    * JWT Secret for auth.
    */
   @IsString()
-  @IsOptional()
-  public jwtSecret?: string;
+  public jwtSecret!: string;
 }
 
 export default registerAs('app', (): AppConfig => {
