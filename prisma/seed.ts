@@ -39,7 +39,7 @@ async function main() {
         {
             id: '00000000-0000-0000-0000-000000000001',
             telegramId: devTelegramId,
-            username: 'dev_user',
+            telegramUsername: 'dev_user',
             fullName: 'Разработчик (Dev)',
             isAdmin: true,
         },
@@ -52,7 +52,7 @@ async function main() {
         {
             id: '00000000-0000-0000-0000-000000000003',
             telegramId: 987654321n,
-            username: 'viewer_user',
+            telegramUsername: 'viewer_user',
             fullName: 'Виктор Зритель',
             isAdmin: false,
         },
