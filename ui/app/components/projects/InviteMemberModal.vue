@@ -53,27 +53,15 @@ function closeModal() {
 </script>
 
 <template>
-  <UModal v-model="isOpen">
-    <div class="p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-          {{ t('projectMember.invite') }}
-        </h3>
-        <UButton
-          color="neutral"
-          variant="ghost"
-          icon="i-heroicons-x-mark-20-solid"
-          class="-my-1"
-          @click="closeModal"
-        />
-      </div>
-
-      <form class="space-y-4" @submit.prevent="handleInvite">
+  <UModal v-model:open="isOpen" :title="t('projectMember.invite')">
+    <template #body>
+      <form class="space-y-4" @submit.prevent="handleInvite" id="invite-member-form">
         <UFormField :label="t('projectMember.userUsername', 'Telegram Username')" required>
           <UInput
             v-model="username"
             :placeholder="t('projectMember.searchPlaceholderUsername', '@username')"
             autofocus
+            class="w-full"
           />
         </UFormField>
 
@@ -83,18 +71,21 @@ function closeModal() {
             :items="roleOptions"
             value-key="value"
             label-key="label"
+            class="w-full"
           />
         </UFormField>
-
-        <div class="flex justify-end gap-3 mt-6">
-          <UButton color="neutral" variant="ghost" @click="closeModal">
-            {{ t('common.cancel') }}
-          </UButton>
-          <UButton type="submit" color="primary" :loading="isLoading" :disabled="!username">
-            {{ t('projectMember.invite') }}
-          </UButton>
-        </div>
       </form>
-    </div>
+    </template>
+
+    <template #footer>
+      <div class="flex justify-end gap-3 w-full">
+        <UButton color="neutral" variant="ghost" @click="closeModal">
+          {{ t('common.cancel') }}
+        </UButton>
+        <UButton type="submit" form="invite-member-form" color="primary" :loading="isLoading" :disabled="!username">
+          {{ t('projectMember.invite') }}
+        </UButton>
+      </div>
+    </template>
   </UModal>
 </template>

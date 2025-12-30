@@ -22,7 +22,7 @@ const {
   copyToken,
 } = useApiTokens()
 
-const { data: projects } = useFetch('/api/v1/projects')
+const { data: projects } = useFetch<any[]>('/api/v1/projects')
 const showCreateTokenModal = ref(false)
 const showEditTokenModal = ref(false)
 const editingToken = ref<any>(null)
@@ -472,7 +472,7 @@ function formatDate(date: string | null | undefined): string {
                 @click="openEditModal(token)"
               />
               <UButton
-                color="red"
+                color="error"
                 variant="ghost"
                 size="xs"
                 icon="i-heroicons-trash"
@@ -513,100 +513,92 @@ function formatDate(date: string | null | undefined): string {
     </UCard>
 
     <!-- Create Token Modal -->
-    <UModal v-model="showCreateTokenModal">
-      <UCard
-        :ui="{
-          ring: '',
-          divide: 'divide-y divide-gray-100 dark:divide-gray-800',
-        }"
-      >
-        <template #header>
-          <h3 class="text-lg font-medium">{{ t('settings.createToken', 'Create API Token') }}</h3>
-        </template>
-
+    <UModal 
+      v-model:open="showCreateTokenModal" 
+      :title="t('settings.createToken', 'Create API Token')"
+      :ui="{ content: 'sm:max-w-md' }"
+    >
+      <template #body>
         <div class="space-y-4">
-          <UFormGroup :label="t('settings.tokenName', 'Token Name')" required>
-            <UInput v-model="newTokenName" placeholder="My Integration Token" />
-          </UFormGroup>
+          <UFormField :label="t('settings.tokenName', 'Token Name')" required>
+            <UInput v-model="newTokenName" placeholder="My Integration Token" class="w-full" />
+          </UFormField>
 
-          <UFormGroup>
+          <UFormField>
             <UCheckbox
               v-model="limitToProjects"
               :label="t('settings.limitToProjects', 'Limit to specific projects')"
             />
-          </UFormGroup>
+          </UFormField>
 
-          <UFormGroup v-if="limitToProjects" :label="t('settings.selectProjects', 'Select Projects')">
+          <UFormField v-if="limitToProjects" :label="t('settings.selectProjects', 'Select Projects')">
             <USelectMenu
               v-model="newTokenScope"
-              :options="projects || []"
-              option-attribute="name"
-              value-attribute="id"
+              :items="projects || []"
+              label-key="name"
+              value-key="id"
               multiple
               placeholder="Select projects..."
+              class="w-full"
             />
-          </UFormGroup>
+          </UFormField>
         </div>
+      </template>
 
-        <template #footer>
-          <div class="flex justify-end gap-2">
-            <UButton color="neutral" variant="outline" @click="showCreateTokenModal = false">
-              {{ t('common.cancel') }}
-            </UButton>
-            <UButton color="primary" @click="handleCreateToken" :loading="tokensLoading">
-              {{ t('common.create') }}
-            </UButton>
-          </div>
-        </template>
-      </UCard>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <UButton color="neutral" variant="outline" @click="showCreateTokenModal = false">
+            {{ t('common.cancel') }}
+          </UButton>
+          <UButton color="primary" @click="handleCreateToken" :loading="tokensLoading">
+            {{ t('common.create') }}
+          </UButton>
+        </div>
+      </template>
     </UModal>
 
     <!-- Edit Token Modal -->
-    <UModal v-model="showEditTokenModal">
-      <UCard
-        :ui="{
-          ring: '',
-          divide: 'divide-y divide-gray-100 dark:divide-gray-800',
-        }"
-      >
-        <template #header>
-          <h3 class="text-lg font-medium">{{ t('settings.editToken', 'Edit API Token') }}</h3>
-        </template>
-
+    <UModal 
+      v-model:open="showEditTokenModal" 
+      :title="t('settings.editToken', 'Edit API Token')"
+      :ui="{ content: 'sm:max-w-md' }"
+    >
+      <template #body>
         <div class="space-y-4">
-          <UFormGroup :label="t('settings.tokenName', 'Token Name')" required>
-            <UInput v-model="newTokenName" />
-          </UFormGroup>
+          <UFormField :label="t('settings.tokenName', 'Token Name')" required>
+            <UInput v-model="newTokenName" class="w-full" />
+          </UFormField>
 
-          <UFormGroup>
+          <UFormField>
             <UCheckbox
               v-model="limitToProjects"
               :label="t('settings.limitToProjects', 'Limit to specific projects')"
             />
-          </UFormGroup>
+          </UFormField>
 
-          <UFormGroup v-if="limitToProjects" :label="t('settings.selectProjects', 'Select Projects')">
+          <UFormField v-if="limitToProjects" :label="t('settings.selectProjects', 'Select Projects')">
             <USelectMenu
               v-model="newTokenScope"
-              :options="projects || []"
-              option-attribute="name"
-              value-attribute="id"
+              :items="projects || []"
+              label-key="name"
+              value-key="id"
               multiple
+              class="w-full"
             />
-          </UFormGroup>
+          </UFormField>
         </div>
+      </template>
 
-        <template #footer>
-          <div class="flex justify-end gap-2">
-            <UButton color="neutral" variant="outline" @click="showEditTokenModal = false">
-              {{ t('common.cancel') }}
-            </UButton>
-            <UButton color="primary" @click="handleUpdateToken" :loading="tokensLoading">
-              {{ t('common.save') }}
-            </UButton>
-          </div>
-        </template>
-      </UCard>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <UButton color="neutral" variant="outline" @click="showEditTokenModal = false">
+            {{ t('common.cancel') }}
+          </UButton>
+          <UButton color="primary" @click="handleUpdateToken" :loading="tokensLoading">
+            {{ t('common.save') }}
+          </UButton>
+        </div>
+      </template>
     </UModal>
   </div>
 </template>
