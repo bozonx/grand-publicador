@@ -22,9 +22,9 @@ const navItems = computed<NavItem[]>(() => [
     icon: 'i-heroicons-briefcase', 
   },
   {
-    label: t('navigation.users'),
-    to: '/admin/users',
-    icon: 'i-heroicons-users',
+    label: t('navigation.admin'),
+    to: '/admin',
+    icon: 'i-heroicons-cog-8-tooth',
     adminOnly: true,
   },
   {

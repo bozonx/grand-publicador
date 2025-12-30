@@ -291,6 +291,14 @@
     "words": "words"
   },
   "admin": {
+    "panel": {
+      "title": "Admin Panel",
+      "description": "Manage system and users"
+    },
+    "tabs": {
+      "users": "Users",
+      "settings": "System Settings"
+    },
     "userManagement": "User Management",
     "searchUsers": "Search users...",
     "filterByRole": "Filter by role",
