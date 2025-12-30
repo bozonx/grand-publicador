@@ -1,15 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { PostStatus, ProjectRole, Prisma } from '@prisma/client';
-import type { CreatePublicationDto, UpdatePublicationDto } from './dto/index.js';
+import { PostStatus, PostType, Prisma, ProjectRole } from '@prisma/client';
+
 import { PermissionsService } from '../../common/services/permissions.service.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import type { CreatePublicationDto, UpdatePublicationDto } from './dto/index.js';
 
 @Injectable()
 export class PublicationsService {
   constructor(
     private prisma: PrismaService,
     private permissions: PermissionsService,
-  ) { }
+  ) {}
 
   /**
    * Create a new publication.
@@ -20,7 +21,7 @@ export class PublicationsService {
    * @param userId - Optional ID of the user creating the publication.
    * @returns The created publication.
    */
-  async create(data: CreatePublicationDto, userId?: string) {
+  public async create(data: CreatePublicationDto, userId?: string) {
     if (userId) {
       // Check if user has access to the project
       await this.permissions.checkProjectAccess(data.projectId, userId);
@@ -32,10 +33,10 @@ export class PublicationsService {
         authorId: userId ?? null,
         title: data.title,
         content: data.content,
-        mediaFiles: JSON.stringify(data.mediaFiles || []),
+        mediaFiles: JSON.stringify(data.mediaFiles ?? []),
         tags: data.tags,
-        status: data.status || PostStatus.DRAFT,
-        meta: JSON.stringify(data.meta || {}),
+        status: data.status ?? PostStatus.DRAFT,
+        meta: JSON.stringify(data.meta ?? {}),
       },
     });
   }
@@ -49,7 +50,7 @@ export class PublicationsService {
    * @param filters - Optional filters (status, limit, offset).
    * @returns A list of publications with associated data (author, posts).
    */
-  async findAll(
+  public async findAll(
     projectId: string,
     userId: string,
     filters?: {
@@ -102,7 +103,7 @@ export class PublicationsService {
    * @returns The publication details.
    * @throws NotFoundException if the publication does not exist.
    */
-  async findOne(id: string, userId: string) {
+  public async findOne(id: string, userId: string) {
     const publication = await this.prisma.publication.findUnique({
       where: { id },
       include: {
@@ -140,7 +141,7 @@ export class PublicationsService {
    * @param userId - The ID of the user.
    * @param data - The data to update.
    */
-  async update(id: string, userId: string, data: UpdatePublicationDto) {
+  public async update(id: string, userId: string, data: UpdatePublicationDto) {
     const publication = await this.findOne(id, userId);
 
     // Check if user is author or has admin rights
@@ -171,7 +172,7 @@ export class PublicationsService {
    * @param id - The ID of the publication to remove.
    * @param userId - The ID of the user.
    */
-  async remove(id: string, userId: string) {
+  public async remove(id: string, userId: string) {
     const publication = await this.findOne(id, userId);
 
     // Check if user is author or has admin rights
@@ -197,7 +198,7 @@ export class PublicationsService {
    * @param scheduledAt - Optional schedule time for the posts.
    * @returns The created posts.
    */
-  async createPostsFromPublication(
+  public async createPostsFromPublication(
     publicationId: string,
     channelIds: string[],
     userId?: string,
@@ -242,7 +243,7 @@ export class PublicationsService {
             authorId: userId ?? null,
             content: publication.content,
             socialMedia: channel.socialMedia,
-            postType: 'POST',
+            postType: PostType.POST,
             title: publication.title,
             tags: publication.tags,
             mediaFiles: publication.mediaFiles,

@@ -1,9 +1,10 @@
-import { registerAs } from '@nestjs/config';
-import { IsInt, IsString, IsIn, Min, Max, validateSync, IsOptional } from 'class-validator';
 import { plainToClass } from 'class-transformer';
+import { IsIn, IsInt, IsString, Max, Min, validateSync } from 'class-validator';
+import { registerAs } from '@nestjs/config';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as yaml from 'js-yaml';
+
 import { getDataDir } from './database.config.js';
 
 /**
@@ -102,12 +103,15 @@ export default registerAs('app', (): AppConfig => {
   }
 
   // Substitute environment variables
-  const substitutedContent = fileContent.replace(/\${(\w+)(?::-([^}]*))?}/g, (_, varName, defaultValue) => {
-    return process.env[varName] || defaultValue || '';
-  });
+  const substitutedContent = fileContent.replace(
+    /\${(\w+)(?::-([^}]*))?}/g,
+    (_, varName, defaultValue) => {
+      return process.env[varName] ?? defaultValue ?? '';
+    },
+  );
 
   // Parse YAML
-  const fileConfig: Record<string, any> = yaml.load(substitutedContent) as Record<string, any> || {};
+  const fileConfig = (yaml.load(substitutedContent) as Record<string, any>) ?? {};
 
   // Transform environment variables and file config to a typed configuration object
   const config = plainToClass(AppConfig, {
@@ -118,7 +122,7 @@ export default registerAs('app', (): AppConfig => {
     nodeEnv: process.env.NODE_ENV ?? 'production',
     logLevel: process.env.LOG_LEVEL ?? 'warn',
 
-    // Application Config (File has priority, but fallback to env if missing in file is reasonable, 
+    // Application Config (File has priority, but fallback to env if missing in file is reasonable,
     // though here we assume file controls these values via placeholders)
     adminTelegramId: fileConfig.telegramAdminId?.toString() ?? process.env.TELEGRAM_ADMIN_ID,
     telegramBotToken: fileConfig.telegramBotToken ?? process.env.TELEGRAM_BOT_TOKEN,

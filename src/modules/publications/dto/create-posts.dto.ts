@@ -1,13 +1,13 @@
+import { Type } from 'class-transformer';
 import {
-  IsNotEmpty,
-  IsArray,
-  IsOptional,
-  IsDate,
   ArrayMinSize,
   ArrayUnique,
+  IsArray,
+  IsDate,
+  IsNotEmpty,
+  IsOptional,
   IsUUID,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 
 /**
  * DTO for creating posts from a publication.
@@ -19,10 +19,10 @@ export class CreatePostsDto {
   @ArrayUnique()
   @IsUUID('4', { each: true })
   @IsNotEmpty()
-  channelIds!: string[];
+  public channelIds!: string[];
 
   @Type(() => Date)
   @IsDate()
   @IsOptional()
-  scheduledAt?: Date;
+  public scheduledAt?: Date;
 }

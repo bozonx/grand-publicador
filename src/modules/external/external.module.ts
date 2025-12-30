@@ -7,4 +7,4 @@ import { ApiTokensModule } from '../api-tokens/api-tokens.module.js';
   imports: [PublicationsModule, ApiTokensModule],
   controllers: [ExternalController],
 })
-export class ExternalModule { }
+export class ExternalModule {}

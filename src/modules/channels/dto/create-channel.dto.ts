@@ -1,6 +1,6 @@
-import { IsNotEmpty, IsOptional, IsString, IsEnum, IsObject, IsBoolean } from 'class-validator';
-import { SocialMedia } from '@prisma/client';
 import { Transform } from 'class-transformer';
+import { IsBoolean, IsEnum, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
+import { SocialMedia } from '@prisma/client';
 
 /**
  * DTO for creating a new social media channel.
@@ -8,27 +8,26 @@ import { Transform } from 'class-transformer';
 export class CreateChannelDto {
   @IsString()
   @IsNotEmpty()
-  projectId!: string;
+  public projectId!: string;
 
   @IsEnum(SocialMedia)
   @IsNotEmpty()
   @Transform(({ value }) => (typeof value === 'string' ? value.toUpperCase() : value))
-  socialMedia!: SocialMedia;
+  public socialMedia!: SocialMedia;
 
   @IsString()
   @IsNotEmpty()
-  name!: string;
+  public name!: string;
 
   @IsString()
   @IsNotEmpty()
-  channelIdentifier!: string;
+  public channelIdentifier!: string;
 
   @IsObject()
   @IsOptional()
-  credentials?: Record<string, any>;
+  public credentials?: Record<string, any>;
 
   @IsBoolean()
   @IsOptional()
-  isActive?: boolean;
+  public isActive?: boolean;
 }
-

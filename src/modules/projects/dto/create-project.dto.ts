@@ -6,9 +6,9 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class CreateProjectDto {
   @IsString()
   @IsNotEmpty()
-  name!: string;
+  public name!: string;
 
   @IsString()
   @IsOptional()
-  description?: string;
+  public description?: string;
 }

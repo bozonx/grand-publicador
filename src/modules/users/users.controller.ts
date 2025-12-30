@@ -1,21 +1,22 @@
 import {
-    Controller,
-    Get,
-    Patch,
-    Param,
-    Body,
-    UseGuards,
-    Request,
-    Query,
-    DefaultValuePipe,
-    ParseIntPipe,
-    ForbiddenException,
+  Body,
+  Controller,
+  DefaultValuePipe,
+  ForbiddenException,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { UsersService } from './users.service.js';
-import { UpdateUserAdminDto, UpdateUserProfileDto } from './dto/user.dto.js';
-import type { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
+
 import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
+import type { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
+import { UpdateUserAdminDto, UpdateUserProfileDto } from './dto/user.dto.js';
+import { UsersService } from './users.service.js';
 
 /**
  * Controller for managing users.
@@ -24,69 +25,68 @@ import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
 @Controller('users')
 @UseGuards(AuthGuard(JWT_STRATEGY))
 export class UsersController {
-    constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
-    /**
-     * Get all users with pagination and filtering.
-     * Admin only.
-     */
-    @Get()
-    async findAll(
-        @Request() req: AuthenticatedRequest,
-        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-        @Query('perPage', new DefaultValuePipe(20), ParseIntPipe) perPage: number,
-        @Query('is_admin') isAdmin?: string,
-        @Query('search') search?: string,
-    ) {
-        // Check if user is admin
-        const currentUser = await this.usersService.findById(req.user.sub);
-        if (!currentUser?.isAdmin) {
-            throw new ForbiddenException('Admin access required');
-        }
-
-        const isAdminFilter = isAdmin === 'true' ? true : isAdmin === 'false' ? false : undefined;
-
-        return this.usersService.findAll({
-            page,
-            perPage,
-            isAdmin: isAdminFilter,
-            search,
-        });
+  /**
+   * Get all users with pagination and filtering.
+   * Admin only.
+   */
+  @Get()
+  public async findAll(
+    @Request() req: AuthenticatedRequest,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('perPage', new DefaultValuePipe(20), ParseIntPipe) perPage: number,
+    @Query('is_admin') isAdmin?: string,
+    @Query('search') search?: string,
+  ) {
+    // Check if user is admin
+    const currentUser = await this.usersService.findById(req.user.sub);
+    if (!currentUser?.isAdmin) {
+      throw new ForbiddenException('Admin access required');
     }
 
-    /**
-     * Toggle admin status for a user.
-     * Admin only.
-     */
-    @Patch(':id/admin')
-    async toggleAdmin(
-        @Request() req: AuthenticatedRequest,
-        @Param('id') userId: string,
-        @Body() updateDto: UpdateUserAdminDto,
-    ) {
-        // Check if user is admin
-        const currentUser = await this.usersService.findById(req.user.sub);
-        if (!currentUser?.isAdmin) {
-            throw new ForbiddenException('Admin access required');
-        }
+    const isAdminFilter = isAdmin === 'true' ? true : isAdmin === 'false' ? false : undefined;
 
-        // Prevent user from removing their own admin status
-        if (userId === req.user.sub && !updateDto.isAdmin) {
-            throw new ForbiddenException('Cannot remove your own admin status');
-        }
+    return this.usersService.findAll({
+      page,
+      perPage,
+      isAdmin: isAdminFilter,
+      search,
+    });
+  }
 
-
-        return this.usersService.updateAdminStatus(userId, updateDto.isAdmin);
+  /**
+   * Toggle admin status for a user.
+   * Admin only.
+   */
+  @Patch(':id/admin')
+  public async toggleAdmin(
+    @Request() req: AuthenticatedRequest,
+    @Param('id') userId: string,
+    @Body() updateDto: UpdateUserAdminDto,
+  ) {
+    // Check if user is admin
+    const currentUser = await this.usersService.findById(req.user.sub);
+    if (!currentUser?.isAdmin) {
+      throw new ForbiddenException('Admin access required');
     }
 
-    /**
-     * Update current user profile.
-     */
-    @Patch('me')
-    async updateProfile(
-        @Request() req: AuthenticatedRequest,
-        @Body() updateDto: UpdateUserProfileDto,
-    ) {
-        return this.usersService.updateProfile(req.user.sub, updateDto);
+    // Prevent user from removing their own admin status
+    if (userId === req.user.sub && !updateDto.isAdmin) {
+      throw new ForbiddenException('Cannot remove your own admin status');
     }
+
+    return this.usersService.updateAdminStatus(userId, updateDto.isAdmin);
+  }
+
+  /**
+   * Update current user profile.
+   */
+  @Patch('me')
+  public async updateProfile(
+    @Request() req: AuthenticatedRequest,
+    @Body() updateDto: UpdateUserProfileDto,
+  ) {
+    return this.usersService.updateProfile(req.user.sub, updateDto);
+  }
 }

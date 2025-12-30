@@ -6,9 +6,9 @@ import { IsOptional, IsString } from 'class-validator';
 export class UpdateProjectDto {
   @IsString()
   @IsOptional()
-  name?: string;
+  public name?: string;
 
   @IsString()
   @IsOptional()
-  description?: string;
+  public description?: string;
 }

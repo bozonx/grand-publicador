@@ -1,6 +1,8 @@
-import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+
+import { ApiTokenGuard } from '../../common/guards/api-token.guard.js';
+import type { ApiTokenRequest } from '../../common/types/api-token-user.interface.js';
 import { PublicationsService } from '../publications/publications.service.js';
-import { ApiTokenGuard } from '../../common/guards/api-key.guard.js';
 import { CreateExternalPublicationDto, SchedulePublicationDto } from './dto/external.dto.js';
 
 /**
@@ -10,13 +12,16 @@ import { CreateExternalPublicationDto, SchedulePublicationDto } from './dto/exte
 @Controller('external')
 @UseGuards(ApiTokenGuard)
 export class ExternalController {
-  constructor(private publicationsService: PublicationsService) { }
+  constructor(private publicationsService: PublicationsService) {}
 
   /**
    * Create a publication from external source
    */
   @Post('publications')
-  async createPublication(@Request() req: any, @Body() dto: CreateExternalPublicationDto) {
+  public async createPublication(
+    @Request() req: ApiTokenRequest,
+    @Body() dto: CreateExternalPublicationDto,
+  ) {
     const { userId, scopeProjectIds } = req.user;
 
     // Validate project scope
@@ -37,7 +42,10 @@ export class ExternalController {
    * Schedule a publication to be posted to channels
    */
   @Post('publications/schedule')
-  async schedulePublication(@Request() req: any, @Body() dto: SchedulePublicationDto) {
+  public async schedulePublication(
+    @Request() req: ApiTokenRequest,
+    @Body() dto: SchedulePublicationDto,
+  ) {
     const { userId } = req.user;
 
     return this.publicationsService.createPostsFromPublication(

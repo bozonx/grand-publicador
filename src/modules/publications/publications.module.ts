@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
-import { PublicationsService } from './publications.service.js';
-import { PublicationsController } from './publications.controller.js';
+
 import { PrismaModule } from '../prisma/prisma.module.js';
+import { PublicationsController } from './publications.controller.js';
+import { PublicationsService } from './publications.service.js';
 
 @Module({
   imports: [PrismaModule],

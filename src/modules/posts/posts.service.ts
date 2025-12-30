@@ -1,8 +1,9 @@
-import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { ChannelsService } from '../channels/channels.service.js';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { PostStatus, PostType, ProjectRole } from '@prisma/client';
+
 import { PermissionsService } from '../../common/services/permissions.service.js';
-import { PostType, PostStatus, ProjectRole } from '@prisma/client';
+import { ChannelsService } from '../channels/channels.service.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 @Injectable()
 export class PostsService {
@@ -10,7 +11,7 @@ export class PostsService {
     private prisma: PrismaService,
     private channelsService: ChannelsService,
     private permissions: PermissionsService,
-  ) { }
+  ) {}
 
   /**
    * Create a new post in a specific channel.
@@ -21,7 +22,7 @@ export class PostsService {
    * @param data - The post creation data.
    * @returns The created post.
    */
-  async create(
+  public async create(
     userId: string,
     channelId: string,
     data: {
@@ -50,16 +51,16 @@ export class PostsService {
         channelId,
         authorId: userId,
         content: data.content,
-        socialMedia: data.socialMedia || channel.socialMedia,
+        socialMedia: data.socialMedia ?? channel.socialMedia,
         postType: data.postType,
         title: data.title,
         description: data.description,
         authorComment: data.authorComment,
         tags: data.tags,
-        mediaFiles: JSON.stringify(data.mediaFiles || []),
+        mediaFiles: JSON.stringify(data.mediaFiles ?? []),
         postDate: data.postDate,
         scheduledAt: data.scheduledAt,
-        status: data.status || PostStatus.DRAFT,
+        status: data.status ?? PostStatus.DRAFT,
       },
     });
   }
@@ -72,7 +73,7 @@ export class PostsService {
    * @param userId - The ID of the user.
    * @returns A list of posts for all channels in the project.
    */
-  async findAllForProject(projectId: string, userId: string) {
+  public async findAllForProject(projectId: string, userId: string) {
     // Check project permission (owner/admin/editor/viewer)
     const role = await this.permissions.getUserProjectRole(projectId, userId);
     if (!role) {
@@ -115,7 +116,7 @@ export class PostsService {
    * @param userId - The ID of the user.
    * @returns A list of posts, ordered by creation date (descending).
    */
-  async findAllForChannel(channelId: string, userId: string) {
+  public async findAllForChannel(channelId: string, userId: string) {
     await this.channelsService.findOne(channelId, userId); // Validates access
     return this.prisma.post.findMany({
       where: { channelId },
@@ -150,7 +151,7 @@ export class PostsService {
    * @returns The post details.
    * @throws NotFoundException if the post does not exist.
    */
-  async findOne(id: string, userId: string) {
+  public async findOne(id: string, userId: string) {
     const post = await this.prisma.post.findUnique({
       where: { id },
       include: {
@@ -190,7 +191,7 @@ export class PostsService {
    * @param data - The data to update.
    * @throws ForbiddenException if the user lacks permissions.
    */
-  async update(
+  public async update(
     id: string,
     userId: string,
     data: {
@@ -243,7 +244,7 @@ export class PostsService {
    * @param id - The ID of the post to remove.
    * @param userId - The ID of the user.
    */
-  async remove(id: string, userId: string) {
+  public async remove(id: string, userId: string) {
     const post = await this.findOne(id, userId);
 
     // Permission: Only author or admin/owner of the project can delete

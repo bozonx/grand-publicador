@@ -1,20 +1,21 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseGuards,
-  Request,
+  Get,
+  Param,
+  Patch,
+  Post,
   Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+
+import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
+import type { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
 import { ChannelsService } from './channels.service.js';
 import { CreateChannelDto, UpdateChannelDto } from './dto/index.js';
-import type { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
-import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
 
 /**
  * Controller for managing channels within projects.
@@ -25,23 +26,23 @@ export class ChannelsController {
   constructor(private readonly channelsService: ChannelsService) {}
 
   @Post()
-  create(@Request() req: AuthenticatedRequest, @Body() createChannelDto: CreateChannelDto) {
+  public create(@Request() req: AuthenticatedRequest, @Body() createChannelDto: CreateChannelDto) {
     const { projectId, ...data } = createChannelDto;
     return this.channelsService.create(req.user.sub, projectId, data);
   }
 
   @Get()
-  findAll(@Request() req: AuthenticatedRequest, @Query('projectId') projectId: string) {
+  public findAll(@Request() req: AuthenticatedRequest, @Query('projectId') projectId: string) {
     return this.channelsService.findAllForProject(projectId, req.user.sub);
   }
 
   @Get(':id')
-  findOne(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
+  public findOne(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.channelsService.findOne(id, req.user.sub);
   }
 
   @Patch(':id')
-  update(
+  public update(
     @Request() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() updateChannelDto: UpdateChannelDto,
@@ -50,7 +51,7 @@ export class ChannelsController {
   }
 
   @Delete(':id')
-  remove(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
+  public remove(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.channelsService.remove(id, req.user.sub);
   }
 }

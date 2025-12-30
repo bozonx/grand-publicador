@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { ConfigService } from '@nestjs/config';
-import { JwtPayload } from '../../common/types/jwt-payload.interface.js';
+
+import type { JwtPayload } from '../../common/types/jwt-payload.interface.js';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -10,11 +11,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * Initialize the strategy.
    * Configures the JWT extraction from the Bearer token and sets the secret key.
    */
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
+    const secret = configService.get<string>('app.jwtSecret');
+    if (!secret) {
+      throw new Error('JWT secret is not configured');
+    }
+
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('app.jwtSecret')!,
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: secret,
     });
   }
 
@@ -26,13 +32,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * @param payload - The decoded JWT payload.
    * @returns A partial user object (JwtPayload) attached to the request.
    */
-  async validate(payload: any): Promise<JwtPayload> {
+  public validate(payload: any): JwtPayload {
     return {
+      exp: payload.exp,
+      iat: payload.iat,
       sub: payload.sub,
       telegramId: payload.telegramId,
       telegramUsername: payload.telegramUsername,
-      iat: payload.iat,
-      exp: payload.exp,
     };
   }
 }

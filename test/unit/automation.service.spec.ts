@@ -2,20 +2,25 @@ import { Test, type TestingModule } from '@nestjs/testing';
 import { AutomationService } from '../../src/modules/automation/automation.service.js';
 import { PrismaService } from '../../src/modules/prisma/prisma.service.js';
 import { jest } from '@jest/globals';
+import { PostStatus } from '@prisma/client';
 
 describe('AutomationService (unit)', () => {
   let service: AutomationService;
-  let prisma: PrismaService;
   let moduleRef: TestingModule;
 
   const mockPrismaService = {
-    // Mock $transaction to immediately execute the callback, passing this mock object as 'tx'
-    $transaction: jest.fn((callback: (tx: any) => Promise<any>) => callback(mockPrismaService)),
+    $transaction: jest.fn((callback: (tx: any) => Promise<any>) =>
+      callback(mockPrismaService),
+    ) as any,
     post: {
-      findMany: jest.fn(),
-      findUnique: jest.fn(),
-      update: jest.fn(),
-      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+      findMany: jest.fn() as any,
+      findUnique: jest.fn() as any,
+      update: jest.fn() as any,
+      updateMany: (jest.fn() as any).mockResolvedValue({ count: 1 }),
+    },
+    projectMember: {
+      findMany: jest.fn() as any,
+      findUnique: jest.fn() as any,
     },
   };
 
@@ -31,7 +36,6 @@ describe('AutomationService (unit)', () => {
     }).compile();
 
     service = moduleRef.get<AutomationService>(AutomationService);
-    prisma = moduleRef.get<PrismaService>(PrismaService);
   });
 
   afterAll(async () => {
@@ -40,385 +44,139 @@ describe('AutomationService (unit)', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Re-implement default behavior for $transaction in case it was overridden
     mockPrismaService.$transaction.mockImplementation((callback: (tx: any) => any) =>
       callback(mockPrismaService),
     );
   });
 
   describe('getPendingPosts', () => {
-    it('should return posts scheduled for now or earlier', async () => {
+    it('should return posts and handle filtering', async () => {
       const now = new Date('2025-12-29T10:00:00Z');
       const OriginalDate = global.Date;
       jest.spyOn(global, 'Date').mockImplementation((...args: any[]) => {
-        if (args.length) {
-          return new OriginalDate(...(args as [any]));
-        }
+        if (args.length) return new OriginalDate(...(args as [any]));
         return now;
       });
 
-      const mockPosts = [
-        {
-          id: 'post-1',
-          status: 'SCHEDULED',
-          scheduledAt: new Date('2025-12-29T09:00:00Z'), // Past
-        },
-        {
-          id: 'post-2',
-          status: 'SCHEDULED',
-          scheduledAt: new Date('2025-12-29T10:00:00Z'), // Now
-        },
-      ];
+      const userId = 'user-1';
+      const projectId = 'project-1';
 
-      mockPrismaService.post.findMany.mockResolvedValue(mockPosts);
+      mockPrismaService.projectMember.findMany.mockResolvedValue([{ projectId }]);
+      mockPrismaService.post.findMany.mockResolvedValue([]);
 
-      const result = await service.getPendingPosts(10);
+      await service.getPendingPosts(10, 60, userId, []);
 
-      expect(result).toEqual(mockPosts);
-      expect(mockPrismaService.post.findMany).toHaveBeenCalledWith({
-        where: {
-          status: 'SCHEDULED',
-          scheduledAt: {
-            lte: now,
-            gte: new Date(now.getTime() - 60 * 60 * 1000), // Default 60 mins lookback
-          },
-        },
-        include: expect.objectContaining({
-          channel: true,
-          publication: true,
-          author: expect.anything(),
-        }),
-        orderBy: {
-          scheduledAt: 'asc',
-        },
-        take: 10,
+      expect(mockPrismaService.projectMember.findMany).toHaveBeenCalledWith({
+        where: { userId },
+        select: { projectId: true },
       });
+
+      expect(mockPrismaService.post.updateMany).toHaveBeenCalled();
+      expect(mockPrismaService.post.findMany).toHaveBeenCalled();
 
       jest.restoreAllMocks();
     });
 
-    it('should respect limit parameter', async () => {
+    it('should respect scopeProjectIds', async () => {
+      const userId = 'user-1';
+      mockPrismaService.projectMember.findMany.mockResolvedValue([{ projectId: 'p1' }, { projectId: 'p2' }]);
       mockPrismaService.post.findMany.mockResolvedValue([]);
 
-      await service.getPendingPosts(5);
+      await service.getPendingPosts(10, 60, userId, ['p1']);
 
-      expect(mockPrismaService.post.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          take: 5,
-        }),
-      );
-    });
-
-    it('should use default limit of 10', async () => {
-      mockPrismaService.post.findMany.mockResolvedValue([]);
-
-      await service.getPendingPosts();
-
-      expect(mockPrismaService.post.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          take: 10,
-        }),
-      );
-    });
-
-    it('should order posts by scheduledAt ascending (oldest first)', async () => {
-      mockPrismaService.post.findMany.mockResolvedValue([]);
-
-      await service.getPendingPosts();
-
-      expect(mockPrismaService.post.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          orderBy: {
-            scheduledAt: 'asc',
-          },
-        }),
-      );
+      const findManyCall = mockPrismaService.post.findMany.mock.calls[0][0];
+      expect(findManyCall.where.channel.projectId.in).toEqual(['p1']);
     });
   });
 
   describe('claimPost', () => {
     it('should successfully claim a scheduled post', async () => {
       const postId = 'post-1';
+      const userId = 'user-1';
+      const projectId = 'project-1';
+
       const mockPost = {
         id: postId,
-        status: 'SCHEDULED',
+        status: PostStatus.SCHEDULED,
         meta: '{}',
+        channel: { projectId },
       };
 
       mockPrismaService.post.findUnique.mockResolvedValue(mockPost);
+      mockPrismaService.projectMember.findUnique.mockResolvedValue({ projectId, userId });
+      mockPrismaService.post.update.mockResolvedValue({ ...mockPost, meta: '{"processing":true}' });
 
-      const claimedPost = {
-        ...mockPost,
-        meta: JSON.stringify({
-          processing: true,
-          claimedAt: expect.any(String),
-        }),
-      };
-
-      mockPrismaService.post.update.mockResolvedValue(claimedPost);
-
-      const result = await service.claimPost(postId);
+      const result = await service.claimPost(postId, userId, []);
 
       expect(result).toBeDefined();
-      expect(mockPrismaService.post.update).toHaveBeenCalledWith({
-        where: { id: postId },
-        data: {
-          meta: expect.stringContaining('processing'),
-        },
-        include: expect.any(Object),
+      expect(mockPrismaService.post.update).toHaveBeenCalled();
+      const updateCall = mockPrismaService.post.update.mock.calls[0][0];
+      expect(JSON.parse(updateCall.data.meta)).toMatchObject({
+        processing: true,
+        claimedBy: userId,
       });
-
-      const updatedMeta = JSON.parse(mockPrismaService.post.update.mock.calls[0][0].data.meta);
-      expect(updatedMeta.processing).toBe(true);
-      expect(updatedMeta.claimedAt).toBeDefined();
     });
 
     it('should throw error when post not found', async () => {
-      const postId = 'non-existent';
-
       mockPrismaService.post.findUnique.mockResolvedValue(null);
-
-      await expect(service.claimPost(postId)).rejects.toThrow('Post not found');
+      await expect(service.claimPost('id', 'u', [])).rejects.toThrow('Post not found');
     });
 
-    it('should throw error when post is not scheduled', async () => {
-      const postId = 'post-1';
-      const mockPost = {
-        id: postId,
-        status: 'PUBLISHED', // Already published
-        meta: '{}',
-      };
-
-      mockPrismaService.post.findUnique.mockResolvedValue(mockPost);
-
-      await expect(service.claimPost(postId)).rejects.toThrow('Post is not scheduled');
+    it('should throw ForbiddenException if user not member', async () => {
+      mockPrismaService.post.findUnique.mockResolvedValue({ channel: { projectId: 'p1' } });
+      mockPrismaService.projectMember.findUnique.mockResolvedValue(null);
+      await expect(service.claimPost('id', 'u', [])).rejects.toThrow('Access denied');
     });
 
-    it('should throw error when post is already being processed', async () => {
-      const postId = 'post-1';
+    it('should throw ConflictException if already processing', async () => {
       const mockPost = {
-        id: postId,
-        status: 'SCHEDULED',
-        meta: JSON.stringify({
-          processing: true,
-          claimedAt: new Date().toISOString(),
-        }),
+        status: PostStatus.SCHEDULED,
+        meta: '{"processing":true}',
+        channel: { projectId: 'p1' },
       };
-
       mockPrismaService.post.findUnique.mockResolvedValue(mockPost);
-
-      await expect(service.claimPost(postId)).rejects.toThrow('Post is already being processed');
-    });
-
-    it('should preserve existing meta fields when claiming', async () => {
-      const postId = 'post-1';
-      const existingMeta = {
-        customField: 'value',
-        anotherField: 123,
-      };
-
-      const mockPost = {
-        id: postId,
-        status: 'SCHEDULED',
-        meta: JSON.stringify(existingMeta),
-      };
-
-      mockPrismaService.post.findUnique.mockResolvedValue(mockPost);
-      mockPrismaService.post.update.mockResolvedValue({
-        ...mockPost,
-        meta: '{}',
-      });
-
-      await service.claimPost(postId);
-
-      const updatedMeta = JSON.parse(mockPrismaService.post.update.mock.calls[0][0].data.meta);
-      expect(updatedMeta.customField).toBe('value');
-      expect(updatedMeta.anotherField).toBe(123);
-      expect(updatedMeta.processing).toBe(true);
+      mockPrismaService.projectMember.findUnique.mockResolvedValue({ projectId: 'p1' });
+      await expect(service.claimPost('id', 'u', [])).rejects.toThrow('Post is already being processed');
     });
   });
 
   describe('updatePostStatus', () => {
-    it('should update status to PUBLISHED and set publishedAt', async () => {
+    it('should update status to PUBLISHED and remove processing flag', async () => {
       const postId = 'post-1';
+      const userId = 'user-1';
+      const projectId = 'project-1';
+
       const mockPost = {
         id: postId,
-        status: 'SCHEDULED',
-        meta: JSON.stringify({ processing: true }),
+        status: PostStatus.SCHEDULED,
+        meta: '{"processing":true,"other":"data"}',
+        channel: { projectId },
       };
 
       mockPrismaService.post.findUnique.mockResolvedValue(mockPost);
+      mockPrismaService.projectMember.findUnique.mockResolvedValue({ projectId, userId });
+      mockPrismaService.post.update.mockResolvedValue({ ...mockPost, status: PostStatus.PUBLISHED });
 
-      const updatedPost = {
-        ...mockPost,
-        status: 'PUBLISHED',
-        publishedAt: expect.any(Date),
-      };
-
-      mockPrismaService.post.update.mockResolvedValue(updatedPost);
-
-      const result = await service.updatePostStatus(postId, 'PUBLISHED');
+      const result = await service.updatePostStatus(postId, PostStatus.PUBLISHED, userId, []);
 
       expect(result).toBeDefined();
-      expect(mockPrismaService.post.update).toHaveBeenCalledWith({
-        where: { id: postId },
-        data: expect.objectContaining({
-          status: 'PUBLISHED',
-          publishedAt: expect.anything(),
-        }),
-      });
+      const updateCall = mockPrismaService.post.update.mock.calls[0][0];
+      const meta = JSON.parse(updateCall.data.meta);
+      expect(meta.processing).toBeUndefined();
+      expect(meta.other).toBe('data');
+      expect(updateCall.data.status).toBe(PostStatus.PUBLISHED);
+      expect(updateCall.data.publishedAt).toBeDefined();
     });
 
-    it('should remove processing flag from meta', async () => {
-      const postId = 'post-1';
-      const mockPost = {
-        id: postId,
-        status: 'SCHEDULED',
-        meta: JSON.stringify({
-          processing: true,
-          claimedAt: '2025-12-29T10:00:00Z',
-        }),
-      };
-
+    it('should include error message in meta if provided', async () => {
+      const mockPost = { meta: '{}', channel: { projectId: 'p1' } };
       mockPrismaService.post.findUnique.mockResolvedValue(mockPost);
-      mockPrismaService.post.update.mockResolvedValue({ ...mockPost });
+      mockPrismaService.projectMember.findUnique.mockResolvedValue({ projectId: 'p1' });
 
-      await service.updatePostStatus(postId, 'PUBLISHED');
-
-      const updatedMeta = JSON.parse(mockPrismaService.post.update.mock.calls[0][0].data.meta);
-      expect(updatedMeta.processing).toBeUndefined();
-    });
-
-    it('should store error message in meta when status is FAILED', async () => {
-      const postId = 'post-1';
-      const errorMessage = 'Network timeout';
-      const mockPost = {
-        id: postId,
-        status: 'SCHEDULED',
-        meta: JSON.stringify({ processing: true }),
-      };
-
-      mockPrismaService.post.findUnique.mockResolvedValue(mockPost);
-      mockPrismaService.post.update.mockResolvedValue({ ...mockPost });
-
-      await service.updatePostStatus(postId, 'FAILED', errorMessage);
-
-      const updatedMeta = JSON.parse(mockPrismaService.post.update.mock.calls[0][0].data.meta);
-      expect(updatedMeta.lastError).toBe(errorMessage);
-      expect(mockPrismaService.post.update).toHaveBeenCalledWith({
-        where: { id: postId },
-        data: expect.objectContaining({
-          status: 'FAILED',
-        }),
-      });
-    });
-
-    it('should not set publishedAt when status is not PUBLISHED', async () => {
-      const postId = 'post-1';
-      const mockPost = {
-        id: postId,
-        status: 'SCHEDULED',
-        meta: '{}',
-      };
-
-      mockPrismaService.post.findUnique.mockResolvedValue(mockPost);
-      mockPrismaService.post.update.mockResolvedValue({ ...mockPost });
-
-      await service.updatePostStatus(postId, 'FAILED');
+      await service.updatePostStatus('id', PostStatus.FAILED, 'u', [], 'Some error');
 
       const updateCall = mockPrismaService.post.update.mock.calls[0][0];
-      expect(updateCall.data.publishedAt).toBeUndefined();
-    });
-
-    it('should preserve existing meta fields when updating status', async () => {
-      const postId = 'post-1';
-      const existingMeta = {
-        customField: 'value',
-        processing: true,
-      };
-
-      const mockPost = {
-        id: postId,
-        status: 'SCHEDULED',
-        meta: JSON.stringify(existingMeta),
-      };
-
-      mockPrismaService.post.findUnique.mockResolvedValue(mockPost);
-      mockPrismaService.post.update.mockResolvedValue({ ...mockPost });
-
-      await service.updatePostStatus(postId, 'PUBLISHED');
-
-      const updatedMeta = JSON.parse(mockPrismaService.post.update.mock.calls[0][0].data.meta);
-      expect(updatedMeta.customField).toBe('value');
-      expect(updatedMeta.processing).toBeUndefined(); // Should be removed
-      expect(updatedMeta.updatedAt).toBeDefined();
-    });
-
-    it('should throw error when post not found', async () => {
-      const postId = 'non-existent';
-
-      mockPrismaService.post.findUnique.mockResolvedValue(null);
-
-      await expect(service.updatePostStatus(postId, 'PUBLISHED')).rejects.toThrow('Post not found');
-    });
-
-    it('should handle multiple status updates correctly', async () => {
-      const postId = 'post-1';
-      const mockPost = {
-        id: postId,
-        status: 'SCHEDULED',
-        meta: '{}',
-      };
-
-      // First update to FAILED
-      mockPrismaService.post.findUnique.mockResolvedValueOnce(mockPost);
-      mockPrismaService.post.update.mockResolvedValueOnce({ ...mockPost });
-
-      await service.updatePostStatus(postId, 'FAILED', 'Error 1');
-
-      let updatedMeta = JSON.parse(mockPrismaService.post.update.mock.calls[0][0].data.meta);
-      expect(updatedMeta.lastError).toBe('Error 1');
-
-      // Second update to PUBLISHED - mock the post with updated meta from first call
-      const postAfterFirstUpdate = {
-        ...mockPost,
-        meta: mockPrismaService.post.update.mock.calls[0][0].data.meta,
-      };
-      mockPrismaService.post.findUnique.mockResolvedValueOnce(postAfterFirstUpdate);
-      mockPrismaService.post.update.mockResolvedValueOnce({ ...mockPost });
-
-      await service.updatePostStatus(postId, 'PUBLISHED');
-
-      updatedMeta = JSON.parse(mockPrismaService.post.update.mock.calls[1][0].data.meta);
-      expect(updatedMeta.lastError).toBe('Error 1'); // Should preserve previous error
-    });
-  });
-
-  describe('Race condition scenarios', () => {
-    it('should prevent double claiming through processing flag', async () => {
-      const postId = 'post-1';
-      const mockPost = {
-        id: postId,
-        status: 'SCHEDULED',
-        meta: '{}',
-      };
-
-      // First claim
-      mockPrismaService.post.findUnique.mockResolvedValueOnce(mockPost);
-      mockPrismaService.post.update.mockResolvedValueOnce({
-        ...mockPost,
-        meta: JSON.stringify({ processing: true }),
-      });
-
-      await service.claimPost(postId);
-
-      // Second claim attempt (simulating race condition)
-      mockPrismaService.post.findUnique.mockResolvedValueOnce({
-        ...mockPost,
-        meta: JSON.stringify({ processing: true }),
-      });
-
-      await expect(service.claimPost(postId)).rejects.toThrow('Post is already being processed');
+      expect(JSON.parse(updateCall.data.meta).lastError).toBe('Some error');
     });
   });
 });

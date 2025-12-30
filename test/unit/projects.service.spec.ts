@@ -1,5 +1,5 @@
 import { Test, type TestingModule } from '@nestjs/testing';
-import { ForbiddenException, NotFoundException, Logger } from '@nestjs/common';
+import { ForbiddenException, Logger } from '@nestjs/common';
 import { ProjectsService } from '../../src/modules/projects/projects.service.js';
 import { PrismaService } from '../../src/modules/prisma/prisma.service.js';
 import { PermissionsService } from '../../src/common/services/permissions.service.js';
@@ -7,29 +7,27 @@ import { jest } from '@jest/globals';
 
 describe('ProjectsService (unit)', () => {
   let service: ProjectsService;
-  let prisma: PrismaService;
-  let permissions: PermissionsService;
   let moduleRef: TestingModule;
 
   const mockPrismaService = {
-    $transaction: jest.fn(),
+    $transaction: jest.fn() as any,
     project: {
-      create: jest.fn(),
-      findMany: jest.fn(),
-      findUnique: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
+      create: jest.fn() as any,
+      findMany: jest.fn() as any,
+      findUnique: jest.fn() as any,
+      update: jest.fn() as any,
+      delete: jest.fn() as any,
     },
     projectMember: {
-      create: jest.fn(),
-      findUnique: jest.fn(),
+      create: jest.fn() as any,
+      findUnique: jest.fn() as any,
     },
   };
 
   const mockPermissionsService = {
-    checkProjectAccess: jest.fn(),
-    checkProjectPermission: jest.fn(),
-    getUserProjectRole: jest.fn(),
+    checkProjectAccess: jest.fn() as any,
+    checkProjectPermission: jest.fn() as any,
+    getUserProjectRole: jest.fn() as any,
   };
 
   beforeAll(async () => {
@@ -48,8 +46,6 @@ describe('ProjectsService (unit)', () => {
     }).compile();
 
     service = moduleRef.get<ProjectsService>(ProjectsService);
-    prisma = moduleRef.get<PrismaService>(PrismaService);
-    permissions = moduleRef.get<PermissionsService>(PermissionsService);
 
     // Silence logger for tests
     jest.spyOn(Logger.prototype, 'log').mockImplementation(() => { });
@@ -83,10 +79,10 @@ describe('ProjectsService (unit)', () => {
       mockPrismaService.$transaction.mockImplementation(async (callback: any) => {
         const tx = {
           project: {
-            create: jest.fn().mockResolvedValue(mockProject),
+            create: (jest.fn() as any).mockResolvedValue(mockProject),
           },
           projectMember: {
-            create: jest.fn().mockResolvedValue({
+            create: (jest.fn() as any).mockResolvedValue({
               id: 'member-1',
               projectId: mockProject.id,
               userId,

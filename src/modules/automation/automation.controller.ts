@@ -1,17 +1,19 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Param,
   Body,
-  Query,
-  UseGuards,
-  ParseIntPipe,
+  Controller,
   DefaultValuePipe,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
   Request,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTokenGuard } from '../../common/guards/api-key.guard.js';
+
+import { ApiTokenGuard } from '../../common/guards/api-token.guard.js';
+import type { ApiTokenRequest } from '../../common/types/api-token-user.interface.js';
 import { AutomationService } from './automation.service.js';
 import { UpdatePostStatusDto } from './dto/automation.dto.js';
 
@@ -23,7 +25,7 @@ import { UpdatePostStatusDto } from './dto/automation.dto.js';
 @Controller('automation/v1')
 @UseGuards(ApiTokenGuard)
 export class AutomationController {
-  constructor(private readonly automationService: AutomationService) { }
+  constructor(private readonly automationService: AutomationService) {}
 
   /**
    * Get posts that are ready to be published
@@ -31,8 +33,8 @@ export class AutomationController {
    * Only returns posts from projects within the token's scope
    */
   @Get('posts/pending')
-  async getPendingPosts(
-    @Request() req: any,
+  public async getPendingPosts(
+    @Request() req: ApiTokenRequest,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
     @Query('lookback', new DefaultValuePipe(60), ParseIntPipe) lookback: number,
   ) {
@@ -45,7 +47,7 @@ export class AutomationController {
    * POST /api/automation/v1/posts/:id/claim
    */
   @Post('posts/:id/claim')
-  async claimPost(@Request() req: any, @Param('id') id: string) {
+  public async claimPost(@Request() req: ApiTokenRequest, @Param('id') id: string) {
     const { userId, scopeProjectIds } = req.user;
     return this.automationService.claimPost(id, userId, scopeProjectIds);
   }
@@ -55,12 +57,18 @@ export class AutomationController {
    * PATCH /api/automation/v1/posts/:id/status
    */
   @Patch('posts/:id/status')
-  async updatePostStatus(
-    @Request() req: any,
+  public async updatePostStatus(
+    @Request() req: ApiTokenRequest,
     @Param('id') id: string,
     @Body() dto: UpdatePostStatusDto,
   ) {
     const { userId, scopeProjectIds } = req.user;
-    return this.automationService.updatePostStatus(id, dto.status, userId, scopeProjectIds, dto.error);
+    return this.automationService.updatePostStatus(
+      id,
+      dto.status,
+      userId,
+      scopeProjectIds,
+      dto.error,
+    );
   }
 }

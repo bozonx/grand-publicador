@@ -1,6 +1,7 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
-import { PrismaService } from '../../modules/prisma/prisma.service.js';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ProjectRole } from '@prisma/client';
+
+import { PrismaService } from '../../modules/prisma/prisma.service.js';
 
 /**
  * Centralized service for checking project access permissions
@@ -18,7 +19,7 @@ export class PermissionsService {
    * @param userId - The ID of the user attempting to access the project.
    * @throws ForbiddenException if the project doesn't exist or the user has no access.
    */
-  async checkProjectAccess(projectId: string, userId: string): Promise<void> {
+  public async checkProjectAccess(projectId: string, userId: string): Promise<void> {
     const project = await this.prisma.project.findUnique({
       where: { id: projectId },
       include: {
@@ -54,7 +55,7 @@ export class PermissionsService {
    * @param allowedRoles - An array of roles that are permitted to perform the action.
    * @throws ForbiddenException if project not found or permission denied.
    */
-  async checkProjectPermission(
+  public async checkProjectPermission(
     projectId: string,
     userId: string,
     allowedRoles: ProjectRole[],
@@ -93,7 +94,7 @@ export class PermissionsService {
    * @param userId - The ID of the user.
    * @returns 'OWNER' if the user is the owner, the MemberRole if they are a member, or null if unrelated.
    */
-  async getUserProjectRole(projectId: string, userId: string): Promise<ProjectRole | null> {
+  public async getUserProjectRole(projectId: string, userId: string): Promise<ProjectRole | null> {
     const project = await this.prisma.project.findUnique({
       where: { id: projectId },
       select: { ownerId: true },

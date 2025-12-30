@@ -1,14 +1,13 @@
 import {
-  type ArgumentsHost,
   Catch,
-  type ExceptionFilter,
   HttpException,
   HttpStatus,
   Inject,
+  type ArgumentsHost,
+  type ExceptionFilter,
 } from '@nestjs/common';
-import { PinoLogger } from 'nestjs-pino';
-
 import type { FastifyReply, FastifyRequest } from 'fastify';
+import { PinoLogger } from 'nestjs-pino';
 
 /**
  * Global exception filter that catches all exceptions
@@ -16,9 +15,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
  */
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  constructor(
-    @Inject(PinoLogger) private readonly logger: PinoLogger,
-  ) {
+  constructor(@Inject(PinoLogger) private readonly logger: PinoLogger) {
     logger.setContext(AllExceptionsFilter.name);
   }
 
@@ -37,8 +34,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const message = this.extractMessage(exception);
     const errorResponse = this.buildErrorResponse(exception);
-
-
 
     // Log error for internal tracking
     if (status >= 500) {

@@ -1,8 +1,9 @@
-import { Injectable, ForbiddenException, NotFoundException, Logger } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { ProjectRole, type Project } from '@prisma/client';
+
 import { PermissionsService } from '../../common/services/permissions.service.js';
-import { Project, ProjectRole, Prisma } from '@prisma/client';
-import { CreateProjectDto, UpdateProjectDto } from './dto/index.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import type { CreateProjectDto, UpdateProjectDto } from './dto/index.js';
 
 @Injectable()
 export class ProjectsService {
@@ -11,7 +12,7 @@ export class ProjectsService {
   constructor(
     private prisma: PrismaService,
     private permissions: PermissionsService,
-  ) { }
+  ) {}
 
   /**
    * Creates a new project and assigns the creator as the owner.
@@ -21,7 +22,7 @@ export class ProjectsService {
    * @param data - The project creation data.
    * @returns The created project.
    */
-  async create(userId: string, data: CreateProjectDto): Promise<Project> {
+  public async create(userId: string, data: CreateProjectDto): Promise<Project> {
     this.logger.log(`Creating project "${data.name}" for user ${userId}`);
 
     return this.prisma.$transaction(async tx => {
@@ -55,7 +56,7 @@ export class ProjectsService {
    * @param options - Pagination options (limit, offset).
    * @returns A list of projects including member count and channel count.
    */
-  async findAllForUser(userId: string, options?: { limit?: number; offset?: number }) {
+  public async findAllForUser(userId: string, options?: { limit?: number; offset?: number }) {
     const take = options?.limit ?? 50;
     const skip = options?.offset ?? 0;
 
@@ -99,7 +100,7 @@ export class ProjectsService {
    * @throws ForbiddenException if the user is not a member.
    * @throws NotFoundException if the project does not exist.
    */
-  async findOne(projectId: string, userId: string): Promise<any> {
+  public async findOne(projectId: string, userId: string): Promise<any> {
     const role = await this.permissions.getUserProjectRole(projectId, userId);
 
     if (!role) {
@@ -138,7 +139,7 @@ export class ProjectsService {
    * @param userId - The ID of the user.
    * @param data - The data to update.
    */
-  async update(projectId: string, userId: string, data: UpdateProjectDto) {
+  public async update(projectId: string, userId: string, data: UpdateProjectDto) {
     await this.permissions.checkProjectPermission(projectId, userId, [
       ProjectRole.OWNER,
       ProjectRole.ADMIN,
@@ -157,7 +158,7 @@ export class ProjectsService {
    * @param projectId - The ID of the project.
    * @param userId - The ID of the user.
    */
-  async remove(projectId: string, userId: string) {
+  public async remove(projectId: string, userId: string) {
     await this.permissions.checkProjectPermission(projectId, userId, [ProjectRole.OWNER]);
 
     return this.prisma.project.delete({

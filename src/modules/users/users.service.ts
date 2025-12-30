@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { User } from '@prisma/client';
+import { Prisma, type User } from '@prisma/client';
+
 import { AppConfig } from '../../config/app.config.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 /**
  * Service for managing user data.
@@ -12,15 +13,15 @@ export class UsersService {
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
-  ) { }
+  ) {}
 
-  async findByTelegramId(telegramId: bigint): Promise<User | null> {
+  public async findByTelegramId(telegramId: bigint): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { telegramId },
     });
   }
 
-  async findById(id: string): Promise<User | null> {
+  public async findById(id: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { id },
     });
@@ -33,14 +34,15 @@ export class UsersService {
    * @param userData - The user data from Telegram.
    * @returns The existing or newly created User.
    */
-  async findOrCreateTelegramUser(userData: {
+  public async findOrCreateTelegramUser(userData: {
     telegramId: bigint;
     username?: string;
     firstName?: string;
     lastName?: string;
     avatarUrl?: string;
   }): Promise<User> {
-    let fullName = [userData.firstName, userData.lastName].filter(Boolean).join(' ') || null;
+    const constructedName = [userData.firstName, userData.lastName].filter(Boolean).join(' ');
+    let fullName: string | null = constructedName !== '' ? constructedName : null;
 
     // Fallback to username if no full name can be constructed
     if (!fullName && userData.username) {
@@ -77,7 +79,7 @@ export class UsersService {
    * Find all users with pagination and filtering.
    * Returns users with their statistics (projects count, posts count).
    */
-  async findAll(options: {
+  public async findAll(options: {
     page: number;
     perPage: number;
     isAdmin?: boolean;
@@ -87,7 +89,7 @@ export class UsersService {
     const skip = (page - 1) * perPage;
 
     // Build where clause
-    const where: any = {};
+    const where: Prisma.UserWhereInput = {};
 
     if (isAdmin !== undefined) {
       where.isAdmin = isAdmin;
@@ -95,9 +97,10 @@ export class UsersService {
 
     if (search) {
       where.OR = [
+        // @ts-expect-error: Prisma types mismatch for SQLite insensitive mode on nullable fields
         { fullName: { contains: search, mode: 'insensitive' } },
+        // @ts-expect-error: Prisma types mismatch for SQLite insensitive mode on nullable fields
         { telegramUsername: { contains: search, mode: 'insensitive' } },
-
       ];
     }
 
@@ -120,23 +123,22 @@ export class UsersService {
       },
     });
 
-    // Transform users to include statistics
-    const usersWithStats = users.map(user => ({
+    // Transform users to match UserDto and include statistics
+    const data = users.map(user => ({
       id: user.id,
+      fullName: user.fullName,
+      telegramUsername: user.telegramUsername,
+      avatarUrl: user.avatarUrl,
       telegramId: user.telegramId?.toString(),
-
-      telegram_username: user.telegramUsername,
-      full_name: user.fullName,
-      avatar_url: user.avatarUrl,
-      is_admin: user.isAdmin,
-      created_at: user.createdAt,
-      updated_at: user.updatedAt,
+      isAdmin: user.isAdmin,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
       projectsCount: user._count.ownedProjects,
       postsCount: user._count.posts,
     }));
 
     return {
-      data: usersWithStats,
+      data,
       meta: {
         total,
         page,
@@ -148,7 +150,7 @@ export class UsersService {
   /**
    * Update admin status for a user.
    */
-  async updateAdminStatus(userId: string, isAdmin: boolean): Promise<User> {
+  public async updateAdminStatus(userId: string, isAdmin: boolean): Promise<User> {
     return this.prisma.user.update({
       where: { id: userId },
       data: { isAdmin },
@@ -158,7 +160,10 @@ export class UsersService {
   /**
    * Update user profile data.
    */
-  async updateProfile(userId: string, data: { fullName?: string; avatarUrl?: string }): Promise<User> {
+  public async updateProfile(
+    userId: string,
+    data: { fullName?: string; avatarUrl?: string },
+  ): Promise<User> {
     return this.prisma.user.update({
       where: { id: userId },
       data: {

@@ -3,18 +3,16 @@ import { IsBoolean, IsString, IsOptional } from 'class-validator';
 
 export class UserDto {
   @Expose()
-  id!: string;
-
-
+  public id!: string;
 
   @Expose()
-  fullName?: string | null;
+  public fullName?: string | null;
 
   @Expose()
-  telegramUsername?: string | null;
+  public telegramUsername?: string | null;
 
   @Expose()
-  avatarUrl?: string | null;
+  public avatarUrl?: string | null;
 
   /**
    * The Telegram ID of the user.
@@ -22,34 +20,32 @@ export class UserDto {
    */
   @Expose()
   @Transform(({ value }) => value?.toString(), { toPlainOnly: true })
-  telegramId?: string | null;
+  public telegramId?: string | null;
 
   @Expose()
-  isAdmin!: boolean;
+  public isAdmin!: boolean;
 
   @Expose()
-  createdAt!: Date;
+  public createdAt!: Date;
 
   @Expose()
-  updatedAt!: Date;
+  public updatedAt!: Date;
 
   @Exclude()
-  preferences!: string; // Internal use
+  public preferences!: string; // Internal use
 }
-
 
 export class UpdateUserAdminDto {
   @IsBoolean()
-  isAdmin!: boolean;
+  public isAdmin!: boolean;
 }
 
 export class UpdateUserProfileDto {
   @IsString()
   @IsOptional()
-  fullName?: string;
+  public fullName?: string;
 
   @IsString()
   @IsOptional()
-  avatarUrl?: string;
+  public avatarUrl?: string;
 }
-

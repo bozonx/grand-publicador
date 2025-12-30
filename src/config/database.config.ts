@@ -18,24 +18,24 @@ export const DB_FILENAME = 'grand-publicador.db';
  * @throws Error if DATA_DIR is not set
  */
 export function getDatabaseUrl(): string {
-    const dataDir = process.env.DATA_DIR;
+  const dataDir = process.env.DATA_DIR;
 
-    if (!dataDir) {
-        throw new Error(
-            'DATA_DIR environment variable is not set. Please set it to the directory where the database should be stored.',
-        );
-    }
+  if (!dataDir) {
+    throw new Error(
+      'DATA_DIR environment variable is not set. Please set it to the directory where the database should be stored.',
+    );
+  }
 
-    // Resolve relative paths to absolute paths
-    // If dataDir is already absolute (starts with /), join will return it as-is
-    // If it's relative (e.g., ./test-data), it will be resolved relative to cwd
-    const absoluteDataDir = join(process.cwd(), dataDir);
+  // Resolve relative paths to absolute paths
+  // If dataDir is already absolute (starts with /), join will return it as-is
+  // If it's relative (e.g., ./test-data), it will be resolved relative to cwd
+  const absoluteDataDir = join(process.cwd(), dataDir);
 
-    // Construct the full path to the database file
-    const dbPath = join(absoluteDataDir, DB_FILENAME);
+  // Construct the full path to the database file
+  const dbPath = join(absoluteDataDir, DB_FILENAME);
 
-    // Return in SQLite URL format
-    return `file:${dbPath}`;
+  // Return in SQLite URL format
+  return `file:${dbPath}`;
 }
 
 /**
@@ -46,11 +46,11 @@ export function getDatabaseUrl(): string {
  * @throws Error if DATA_DIR is not set
  */
 export function getDataDir(): string {
-    const dataDir = process.env.DATA_DIR;
+  const dataDir = process.env.DATA_DIR;
 
-    if (!dataDir) {
-        throw new Error('DATA_DIR environment variable is not set.');
-    }
+  if (!dataDir) {
+    throw new Error('DATA_DIR environment variable is not set.');
+  }
 
-    return dataDir;
+  return dataDir;
 }

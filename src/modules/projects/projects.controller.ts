@@ -1,22 +1,23 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  Request,
-  Query,
+  Controller,
   DefaultValuePipe,
+  Delete,
+  Get,
+  Param,
   ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ProjectsService } from './projects.service.js';
-import { CreateProjectDto, UpdateProjectDto } from './dto/index.js';
-import type { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
+
 import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
+import type { AuthenticatedRequest } from '../../common/types/authenticated-request.interface.js';
+import { CreateProjectDto, UpdateProjectDto } from './dto/index.js';
+import { ProjectsService } from './projects.service.js';
 
 /**
  * Controller for managing projects.
@@ -28,12 +29,12 @@ export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @Post()
-  create(@Request() req: AuthenticatedRequest, @Body() createProjectDto: CreateProjectDto) {
+  public create(@Request() req: AuthenticatedRequest, @Body() createProjectDto: CreateProjectDto) {
     return this.projectsService.create(req.user.sub, createProjectDto);
   }
 
   @Get()
-  findAll(
+  public findAll(
     @Request() req: AuthenticatedRequest,
     @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit?: number,
     @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset?: number,
@@ -42,12 +43,12 @@ export class ProjectsController {
   }
 
   @Get(':id')
-  findOne(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
+  public findOne(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.projectsService.findOne(id, req.user.sub);
   }
 
   @Patch(':id')
-  update(
+  public update(
     @Request() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() updateProjectDto: UpdateProjectDto,
@@ -56,7 +57,7 @@ export class ProjectsController {
   }
 
   @Delete(':id')
-  remove(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
+  public remove(@Request() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.projectsService.remove(id, req.user.sub);
   }
 }

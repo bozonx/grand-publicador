@@ -4,31 +4,31 @@ import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
  * DTO for Telegram Login Widget authentication request.
  */
 export class TelegramWidgetLoginDto {
-    @IsNumber()
-    @IsNotEmpty()
-    id!: number;
+  @IsNumber()
+  @IsNotEmpty()
+  public id!: number;
 
-    @IsString()
-    @IsNotEmpty()
-    first_name!: string;
+  @IsString()
+  @IsNotEmpty()
+  public first_name!: string;
 
-    @IsString()
-    @IsOptional()
-    last_name?: string;
+  @IsString()
+  @IsOptional()
+  public last_name?: string;
 
-    @IsString()
-    @IsOptional()
-    username?: string;
+  @IsString()
+  @IsOptional()
+  public username?: string;
 
-    @IsString()
-    @IsOptional()
-    photo_url?: string;
+  @IsString()
+  @IsOptional()
+  public photo_url?: string;
 
-    @IsNumber()
-    @IsNotEmpty()
-    auth_date!: number;
+  @IsNumber()
+  @IsNotEmpty()
+  public auth_date!: number;
 
-    @IsString()
-    @IsNotEmpty()
-    hash!: string;
+  @IsString()
+  @IsNotEmpty()
+  public hash!: string;
 }

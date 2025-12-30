@@ -1,25 +1,31 @@
 import 'reflect-metadata';
+
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
+import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
+import fastifyStatic from '@fastify/static';
+import { Logger } from 'nestjs-pino';
+
+import { AppModule } from './app.module.js';
+import { SpaFallbackFilter } from './common/filters/spa-fallback.filter.js';
+import type { AppConfig } from './config/app.config.js';
 import { getDatabaseUrl } from './config/database.config.js';
 
-// Set up DATABASE_URL from DATA_DIR before Prisma Client is loaded
-// This ensures Prisma uses the correct database path with hardcoded filename
+/**
+ * Set up DATABASE_URL from DATA_DIR before Prisma Client is loaded.
+ * This ensures Prisma uses the correct database path with hardcoded filename.
+ */
 if (process.env.DATA_DIR && !process.env.DATABASE_URL) {
   process.env.DATABASE_URL = getDatabaseUrl();
 }
 
-import { NestFactory } from '@nestjs/core';
-import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
-import fastifyStatic from '@fastify/static';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { ValidationPipe } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { Logger } from 'nestjs-pino';
-import { AppModule } from './app.module.js';
-import type { AppConfig } from './config/app.config.js';
-import { SpaFallbackFilter } from './common/filters/spa-fallback.filter.js';
-
-// Solves "Do not know how to serialize a BigInt" error
+/**
+ * Solves "Do not know how to serialize a BigInt" error.
+ */
 (BigInt.prototype as any).toJSON = function () {
   return this.toString();
 };
@@ -53,7 +59,10 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const logger = app.get(Logger);
 
-  const appConfig = configService.get<AppConfig>('app')!;
+  const appConfig = configService.get<AppConfig>('app');
+  if (!appConfig) {
+    throw new Error('Application configuration is missing');
+  }
 
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
@@ -80,9 +89,6 @@ async function bootstrap() {
     prefix: '/',
     wildcard: false, // Disable wildcard, we handle SPA fallback via exception filter
   });
-
-
-
 
   // Enable graceful shutdown hooks to handle signals (SIGINT, SIGTERM) correctly
   app.enableShutdownHooks();

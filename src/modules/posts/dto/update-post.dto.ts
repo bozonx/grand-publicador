@@ -1,5 +1,5 @@
-import { IsOptional, IsString, IsEnum, IsDate } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsArray, IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
 import { PostStatus } from '@prisma/client';
 
 /**
@@ -8,43 +8,44 @@ import { PostStatus } from '@prisma/client';
 export class UpdatePostDto {
   @IsString()
   @IsOptional()
-  content?: string;
+  public content?: string;
 
   @IsString()
   @IsOptional()
-  title?: string;
+  public title?: string;
 
   @IsString()
   @IsOptional()
-  description?: string;
+  public description?: string;
 
   @IsString()
   @IsOptional()
-  authorComment?: string;
+  public authorComment?: string;
 
   @IsString()
   @IsOptional()
-  tags?: string;
+  public tags?: string;
 
+  @IsArray()
   @IsOptional()
-  mediaFiles?: any;
+  public mediaFiles?: string[];
 
   @IsEnum(PostStatus)
   @IsOptional()
-  status?: PostStatus;
+  public status?: PostStatus;
 
   @Type(() => Date)
   @IsDate()
   @IsOptional()
-  postDate?: Date;
+  public postDate?: Date;
 
   @Type(() => Date)
   @IsDate()
   @IsOptional()
-  scheduledAt?: Date;
+  public scheduledAt?: Date;
 
   @Type(() => Date)
   @IsDate()
   @IsOptional()
-  publishedAt?: Date;
+  public publishedAt?: Date;
 }

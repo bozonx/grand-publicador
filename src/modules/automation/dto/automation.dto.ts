@@ -6,8 +6,8 @@ import { PostStatus } from '@prisma/client';
  */
 export class UpdatePostStatusDto {
   @IsEnum(PostStatus)
-  status!: PostStatus;
+  public status!: PostStatus;
 
   @IsOptional()
-  error?: string;
+  public error?: string;
 }

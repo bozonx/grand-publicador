@@ -16,12 +16,12 @@ describe('AuthService (unit)', () => {
   const mockBotToken = '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11';
 
   const mockUsersService = {
-    findOrCreateTelegramUser: jest.fn(),
-    findById: jest.fn(),
+    findOrCreateTelegramUser: jest.fn() as any,
+    findById: jest.fn() as any,
   };
 
   const mockJwtService = {
-    sign: jest.fn(),
+    sign: jest.fn() as any,
   };
 
   const mockConfigService = {
@@ -92,11 +92,10 @@ describe('AuthService (unit)', () => {
       const initData = generateValidInitData(telegramUser);
       const mockUser = {
         id: 'user-uuid',
-        email: null,
         firstName: 'John',
         lastName: 'Doe',
         telegramId: 123456789n,
-        username: 'johndoe',
+        telegramUsername: 'johndoe',
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -120,7 +119,7 @@ describe('AuthService (unit)', () => {
       expect(mockJwtService.sign).toHaveBeenCalledWith({
         sub: mockUser.id,
         telegramId: '123456789',
-        username: mockUser.username,
+        telegramUsername: mockUser.telegramUsername,
       });
     });
 
@@ -148,7 +147,7 @@ describe('AuthService (unit)', () => {
       const userId = 'user-1';
       const mockUser = {
         id: userId,
-        username: 'test',
+        telegramUsername: 'test',
         telegramId: 12345n,
       };
       mockUsersService.findById.mockResolvedValue(mockUser);
@@ -157,7 +156,7 @@ describe('AuthService (unit)', () => {
 
       expect(result).toBeDefined();
       expect(result.id).toBe(userId);
-      expect(result.username).toBe('test');
+      expect(result.telegramUsername).toBe('test');
     });
 
     it('should throw UnauthorizedException if user not found', async () => {

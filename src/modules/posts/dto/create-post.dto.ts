@@ -1,6 +1,6 @@
-import { IsNotEmpty, IsOptional, IsString, IsEnum, IsDate } from 'class-validator';
 import { Type } from 'class-transformer';
-import { PostType, PostStatus } from '@prisma/client';
+import { IsArray, IsDate, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { PostStatus, PostType } from '@prisma/client';
 
 /**
  * DTO for creating a new post.
@@ -8,50 +8,51 @@ import { PostType, PostStatus } from '@prisma/client';
 export class CreatePostDto {
   @IsString()
   @IsNotEmpty()
-  channelId!: string;
+  public channelId!: string;
 
   @IsString()
   @IsNotEmpty()
-  content!: string;
+  public content!: string;
 
   @IsString()
   @IsOptional()
-  socialMedia?: string;
+  public socialMedia?: string;
 
   @IsEnum(PostType)
   @IsNotEmpty()
-  postType!: PostType;
+  public postType!: PostType;
 
   @IsString()
   @IsOptional()
-  title?: string;
+  public title?: string;
 
   @IsString()
   @IsOptional()
-  description?: string;
+  public description?: string;
 
   @IsString()
   @IsOptional()
-  authorComment?: string;
+  public authorComment?: string;
 
   @IsString()
   @IsOptional()
-  tags?: string;
+  public tags?: string;
 
+  @IsArray()
   @IsOptional()
-  mediaFiles?: any;
+  public mediaFiles?: string[];
 
   @Type(() => Date)
   @IsDate()
   @IsOptional()
-  postDate?: Date;
+  public postDate?: Date;
 
   @Type(() => Date)
   @IsDate()
   @IsOptional()
-  scheduledAt?: Date;
+  public scheduledAt?: Date;
 
   @IsEnum(PostStatus)
   @IsOptional()
-  status?: PostStatus;
+  public status?: PostStatus;
 }

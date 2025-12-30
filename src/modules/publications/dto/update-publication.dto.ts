@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEnum, IsArray, IsObject } from 'class-validator';
+import { IsArray, IsEnum, IsObject, IsOptional, IsString } from 'class-validator';
 import { PostStatus } from '@prisma/client';
 
 /**
@@ -7,25 +7,25 @@ import { PostStatus } from '@prisma/client';
 export class UpdatePublicationDto {
   @IsString()
   @IsOptional()
-  title?: string;
+  public title?: string;
 
   @IsString()
   @IsOptional()
-  content?: string;
+  public content?: string;
 
   @IsArray()
   @IsOptional()
-  mediaFiles?: string[];
+  public mediaFiles?: string[];
 
   @IsString()
   @IsOptional()
-  tags?: string;
+  public tags?: string;
 
   @IsEnum(PostStatus)
   @IsOptional()
-  status?: PostStatus;
+  public status?: PostStatus;
 
   @IsObject()
   @IsOptional()
-  meta?: Record<string, any>;
+  public meta?: Record<string, any>;
 }

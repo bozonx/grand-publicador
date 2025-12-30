@@ -1,11 +1,13 @@
-import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { createHash, createHmac } from 'node:crypto';
+
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createHmac, createHash } from 'node:crypto';
-import { UsersService } from '../users/users.service.js';
+import { JwtService } from '@nestjs/jwt';
 import { plainToInstance } from 'class-transformer';
-import { AuthResponseDto, TelegramWidgetLoginDto } from './dto/index.js';
+
 import { UserDto } from '../users/dto/user.dto.js';
+import { UsersService } from '../users/users.service.js';
+import { AuthResponseDto, TelegramWidgetLoginDto } from './dto/index.js';
 
 /**
  * Interface representing the structure of a Telegram user object received in initData.
@@ -49,7 +51,7 @@ export class AuthService {
    * @returns An object containing the JWT access token and user details.
    * @throws UnauthorizedException if data validation fails or user is missing.
    */
-  async loginWithTelegram(initData: string): Promise<AuthResponseDto> {
+  public async loginWithTelegram(initData: string): Promise<AuthResponseDto> {
     const isValid = this.validateTelegramInitData(initData);
     if (!isValid) {
       this.logger.warn('Invalid Telegram init data');
@@ -95,7 +97,7 @@ export class AuthService {
    * @returns An object containing the JWT access token and user details.
    * @throws UnauthorizedException if data validation fails.
    */
-  async loginWithTelegramWidget(
+  public async loginWithTelegramWidget(
     widgetData: TelegramWidgetLoginDto,
   ): Promise<AuthResponseDto> {
     const isValid = this.validateTelegramWidgetData(widgetData);
@@ -152,9 +154,7 @@ export class AuthService {
       .join('\n');
 
     const secretKey = createHash('sha256').update(this.botToken).digest();
-    const calculatedHash = createHmac('sha256', secretKey)
-      .update(dataCheckArr)
-      .digest('hex');
+    const calculatedHash = createHmac('sha256', secretKey).update(dataCheckArr).digest('hex');
 
     return calculatedHash === hash;
   }
@@ -182,7 +182,7 @@ export class AuthService {
     return calculatedHash === hash;
   }
 
-  async getProfile(userId: string): Promise<UserDto> {
+  public async getProfile(userId: string): Promise<UserDto> {
     const user = await this.usersService.findById(userId);
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -195,7 +195,7 @@ export class AuthService {
    * Development login to bypass Telegram validation.
    * Only works in development environment.
    */
-  async loginDev(telegramId: number): Promise<AuthResponseDto> {
+  public async loginDev(telegramId: number): Promise<AuthResponseDto> {
     const user = await this.usersService.findOrCreateTelegramUser({
       telegramId: BigInt(telegramId),
       username: 'dev_user',

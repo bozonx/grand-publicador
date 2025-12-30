@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsArray, IsEnum, IsDateString } from 'class-validator';
+import { IsArray, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { PostStatus } from '@prisma/client';
 
 /**
@@ -7,27 +7,27 @@ import { PostStatus } from '@prisma/client';
 export class CreateExternalPublicationDto {
   @IsString()
   @IsNotEmpty()
-  projectId!: string;
+  public projectId!: string;
 
   @IsString()
   @IsOptional()
-  title?: string;
+  public title?: string;
 
   @IsString()
   @IsNotEmpty()
-  content!: string;
+  public content!: string;
 
   @IsArray()
   @IsOptional()
-  mediaFiles?: string[];
+  public mediaFiles?: string[];
 
   @IsString()
   @IsOptional()
-  tags?: string;
+  public tags?: string;
 
   @IsEnum(PostStatus)
   @IsOptional()
-  status?: PostStatus;
+  public status?: PostStatus;
 }
 
 /**
@@ -36,13 +36,13 @@ export class CreateExternalPublicationDto {
 export class SchedulePublicationDto {
   @IsString()
   @IsNotEmpty()
-  publicationId!: string;
+  public publicationId!: string;
 
   @IsArray()
   @IsNotEmpty()
-  channelIds!: string[];
+  public channelIds!: string[];
 
   @IsDateString()
   @IsOptional()
-  scheduledAt?: Date;
+  public scheduledAt?: Date;
 }

@@ -114,6 +114,7 @@ export default [
             'no-debugger': 'error',
             'prefer-const': 'error',
             'no-var': 'error',
+            'no-unused-vars': 'off', // Handled by @typescript-eslint/no-unused-vars
         },
     },
 

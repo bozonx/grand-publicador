@@ -2,22 +2,23 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
 import { LoggerModule } from 'nestjs-pino';
-import { HealthModule } from './modules/health/health.module.js';
-import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
-import { PrismaModule } from './modules/prisma/prisma.module.js';
-import { UsersModule } from './modules/users/users.module.js';
-import { AuthModule } from './modules/auth/auth.module.js';
-import { ProjectsModule } from './modules/projects/projects.module.js';
-import { ChannelsModule } from './modules/channels/channels.module.js';
-import { PostsModule } from './modules/posts/posts.module.js';
-import appConfig, { AppConfig } from './config/app.config.js';
-import { SystemConfigModule } from './modules/system-config/system-config.module.js';
-import { PublicationsModule } from './modules/publications/publications.module.js';
-import { ExternalModule } from './modules/external/external.module.js';
-import { AutomationModule } from './modules/automation/automation.module.js';
-import { PermissionsModule } from './common/services/permissions.module.js';
-import { ApiTokensModule } from './modules/api-tokens/api-tokens.module.js';
+
 import pkg from '../package.json' with { type: 'json' };
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
+import { PermissionsModule } from './common/services/permissions.module.js';
+import appConfig, { AppConfig } from './config/app.config.js';
+import { ApiTokensModule } from './modules/api-tokens/api-tokens.module.js';
+import { AuthModule } from './modules/auth/auth.module.js';
+import { AutomationModule } from './modules/automation/automation.module.js';
+import { ChannelsModule } from './modules/channels/channels.module.js';
+import { ExternalModule } from './modules/external/external.module.js';
+import { HealthModule } from './modules/health/health.module.js';
+import { PostsModule } from './modules/posts/posts.module.js';
+import { PrismaModule } from './modules/prisma/prisma.module.js';
+import { ProjectsModule } from './modules/projects/projects.module.js';
+import { PublicationsModule } from './modules/publications/publications.module.js';
+import { SystemConfigModule } from './modules/system-config/system-config.module.js';
+import { UsersModule } from './modules/users/users.module.js';
 
 @Module({
   imports: [
@@ -44,15 +45,15 @@ import pkg from '../package.json' with { type: 'json' };
             // Use pino-pretty for better readability in development
             transport: isDev
               ? {
-                target: 'pino-pretty',
-                options: {
-                  colorize: true,
-                  singleLine: false,
-                  translateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss.l'Z'",
-                  ignore: 'pid,hostname',
-                  messageFormat: '[{context}] {msg}',
-                },
-              }
+                  target: 'pino-pretty',
+                  options: {
+                    colorize: true,
+                    singleLine: false,
+                    translateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss.l'Z'",
+                    ignore: 'pid,hostname',
+                    messageFormat: '[{context}] {msg}',
+                  },
+                }
               : undefined,
             serializers: {
               req: req => ({
@@ -129,4 +130,4 @@ import pkg from '../package.json' with { type: 'json' };
  * The root module of the application.
  * Configures global imports, providers, and modules.
  */
-export class AppModule { }
+export class AppModule {}

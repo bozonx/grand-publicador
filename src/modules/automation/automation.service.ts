@@ -1,12 +1,20 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service.js';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { PostStatus, Prisma } from '@prisma/client';
+
+import { PrismaService } from '../prisma/prisma.service.js';
 
 @Injectable()
 export class AutomationService {
   private readonly logger = new Logger(AutomationService.name);
 
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   /**
    * Get posts that are ready to be published.
@@ -20,7 +28,7 @@ export class AutomationService {
    * @param scopeProjectIds - Array of project IDs in the token's scope (empty = all projects).
    * @returns A list of pending posts with related data.
    */
-  async getPendingPosts(
+  public async getPendingPosts(
     limit: number = 10,
     lookbackMinutes: number = 60,
     userId: string,
@@ -35,12 +43,12 @@ export class AutomationService {
       select: { projectId: true },
     });
 
-    const userProjectIds = userProjects.map((p) => p.projectId);
+    const userProjectIds = userProjects.map(p => p.projectId);
 
     // Filter by scope if specified
     const allowedProjectIds =
       scopeProjectIds.length > 0
-        ? userProjectIds.filter((id) => scopeProjectIds.includes(id))
+        ? userProjectIds.filter(id => scopeProjectIds.includes(id))
         : userProjectIds;
 
     if (allowedProjectIds.length === 0) {
@@ -110,12 +118,15 @@ export class AutomationService {
    * @param userId - The ID of the user claiming the post.
    * @param scopeProjectIds - Allowed project IDs from the token.
    * @returns The updated post with claim metadata.
-   * @throws Error if post is not found, access denied, not scheduled, or already processed.
+   * @throws NotFoundException if post is not found.
+   * @throws ForbiddenException if access denied.
+   * @throws BadRequestException if post is not scheduled.
+   * @throws ConflictException if post is already processed.
    */
-  async claimPost(postId: string, userId: string, scopeProjectIds: string[]) {
+  public async claimPost(postId: string, userId: string, scopeProjectIds: string[]) {
     this.logger.log(`Claiming post ${postId} by user ${userId}`);
 
-    // Verify access first (outside transaction to keep it short, though inside might be safer for consistency, 
+    // Verify access first (outside transaction to keep it short, though inside might be safer for consistency,
     // but here we just need to know if the user generally has access)
     // Actually, we need to fetch the post to know the project ID.
     // We can do it inside the transaction.
@@ -130,7 +141,7 @@ export class AutomationService {
       });
 
       if (!post) {
-        throw new Error('Post not found');
+        throw new NotFoundException('Post not found');
       }
 
       // Security Check: explicit project scope validation
@@ -138,7 +149,7 @@ export class AutomationService {
 
       // 1. Check Token Scope
       if (scopeProjectIds.length > 0 && !scopeProjectIds.includes(projectId)) {
-        throw new Error('Access denied: Project not in token scope');
+        throw new ForbiddenException('Access denied: Project not in token scope');
       }
 
       // 2. Check User Membership (ensure user actually has access to this project)
@@ -152,17 +163,17 @@ export class AutomationService {
       });
 
       if (!member) {
-        throw new Error('Access denied: User is not a member of this project');
+        throw new ForbiddenException('Access denied: User is not a member of this project');
       }
 
       if (post.status !== PostStatus.SCHEDULED) {
-        throw new Error('Post is not scheduled');
+        throw new BadRequestException('Post is not scheduled');
       }
 
       // Parse meta and check processing flag
       const meta = JSON.parse(post.meta);
       if (meta.processing) {
-        throw new Error('Post is already being processed');
+        throw new ConflictException('Post is already being processed');
       }
 
       // Atomic update within transaction
@@ -196,12 +207,12 @@ export class AutomationService {
    * @param error - Optional error message if the attempt failed.
    * @returns The updated post.
    */
-  async updatePostStatus(
+  public async updatePostStatus(
     postId: string,
     status: PostStatus,
     userId: string,
     scopeProjectIds: string[],
-    error?: string
+    error?: string,
   ) {
     this.logger.log(`Updating post ${postId} status to ${status} by user ${userId}`);
 
@@ -213,7 +224,7 @@ export class AutomationService {
     });
 
     if (!post) {
-      throw new Error('Post not found');
+      throw new NotFoundException('Post not found');
     }
 
     // Security Check
@@ -221,7 +232,7 @@ export class AutomationService {
 
     // 1. Check Token Scope
     if (scopeProjectIds.length > 0 && !scopeProjectIds.includes(projectId)) {
-      throw new Error('Access denied: Project not in token scope');
+      throw new ForbiddenException('Access denied: Project not in token scope');
     }
 
     // 2. Check User Membership
@@ -235,7 +246,7 @@ export class AutomationService {
     });
 
     if (!member) {
-      throw new Error('Access denied: User is not a member of this project');
+      throw new ForbiddenException('Access denied: User is not a member of this project');
     }
 
     const meta = JSON.parse(post.meta);

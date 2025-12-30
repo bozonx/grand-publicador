@@ -1,5 +1,6 @@
-import { UserDto } from '../../users/dto/user.dto.js';
 import { Expose, Type } from 'class-transformer';
+
+import { UserDto } from '../../users/dto/user.dto.js';
 
 /**
  * DTO for the authentication response.
@@ -7,9 +8,9 @@ import { Expose, Type } from 'class-transformer';
  */
 export class AuthResponseDto {
   @Expose()
-  accessToken!: string;
+  public accessToken!: string;
 
   @Expose()
   @Type(() => UserDto)
-  user!: UserDto;
+  public user!: UserDto;
 }

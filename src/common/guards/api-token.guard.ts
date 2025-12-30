@@ -1,12 +1,14 @@
 import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  UnauthorizedException,
+  type CanActivate,
+  type ExecutionContext,
   ForbiddenException,
+  Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { FastifyRequest } from 'fastify';
+import type { FastifyRequest } from 'fastify';
+
 import { ApiTokensService } from '../../modules/api-tokens/api-tokens.service.js';
+import type { ApiTokenRequest } from '../types/api-token-user.interface.js';
 
 /**
  * Guard to protect External and Automation API endpoints with user API tokens.
@@ -14,9 +16,9 @@ import { ApiTokensService } from '../../modules/api-tokens/api-tokens.service.js
  */
 @Injectable()
 export class ApiTokenGuard implements CanActivate {
-  constructor(private apiTokensService: ApiTokensService) { }
+  constructor(private apiTokensService: ApiTokensService) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  public async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<FastifyRequest>();
     const token = this.extractToken(request);
 
@@ -31,7 +33,7 @@ export class ApiTokenGuard implements CanActivate {
     }
 
     // Add user info and scope to request for use in controllers
-    (request as any).user = {
+    (request as unknown as ApiTokenRequest).user = {
       userId: tokenData.userId,
       scopeProjectIds: tokenData.scopeProjectIds,
       tokenId: tokenData.tokenId,
@@ -65,7 +67,7 @@ export class ApiTokenGuard implements CanActivate {
    * Helper method to check if a project is in the token's scope.
    * Can be called from controllers to validate project access.
    */
-  static validateProjectScope(projectId: string, scopeProjectIds: string[]): void {
+  public static validateProjectScope(projectId: string, scopeProjectIds: string[]): void {
     // Empty scope means all projects are allowed
     if (scopeProjectIds.length === 0) {
       return;

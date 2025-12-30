@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ProjectRole } from '@prisma/client';
+
+import { PermissionsService } from '../../common/services/permissions.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ProjectsService } from '../projects/projects.service.js';
-import { PermissionsService } from '../../common/services/permissions.service.js';
-import { ProjectRole } from '@prisma/client';
-import { CreateChannelDto, UpdateChannelDto } from './dto/index.js';
+import type { CreateChannelDto, UpdateChannelDto } from './dto/index.js';
 
 @Injectable()
 export class ChannelsService {
@@ -11,7 +12,7 @@ export class ChannelsService {
     private prisma: PrismaService,
     private projectsService: ProjectsService,
     private permissions: PermissionsService,
-  ) { }
+  ) {}
 
   /**
    * Creates a new channel within a project.
@@ -22,7 +23,11 @@ export class ChannelsService {
    * @param data - The channel creation data.
    * @returns The created channel.
    */
-  async create(userId: string, projectId: string, data: Omit<CreateChannelDto, 'projectId'>) {
+  public async create(
+    userId: string,
+    projectId: string,
+    data: Omit<CreateChannelDto, 'projectId'>,
+  ) {
     await this.permissions.checkProjectPermission(projectId, userId, [
       ProjectRole.OWNER,
       ProjectRole.ADMIN,
@@ -35,11 +40,10 @@ export class ChannelsService {
         socialMedia: data.socialMedia,
         name: data.name,
         channelIdentifier: data.channelIdentifier,
-        credentials: JSON.stringify(data.credentials || {}),
+        credentials: JSON.stringify(data.credentials ?? {}),
         isActive: data.isActive ?? true,
       },
     });
-
   }
 
   /**
@@ -50,7 +54,7 @@ export class ChannelsService {
    * @param userId - The ID of the user requesting the channels.
    * @returns A list of channels with post counts.
    */
-  async findAllForProject(projectId: string, userId: string) {
+  public async findAllForProject(projectId: string, userId: string) {
     await this.projectsService.findOne(projectId, userId); // Validates membership
     return this.prisma.channel.findMany({
       where: { projectId },
@@ -71,7 +75,7 @@ export class ChannelsService {
    * @returns The channel details.
    * @throws NotFoundException if the channel does not exist.
    */
-  async findOne(id: string, userId: string) {
+  public async findOne(id: string, userId: string) {
     const channel = await this.prisma.channel.findUnique({
       where: { id },
     });
@@ -92,7 +96,7 @@ export class ChannelsService {
    * @param userId - The ID of the user.
    * @param data - The data to update.
    */
-  async update(id: string, userId: string, data: UpdateChannelDto) {
+  public async update(id: string, userId: string, data: UpdateChannelDto) {
     const channel = await this.findOne(id, userId);
     await this.permissions.checkProjectPermission(channel.projectId, userId, [
       ProjectRole.OWNER,
@@ -118,7 +122,7 @@ export class ChannelsService {
    * @param id - The ID of the channel to remove.
    * @param userId - The ID of the user.
    */
-  async remove(id: string, userId: string) {
+  public async remove(id: string, userId: string) {
     const channel = await this.findOne(id, userId);
     await this.permissions.checkProjectPermission(channel.projectId, userId, [
       ProjectRole.OWNER,
