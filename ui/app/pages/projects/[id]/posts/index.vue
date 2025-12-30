@@ -231,7 +231,7 @@ const hasActiveFilters = computed(() => {
         />
 
         <!-- Status filter -->
-        <USelect
+        <USelectMenu
           v-model="selectedStatus"
           :options="statusFilterOptions"
           option-attribute="label"
@@ -240,7 +240,7 @@ const hasActiveFilters = computed(() => {
         />
 
         <!-- Type filter -->
-        <USelect
+        <USelectMenu
           v-model="selectedType"
           :options="typeFilterOptions"
           option-attribute="label"
@@ -249,7 +249,7 @@ const hasActiveFilters = computed(() => {
         />
 
         <!-- Channel filter -->
-        <USelect
+        <USelectMenu
           v-model="selectedChannel"
           :options="channelOptions"
           option-attribute="label"

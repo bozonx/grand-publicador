@@ -78,7 +78,12 @@ function closeModal() {
         </UFormGroup>
 
         <UFormGroup :label="t('common.role')">
-          <USelect v-model="selectedRole" :options="roleOptions" option-attribute="label" />
+          <USelectMenu
+            v-model="selectedRole"
+            :options="roleOptions"
+            option-attribute="label"
+            value-attribute="value"
+          />
         </UFormGroup>
 
         <div class="flex justify-end gap-3 mt-6">

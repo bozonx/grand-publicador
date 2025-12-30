@@ -175,7 +175,7 @@ const isFormValid = computed(() => {
       <!-- Channel selection (only for new posts) -->
       <div v-if="!isEditMode">
         <UFormField :label="t('channel.title')" required>
-          <USelect
+          <USelectMenu
             v-model="formData.channelId"
             :options="channelOptions"
             option-attribute="label"
@@ -183,6 +183,7 @@ const isFormValid = computed(() => {
             :placeholder="t('post.selectChannel', 'Select a channel')"
             class="w-full"
             size="lg"
+            searchable
           />
           <template v-if="channelOptions.length === 0" #help>
             <div class="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
@@ -212,7 +213,7 @@ const isFormValid = computed(() => {
       <!-- Post type & Status Row -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <UFormField :label="t('post.postType')" required>
-          <USelect
+          <USelectMenu
             v-model="formData.postType"
             :options="typeOptions"
             option-attribute="label"
@@ -222,7 +223,7 @@ const isFormValid = computed(() => {
         </UFormField>
 
         <UFormField :label="t('post.status')" required>
-          <USelect
+          <USelectMenu
             v-model="formData.status"
             :options="availableStatusOptions"
             option-attribute="label"

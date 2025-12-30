@@ -177,7 +177,7 @@ const activeStatusOptions = [
         />
 
         <!-- Social media filter -->
-        <USelect
+        <USelectMenu
           v-model="selectedSocialMedia"
           :options="[{ value: null, label: t('common.all') }, ...socialMediaOptions]"
           option-attribute="label"
@@ -187,7 +187,7 @@ const activeStatusOptions = [
         />
 
         <!-- Active status filter -->
-        <USelect
+        <USelectMenu
           v-model="selectedActiveStatus"
           :options="activeStatusOptions"
           option-attribute="label"

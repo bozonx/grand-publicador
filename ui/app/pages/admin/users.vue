@@ -156,7 +156,7 @@ function getRow(row: unknown): UserWithStats {
         />
 
         <!-- Admin filter -->
-        <USelect
+        <USelectMenu
           v-model="selectedAdminFilter"
           :options="adminFilterOptions"
           option-attribute="label"
