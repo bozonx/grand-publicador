@@ -140,12 +140,21 @@ function formatDate(date: string | null): string {
   return new Date(date).toLocaleDateString()
 }
 
-// Active status options for filter
-const activeStatusOptions = [
-  { value: null, label: t('common.all') },
-  { value: true, label: t('channel.active') },
-  { value: false, label: t('channel.inactive') },
-]
+// Computed filter options with proper structure for USelectMenu
+const socialMediaFilterOptions = computed(() => {
+  return [
+    { label: t('common.all'), value: null },
+    ...socialMediaOptions.value
+  ]
+})
+
+const activeStatusFilterOptions = computed(() => {
+  return [
+    { label: t('common.all'), value: null },
+    { label: t('channel.active'), value: true },
+    { label: t('channel.inactive'), value: false },
+  ]
+})
 </script>
 
 <template>
@@ -179,9 +188,9 @@ const activeStatusOptions = [
         <!-- Social media filter -->
         <USelectMenu
           v-model="selectedSocialMedia"
-          :options="[{ value: null, label: t('common.all') }, ...socialMediaOptions]"
-          option-attribute="label"
+          :options="socialMediaFilterOptions"
           value-attribute="value"
+          option-attribute="label"
           :placeholder="t('channel.socialMedia')"
           class="w-full"
         />
@@ -189,9 +198,9 @@ const activeStatusOptions = [
         <!-- Active status filter -->
         <USelectMenu
           v-model="selectedActiveStatus"
-          :options="activeStatusOptions"
-          option-attribute="label"
+          :options="activeStatusFilterOptions"
           value-attribute="value"
+          option-attribute="label"
           :placeholder="t('channel.isActive')"
           class="w-full"
         />

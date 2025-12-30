@@ -81,8 +81,8 @@ function closeModal() {
           <USelectMenu
             v-model="selectedRole"
             :options="roleOptions"
-            option-attribute="label"
             value-attribute="value"
+            option-attribute="label"
           />
         </UFormField>
 

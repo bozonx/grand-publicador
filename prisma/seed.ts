@@ -1,11 +1,17 @@
 import { PrismaClient, ProjectRole, SocialMedia, PostType, PostStatus } from '@prisma/client';
 import { config } from 'dotenv';
 import path from 'path';
+import { getDatabaseUrl } from '../src/config/database.config.js';
 
 // Manual env loading for the script since we removed prisma.config.ts
 const nodeEnv = process.env.NODE_ENV || 'development';
 config({ path: path.resolve(process.cwd(), `.env.${nodeEnv}`) });
 config();
+
+// Set up DATABASE_URL from DATA_DIR if not already set
+if (process.env.DATA_DIR && !process.env.DATABASE_URL) {
+    process.env.DATABASE_URL = getDatabaseUrl();
+}
 
 const prisma = new PrismaClient({
     datasources: {

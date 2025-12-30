@@ -234,8 +234,8 @@ const hasActiveFilters = computed(() => {
         <USelectMenu
           v-model="selectedStatus"
           :options="statusFilterOptions"
-          option-attribute="label"
           value-attribute="value"
+          option-attribute="label"
           :placeholder="t('post.status')"
         />
 
@@ -243,8 +243,8 @@ const hasActiveFilters = computed(() => {
         <USelectMenu
           v-model="selectedType"
           :options="typeFilterOptions"
-          option-attribute="label"
           value-attribute="value"
+          option-attribute="label"
           :placeholder="t('post.postType')"
         />
 
@@ -252,8 +252,8 @@ const hasActiveFilters = computed(() => {
         <USelectMenu
           v-model="selectedChannel"
           :options="channelOptions"
-          option-attribute="label"
           value-attribute="value"
+          option-attribute="label"
           :placeholder="t('channel.title')"
         />
       </div>

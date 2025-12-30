@@ -1,4 +1,12 @@
 import 'reflect-metadata';
+import { getDatabaseUrl } from './config/database.config.js';
+
+// Set up DATABASE_URL from DATA_DIR before Prisma Client is loaded
+// This ensures Prisma uses the correct database path with hardcoded filename
+if (process.env.DATA_DIR && !process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = getDatabaseUrl();
+}
+
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
 import fastifyStatic from '@fastify/static';

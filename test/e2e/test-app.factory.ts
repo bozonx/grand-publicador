@@ -23,7 +23,7 @@ export async function createTestApp(): Promise<NestFastifyApplication> {
           JWT_SECRET: 'test-secret-key',
           AUTH_JWT_SECRET: 'test-secret-key',
           TELEGRAM_BOT_TOKEN: 'test-bot-token',
-          DATABASE_URL: 'file:./test.db',
+          DATA_DIR: './test-data',
           NODE_ENV: 'test',
           app: {
             port: 8080,

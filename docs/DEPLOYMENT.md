@@ -60,7 +60,7 @@ docker-compose down
 
 - **Single Container**: Backend (NestJS + Fastify) and Frontend (Nuxt SPA) in one container
 - **Static Serving**: Fastify serves the Nuxt static build from `ui/.output/public`
-- **Database**: SQLite stored in `/data/app.db` (mounted volume)
+- **Database**: SQLite stored in `/data/grand-publicador.db` (mounted volume)
 - **Port**: 8080 (both API and UI)
 
 ## Environment Variables
@@ -71,7 +71,7 @@ These variables are used by the backend when running:
 - `LISTEN_HOST=0.0.0.0` - Host to bind
 - `LISTEN_PORT=8080` - Port to listen on
 - `LOG_LEVEL=warn` - Logging level
-- `DATABASE_URL=file:/data/app.db` - SQLite database path
+- `DATA_DIR=/data` - Directory for database storage (database filename: `grand-publicador.db`)
 - `JWT_SECRET` - Secret for JWT tokens (REQUIRED)
 - `TELEGRAM_BOT_TOKEN` - Telegram bot token (REQUIRED)
 - `API_KEY` - API key for External/Automation API (REQUIRED)
@@ -201,7 +201,7 @@ docker-compose logs
 ### Database issues
 ```bash
 # Reset database (WARNING: deletes all data)
-rm docker/data/app.db
+rm docker/data/grand-publicador.db
 docker-compose restart
 ```
 

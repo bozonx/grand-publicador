@@ -206,8 +206,8 @@ const hasActiveFilters = computed(() => {
           <USelectMenu
             v-model="selectedAdminFilter"
             :options="adminFilterOptions"
-            option-attribute="label"
             value-attribute="value"
+            option-attribute="label"
             :placeholder="t('admin.filterByRole', 'Filter by role')"
           />
         </div>
