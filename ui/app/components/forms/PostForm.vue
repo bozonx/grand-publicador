@@ -171,7 +171,7 @@ const isFormValid = computed(() => {
       </p>
     </div>
 
-    <div class="p-6 space-y-6">
+    <form class="p-6 space-y-6" @submit.prevent="handleSubmit">
       <!-- Channel selection (only for new posts) -->
       <div v-if="!isEditMode">
         <UFormField :label="t('channel.title')" required>
@@ -245,6 +245,8 @@ const isFormValid = computed(() => {
           :placeholder="t('post.titlePlaceholder', 'Enter post title')"
           size="lg"
           class="w-full"
+          type="text"
+          @keydown.enter.prevent
         />
       </UFormField>
 
@@ -315,6 +317,7 @@ const isFormValid = computed(() => {
                 v-model="formData.tags"
                 :placeholder="t('post.tagsPlaceholder', 'tag1, tag2, tag3')"
                 icon="i-heroicons-hashtag"
+                @keydown.enter.prevent
               />
             </UFormField>
 
@@ -339,17 +342,16 @@ const isFormValid = computed(() => {
           {{ t('common.cancel') }}
         </UButton>
         <UButton
-          type="button"
+          type="submit"
           color="primary"
           :loading="isLoading"
           :disabled="!isFormValid"
-          @click="handleSubmit"
         >
           <template #default>
             {{ isEditMode ? t('common.save') : t('common.create') }}
           </template>
         </UButton>
       </div>
-    </div>
+    </form>
   </div>
 </template>

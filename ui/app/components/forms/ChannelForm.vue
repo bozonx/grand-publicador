@@ -131,7 +131,7 @@ const currentSocialMedia = computed(() => (isEditMode.value ? props.channel?.soc
       </p>
     </div>
 
-    <div class="space-y-6">
+    <form class="space-y-6" @submit.prevent="handleSubmit">
       <!-- Channel name -->
       <UFormField :label="t('channel.name')" required>
         <UInput
@@ -239,15 +239,14 @@ const currentSocialMedia = computed(() => (isEditMode.value ? props.channel?.soc
           {{ t('common.cancel') }}
         </UButton>
         <UButton
-          type="button"
+          type="submit"
           color="primary"
           :loading="isLoading"
           :disabled="!state.name || !state.channelIdentifier"
-          @click="handleSubmit"
         >
           {{ isEditMode ? t('common.save') : t('common.create') }}
         </UButton>
       </div>
-    </div>
+    </form>
   </div>
 </template>

@@ -74,7 +74,7 @@ function handleCancel() {
       </p>
     </div>
 
-    <div class="space-y-6">
+    <form class="space-y-6" @submit.prevent="handleSubmit">
       <!-- Project name -->
       <UFormField
         :label="t('project.name')"
@@ -118,15 +118,14 @@ function handleCancel() {
           {{ cancelLabel || t('common.cancel') }}
         </UButton>
         <UButton
-          type="button"
+          type="submit"
           color="primary"
           :loading="isLoading"
           :disabled="!state.name || state.name.length < 2 || state.description.length > 500"
-          @click="handleSubmit"
         >
           {{ submitLabel || (isEditMode ? t('common.save') : t('common.create')) }}
         </UButton>
       </div>
-    </div>
+    </form>
   </div>
 </template>
