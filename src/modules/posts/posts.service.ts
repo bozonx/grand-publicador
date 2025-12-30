@@ -11,7 +11,7 @@ export class PostsService {
     private prisma: PrismaService,
     private channelsService: ChannelsService,
     private permissions: PermissionsService,
-  ) {}
+  ) { }
 
   /**
    * Create a new post in a specific channel.
@@ -82,8 +82,11 @@ export class PostsService {
 
     return this.prisma.post.findMany({
       where: {
+        archivedAt: null,
         channel: {
           projectId,
+          archivedAt: null,
+          project: { archivedAt: null },
         },
       },
       include: {
@@ -119,7 +122,14 @@ export class PostsService {
   public async findAllForChannel(channelId: string, userId: string) {
     await this.channelsService.findOne(channelId, userId); // Validates access
     return this.prisma.post.findMany({
-      where: { channelId },
+      where: {
+        channelId,
+        archivedAt: null,
+        channel: {
+          archivedAt: null,
+          project: { archivedAt: null },
+        },
+      },
       include: {
         channel: {
           select: {
@@ -153,7 +163,14 @@ export class PostsService {
    */
   public async findOne(id: string, userId: string) {
     const post = await this.prisma.post.findUnique({
-      where: { id },
+      where: {
+        id,
+        archivedAt: null,
+        channel: {
+          archivedAt: null,
+          project: { archivedAt: null },
+        },
+      },
       include: {
         channel: {
           select: {

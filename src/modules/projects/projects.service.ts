@@ -13,7 +13,7 @@ export class ProjectsService {
   constructor(
     private prisma: PrismaService,
     private permissions: PermissionsService,
-  ) {}
+  ) { }
 
   /**
    * Creates a new project and assigns the creator as the owner.
@@ -71,6 +71,7 @@ export class ProjectsService {
 
     const projects = await this.prisma.project.findMany({
       where: {
+        archivedAt: null,
         members: {
           some: {
             userId: userId,
@@ -117,7 +118,7 @@ export class ProjectsService {
     }
 
     const project = await this.prisma.project.findUnique({
-      where: { id: projectId },
+      where: { id: projectId, archivedAt: null },
       include: {
         channels: true,
         members: {

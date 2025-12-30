@@ -41,7 +41,8 @@
     "posts": "Публикации",
     "users": "Пользователи",
     "settings": "Настройки",
-    "admin": "Администрирование"
+    "admin": "Администрирование",
+    "archive": "Архив"
   },
   "auth": {
     "login": "Войти",
@@ -109,7 +110,11 @@
     "general_settings": "Основные настройки",
     "general_settings_desc": "Обновите название и описание проекта",
     "members_desc": "Управляйте доступом к проекту",
-    "delete_warning": "Удаление проекта необратимо. Пожалуйста, будьте внимательны."
+    "delete_warning": "Удаление проекта необратимо. Пожалуйста, будьте внимательны.",
+    "moveToArchive": "В архив",
+    "archiveConfirm": "Вы действительно хотите отправить этот проект в архив? Все связанные с ним каналы и посты также будут скрыты.",
+    "owner": "Владелец",
+    "members": "Участники"
   },
   "projectMember": {
     "title": "Участник",
@@ -306,6 +311,42 @@
   "editor": {
     "characters": "символов",
     "words": "слов"
+  },
+  "archive": {
+    "title": "Архив",
+    "subtitle": "Управление архивированными элементами",
+    "projects": "Проекты",
+    "channels": "Каналы",
+    "publications": "Публикации",
+    "posts": "Посты",
+    "total_archived": "Всего в архиве",
+    "entity_name": "Название",
+    "archived_at": "Дата архивирования",
+    "empty": "Архив пуст",
+    "restore": "Восстановить",
+    "delete_permanent": "Удалить",
+    "delete_permanent_title": "Удалить навсегда?",
+    "delete_permanent_description": "Вы действительно хотите удалить {name}? Это действие необратимо.",
+    "delete_permanent_warning": "Внимание: данные будут полностью удалены из базы данных и не могут быть восстановлены.",
+    "confirm_delete": "Удалить навсегда",
+    "delete_confirm_permanent": "Вы уверены? Это действие необратимо и данные будут полностью удалены.",
+    "success_archived": "Успешно перемещено в архив",
+    "success_restored": "Успешно восстановлено из архива",
+    "success_deleted": "Успешно удалено",
+    "success_moved": "Успешно перемещено",
+    "error_archiving": "Ошибка при архивировании",
+    "error_restoring": "Ошибка при восстановлении",
+    "error_deleting": "Ошибка при удалении",
+    "error_moving": "Ошибка при перемещении",
+    "move_entity_title": "Переместить элемент",
+    "move_entity_description": "Выберите новое расположение для {type}",
+    "target_parent": "Новое расположение",
+    "select_target": "Выберите...",
+    "confirm_move": "Переместить",
+    "type_project": "проекта",
+    "type_channel": "канала",
+    "type_publication": "публикации",
+    "type_post": "поста"
   },
   "admin": {
     "panel": {

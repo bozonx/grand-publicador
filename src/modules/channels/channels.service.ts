@@ -12,7 +12,7 @@ export class ChannelsService {
     private prisma: PrismaService,
     private projectsService: ProjectsService,
     private permissions: PermissionsService,
-  ) {}
+  ) { }
 
   /**
    * Creates a new channel within a project.
@@ -57,7 +57,11 @@ export class ChannelsService {
   public async findAllForProject(projectId: string, userId: string) {
     await this.projectsService.findOne(projectId, userId); // Validates membership
     return this.prisma.channel.findMany({
-      where: { projectId },
+      where: {
+        projectId,
+        archivedAt: null,
+        project: { archivedAt: null },
+      },
       include: {
         _count: {
           select: { posts: true },
@@ -77,7 +81,11 @@ export class ChannelsService {
    */
   public async findOne(id: string, userId: string) {
     const channel = await this.prisma.channel.findUnique({
-      where: { id },
+      where: {
+        id,
+        archivedAt: null,
+        project: { archivedAt: null },
+      },
     });
 
     if (!channel) {

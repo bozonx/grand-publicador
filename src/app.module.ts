@@ -19,6 +19,7 @@ import { ProjectsModule } from './modules/projects/projects.module.js';
 import { PublicationsModule } from './modules/publications/publications.module.js';
 import { SystemConfigModule } from './modules/system-config/system-config.module.js';
 import { UsersModule } from './modules/users/users.module.js';
+import { ArchiveModule } from './modules/archive/archive.module.js';
 
 @Module({
   imports: [
@@ -45,15 +46,15 @@ import { UsersModule } from './modules/users/users.module.js';
             // Use pino-pretty for better readability in development
             transport: isDev
               ? {
-                  target: 'pino-pretty',
-                  options: {
-                    colorize: true,
-                    singleLine: false,
-                    translateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss.l'Z'",
-                    ignore: 'pid,hostname',
-                    messageFormat: '[{context}] {msg}',
-                  },
-                }
+                target: 'pino-pretty',
+                options: {
+                  colorize: true,
+                  singleLine: false,
+                  translateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss.l'Z'",
+                  ignore: 'pid,hostname',
+                  messageFormat: '[{context}] {msg}',
+                },
+              }
               : undefined,
             serializers: {
               req: req => ({
@@ -117,6 +118,7 @@ import { UsersModule } from './modules/users/users.module.js';
     AutomationModule,
     SystemConfigModule,
     ApiTokensModule,
+    ArchiveModule,
   ],
   controllers: [],
   providers: [
@@ -130,4 +132,4 @@ import { UsersModule } from './modules/users/users.module.js';
  * The root module of the application.
  * Configures global imports, providers, and modules.
  */
-export class AppModule {}
+export class AppModule { }

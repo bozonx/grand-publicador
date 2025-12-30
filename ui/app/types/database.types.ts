@@ -75,6 +75,8 @@ export type Database = {
           owner_id: string
           created_at: string | null
           updated_at: string | null
+          archived_at: string | null
+          archived_by: string | null
         }
         Insert: {
           id?: string
@@ -83,6 +85,8 @@ export type Database = {
           owner_id: string
           created_at?: string | null
           updated_at?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
         }
         Update: {
           id?: string
@@ -91,6 +95,8 @@ export type Database = {
           owner_id?: string
           created_at?: string | null
           updated_at?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
         }
         Relationships: [
           {
@@ -113,6 +119,8 @@ export type Database = {
           name: string
           social_media: Database['public']['Enums']['social_media_enum']
           updated_at: string | null
+          archived_at: string | null
+          archived_by: string | null
         }
         Insert: {
           project_id: string
@@ -124,6 +132,8 @@ export type Database = {
           name: string
           social_media: Database['public']['Enums']['social_media_enum']
           updated_at?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
         }
         Update: {
           project_id?: string
@@ -135,6 +145,8 @@ export type Database = {
           name?: string
           social_media?: Database['public']['Enums']['social_media_enum']
           updated_at?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
         }
         Relationships: [
           {

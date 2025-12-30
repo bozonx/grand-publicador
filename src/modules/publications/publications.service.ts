@@ -12,7 +12,7 @@ export class PublicationsService {
   constructor(
     private prisma: PrismaService,
     private permissions: PermissionsService,
-  ) {}
+  ) { }
 
   /**
    * Create a new publication.
@@ -70,7 +70,11 @@ export class PublicationsService {
   ) {
     await this.permissions.checkProjectAccess(projectId, userId);
 
-    const where: Prisma.PublicationWhereInput = { projectId };
+    const where: Prisma.PublicationWhereInput = {
+      projectId,
+      archivedAt: null,
+      project: { archivedAt: null },
+    };
     if (filters?.status) {
       where.status = filters.status;
     }
@@ -114,7 +118,11 @@ export class PublicationsService {
    */
   public async findOne(id: string, userId: string) {
     const publication = await this.prisma.publication.findUnique({
-      where: { id },
+      where: {
+        id,
+        archivedAt: null,
+        project: { archivedAt: null },
+      },
       include: {
         author: {
           select: {

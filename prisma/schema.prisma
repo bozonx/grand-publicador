@@ -41,6 +41,8 @@ model Project {
   ownerId     String   @map("owner_id")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
+  archivedAt  DateTime? @map("archived_at")
+  archivedBy  String?   @map("archived_by")
 
   owner        User            @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   members      ProjectMember[]
@@ -74,6 +76,8 @@ model Channel {
   isActive          Boolean     @default(true) @map("is_active")
   createdAt         DateTime    @default(now()) @map("created_at")
   updatedAt         DateTime    @updatedAt @map("updated_at")
+  archivedAt        DateTime?   @map("archived_at")
+  archivedBy        String?     @map("archived_by")
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   posts   Post[]
@@ -94,6 +98,8 @@ model Publication {
   meta       String     @default("{}")
   createdAt  DateTime   @default(now()) @map("created_at")
   updatedAt  DateTime   @updatedAt @map("updated_at")
+  archivedAt DateTime?  @map("archived_at")
+  archivedBy String?    @map("archived_by")
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   author  User?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
@@ -124,6 +130,8 @@ model Post {
   meta          String       @default("{}")
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt @map("updated_at")
+  archivedAt    DateTime?    @map("archived_at")
+  archivedBy    String?      @map("archived_by")
 
   publication Publication? @relation(fields: [publicationId], references: [id], onDelete: Cascade)
   channel     Channel      @relation(fields: [channelId], references: [id], onDelete: Cascade)

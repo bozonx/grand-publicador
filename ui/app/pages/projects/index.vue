@@ -5,8 +5,10 @@ definePageMeta({
 
 const { t } = useI18n()
 const router = useRouter()
-const { projects, isLoading, error, fetchProjects, deleteProject, canEdit, canDelete, getRoleDisplayName } =
+const { projects, isLoading, error, fetchProjects, canEdit, canDelete, getRoleDisplayName } =
   useProjects()
+const { archiveEntity } = useArchive()
+const { ArchiveEntityType } = await import('~/types/archive.types')
 
 // Delete confirmation modal state
 const showDeleteModal = ref(false)
@@ -50,16 +52,19 @@ function confirmDelete(projectId: string) {
 /**
  * Handle project deletion
  */
-async function handleDelete() {
+async function handleArchive() {
   if (!projectToDelete.value) return
 
   isDeleting.value = true
-  const success = await deleteProject(projectToDelete.value)
-  isDeleting.value = false
-
-  if (success) {
+  try {
+    await archiveEntity(ArchiveEntityType.PROJECT, projectToDelete.value)
     showDeleteModal.value = false
     projectToDelete.value = null
+    await fetchProjects()
+  } catch (err) {
+    // Error handled in useArchive
+  } finally {
+    isDeleting.value = false
   }
 }
 
@@ -207,20 +212,20 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
               />
             </div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ t('project.deleteProject') }}
+              {{ t('project.moveToArchive') || 'В архив' }}
             </h3>
           </div>
 
           <p class="text-gray-600 dark:text-gray-400 mb-6">
-            {{ t('project.deleteConfirm') }}
+            {{ t('project.archiveConfirm') || 'Вы действительно хотите отправить этот проект в архив? Все связанные с ним каналы и посты также будут скрыты.' }}
           </p>
 
           <div class="flex justify-end gap-3">
             <UButton color="neutral" variant="ghost" :disabled="isDeleting" @click="cancelDelete">
               {{ t('common.cancel') }}
             </UButton>
-            <UButton color="error" :loading="isDeleting" @click="handleDelete">
-              {{ t('common.delete') }}
+            <UButton color="error" :loading="isDeleting" @click="handleArchive">
+              {{ t('project.moveToArchive') || 'В архив' }}
             </UButton>
           </div>
         </div>
