@@ -7,9 +7,9 @@ export function useApiTokens() {
     const api = useApi()
     const toast = useToast()
 
-    const tokens = ref\u003cApiToken[]\u003e([])
+    const tokens = ref<ApiToken[]>([])
     const loading = ref(false)
-    const error = ref\u003cstring | null\u003e(null)
+    const error = ref<string | null>(null)
 
     /**
      * Fetch all API tokens for the current user
@@ -27,7 +27,7 @@ export function useApiTokens() {
             toast.add({
                 title: 'Error',
                 description: error.value,
-                color: 'red',
+                color: 'error',
             })
             throw err
         } finally {
@@ -38,7 +38,7 @@ export function useApiTokens() {
     /**
      * Create a new API token
      */
-    async function createToken(dto: CreateApiTokenDto): Promise\u003cApiToken\u003e {
+    async function createToken(dto: CreateApiTokenDto): Promise<ApiToken> {
         loading.value = true
         error.value = null
 
@@ -53,7 +53,7 @@ export function useApiTokens() {
             toast.add({
                 title: 'Success',
                 description: 'API token created successfully',
-                color: 'green',
+                color: 'success',
             })
 
             return response
@@ -62,7 +62,7 @@ export function useApiTokens() {
             toast.add({
                 title: 'Error',
                 description: error.value,
-                color: 'red',
+                color: 'error',
             })
             throw err
         } finally {
@@ -73,7 +73,7 @@ export function useApiTokens() {
     /**
      * Update an existing API token (name and scope only)
      */
-    async function updateToken(id: string, dto: UpdateApiTokenDto): Promise\u003cApiToken\u003e {
+    async function updateToken(id: string, dto: UpdateApiTokenDto): Promise<ApiToken> {
         loading.value = true
         error.value = null
 
@@ -83,7 +83,7 @@ export function useApiTokens() {
                 body: dto,
             })
 
-            const index = tokens.value.findIndex((t) =\u003e t.id === id)
+            const index = tokens.value.findIndex((t) => t.id === id)
             if (index !== -1) {
                 tokens.value[index] = response
             }
@@ -91,7 +91,7 @@ export function useApiTokens() {
             toast.add({
                 title: 'Success',
                 description: 'API token updated successfully',
-                color: 'green',
+                color: 'success',
             })
 
             return response
@@ -100,7 +100,7 @@ export function useApiTokens() {
             toast.add({
                 title: 'Error',
                 description: error.value,
-                color: 'red',
+                color: 'error',
             })
             throw err
         } finally {
@@ -111,7 +111,7 @@ export function useApiTokens() {
     /**
      * Delete an API token
      */
-    async function deleteToken(id: string): Promise\u003cvoid\u003e {
+    async function deleteToken(id: string): Promise<void> {
         loading.value = true
         error.value = null
 
@@ -120,19 +120,19 @@ export function useApiTokens() {
                 method: 'DELETE',
             })
 
-            tokens.value = tokens.value.filter((t) =\u003e t.id !== id)
+            tokens.value = tokens.value.filter((t) => t.id !== id)
 
             toast.add({
                 title: 'Success',
                 description: 'API token deleted successfully',
-                color: 'green',
+                color: 'success',
             })
         } catch (err: any) {
             error.value = err.message || 'Failed to delete API token'
             toast.add({
                 title: 'Error',
                 description: error.value,
-                color: 'red',
+                color: 'error',
             })
             throw err
         } finally {
@@ -149,13 +149,13 @@ export function useApiTokens() {
             toast.add({
                 title: 'Copied',
                 description: 'Token copied to clipboard',
-                color: 'green',
+                color: 'success',
             })
         } catch (err) {
             toast.add({
                 title: 'Error',
                 description: 'Failed to copy token',
-                color: 'red',
+                color: 'error',
             })
         }
     }
