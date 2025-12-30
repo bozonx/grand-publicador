@@ -144,13 +144,16 @@ function getChannelLink(projectId: string, channelId: string) {
               <span class="truncate">{{ project.name }}</span>
             </NuxtLink>
             
-            <UButton
-              variant="ghost"
-              color="neutral"
-              size="xs"
-              :icon="expandedProjects.has(project.id) ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-right'"
+            <button
+              class="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
               @click.stop="toggleProject(project.id)"
-            />
+            >
+              <UIcon 
+                name="i-heroicons-chevron-right" 
+                class="w-4 h-4 transition-transform duration-200"
+                :class="{ 'rotate-90': expandedProjects.has(project.id) }"
+              />
+            </button>
           </div>
 
           <!-- Channels List (Horizontal Icons) -->
@@ -174,39 +177,44 @@ function getChannelLink(projectId: string, channelId: string) {
                   :class="{ 'bg-primary-100 dark:bg-primary-900 ring-2 ring-primary-500': route.query.channelId === channel.id }"
                 >
                   <UIcon 
-                    v-if="channel.socialMedia === 'telegram'" 
+                    v-if="channel.socialMedia === 'TELEGRAM'" 
                     name="i-simple-icons-telegram" 
                     class="w-5 h-5 text-blue-500" 
                   />
                   <UIcon 
-                    v-else-if="channel.socialMedia === 'instagram'" 
+                    v-else-if="channel.socialMedia === 'INSTAGRAM'" 
                     name="i-simple-icons-instagram" 
                     class="w-5 h-5 text-pink-600" 
                   />
                   <UIcon 
-                    v-else-if="channel.socialMedia === 'facebook'" 
+                    v-else-if="channel.socialMedia === 'FACEBOOK'" 
                     name="i-simple-icons-facebook" 
                     class="w-5 h-5 text-blue-600" 
                   />
                   <UIcon 
-                    v-else-if="channel.socialMedia === 'x'" 
+                    v-else-if="channel.socialMedia === 'X'" 
                     name="i-simple-icons-x" 
                     class="w-5 h-5 text-gray-900 dark:text-white" 
                   />
                   <UIcon 
-                    v-else-if="channel.socialMedia === 'youtube'" 
+                    v-else-if="channel.socialMedia === 'YOUTUBE'" 
                     name="i-simple-icons-youtube" 
                     class="w-5 h-5 text-red-600" 
                   />
                   <UIcon 
-                    v-else-if="channel.socialMedia === 'vk'" 
+                    v-else-if="channel.socialMedia === 'VK'" 
                     name="i-simple-icons-vk" 
                     class="w-5 h-5 text-blue-700" 
                   />
                   <UIcon 
-                    v-else-if="channel.socialMedia === 'tiktok'" 
+                    v-else-if="channel.socialMedia === 'TIKTOK'" 
                     name="i-simple-icons-tiktok" 
                     class="w-5 h-5 text-gray-900 dark:text-white" 
+                  />
+                  <UIcon 
+                    v-else-if="channel.socialMedia === 'LINKEDIN'" 
+                    name="i-simple-icons-linkedin" 
+                    class="w-5 h-5 text-blue-700" 
                   />
                   <UIcon 
                     v-else 

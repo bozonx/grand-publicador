@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 
-export type SocialMedia = 'telegram' | 'instagram' | 'vk' | 'youtube' | 'tiktok' | 'x' | 'facebook' | 'site'
+export type SocialMedia = 'TELEGRAM' | 'INSTAGRAM' | 'VK' | 'YOUTUBE' | 'TIKTOK' | 'X' | 'FACEBOOK' | 'LINKEDIN' | 'SITE'
 
 export interface Channel {
     id: string
@@ -56,14 +56,15 @@ export function useChannels() {
 
     const socialMediaOptions = computed(() => {
         const options: { value: SocialMedia; label: string }[] = [
-            { value: 'telegram', label: t('socialMedia.telegram') },
-            { value: 'instagram', label: t('socialMedia.instagram') },
-            { value: 'vk', label: t('socialMedia.vk') },
-            { value: 'youtube', label: t('socialMedia.youtube') },
-            { value: 'tiktok', label: t('socialMedia.tiktok') },
-            { value: 'x', label: t('socialMedia.x') },
-            { value: 'facebook', label: t('socialMedia.facebook') },
-            { value: 'site', label: t('socialMedia.site') },
+            { value: 'TELEGRAM', label: t('socialMedia.telegram') },
+            { value: 'INSTAGRAM', label: t('socialMedia.instagram') },
+            { value: 'VK', label: t('socialMedia.vk') },
+            { value: 'YOUTUBE', label: t('socialMedia.youtube') },
+            { value: 'TIKTOK', label: t('socialMedia.tiktok') },
+            { value: 'X', label: t('socialMedia.x') },
+            { value: 'FACEBOOK', label: t('socialMedia.facebook') },
+            { value: 'LINKEDIN', label: t('socialMedia.linkedin') },
+            { value: 'SITE', label: t('socialMedia.site') },
         ]
         return options
     })
@@ -210,28 +211,30 @@ export function useChannels() {
 
     function getSocialMediaColor(socialMedia: SocialMedia): string {
         const colors: Record<string, string> = {
-            telegram: '#0088cc',
-            instagram: '#e1306c',
-            vk: '#4a76a8',
-            youtube: '#ff0000',
-            tiktok: '#000000',
-            x: '#000000',
-            facebook: '#1877f2',
-            site: '#6b7280',
+            TELEGRAM: '#0088cc',
+            INSTAGRAM: '#e1306c',
+            VK: '#4a76a8',
+            YOUTUBE: '#ff0000',
+            TIKTOK: '#000000',
+            X: '#000000',
+            FACEBOOK: '#1877f2',
+            LINKEDIN: '#0077b5',
+            SITE: '#6b7280',
         }
         return colors[socialMedia] || '#6b7280'
     }
 
     function getSocialMediaIcon(socialMedia: SocialMedia): string {
         const icons: Record<string, string> = {
-            telegram: 'i-simple-icons-telegram',
-            instagram: 'i-simple-icons-instagram',
-            vk: 'i-simple-icons-vk',
-            youtube: 'i-simple-icons-youtube',
-            tiktok: 'i-simple-icons-tiktok',
-            x: 'i-simple-icons-x',
-            facebook: 'i-simple-icons-facebook',
-            site: 'i-heroicons-globe-alt',
+            TELEGRAM: 'i-simple-icons-telegram',
+            INSTAGRAM: 'i-simple-icons-instagram',
+            VK: 'i-simple-icons-vk',
+            YOUTUBE: 'i-simple-icons-youtube',
+            TIKTOK: 'i-simple-icons-tiktok',
+            X: 'i-simple-icons-x',
+            FACEBOOK: 'i-simple-icons-facebook',
+            LINKEDIN: 'i-simple-icons-linkedin',
+            SITE: 'i-heroicons-globe-alt',
         }
         return icons[socialMedia] || 'i-heroicons-hashtag'
     }
