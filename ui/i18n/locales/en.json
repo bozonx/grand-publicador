@@ -52,7 +52,6 @@
     "adminOnly": "Administrators only",
     "signIn": "Sign In",
     "signUp": "Sign Up",
-    "email": "Email",
     "password": "Password",
     "confirmPassword": "Confirm password",
     "fullName": "Full name",
@@ -67,8 +66,6 @@
     "openInTelegram": "Open the app in Telegram for automatic login",
     "passwordMismatch": "Passwords do not match",
     "weakPassword": "Password must be at least 6 characters",
-    "invalidEmail": "Invalid email",
-    "emailInUse": "This email is already in use",
     "signUpSuccess": "Registration successful! Check your email for confirmation.",
     "authMode": "Auth mode",
     "telegramMode": "Telegram",
@@ -123,8 +120,8 @@
     "addSuccess": "Member added successfully",
     "updateSuccess": "Member role updated successfully",
     "removeSuccess": "Member removed successfully",
-    "searchPlaceholder": "Email or username",
-    "userEmailOrUsername": "Email or username"
+    "searchPlaceholderUsername": "@username",
+    "userUsername": "Telegram Username"
   },
   "roles": {
     "owner": "Owner",
@@ -259,7 +256,6 @@
     "required": "This field is required",
     "minLength": "Minimum length: {min} characters",
     "maxLength": "Maximum length: {max} characters",
-    "email": "Enter a valid email",
     "url": "Enter a valid URL",
     "number": "Enter a number",
     "positive": "Number must be positive",

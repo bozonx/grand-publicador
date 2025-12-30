@@ -123,9 +123,7 @@ async function handleRemove(row: any) {
             <div class="font-medium text-gray-900 dark:text-white text-sm">
               {{ row.original.user.fullName || row.original.user.telegramUsername }}
             </div>
-            <div class="text-xs text-gray-500">
-              {{ row.original.user.email }}
-            </div>
+
           </div>
         </div>
       </template>

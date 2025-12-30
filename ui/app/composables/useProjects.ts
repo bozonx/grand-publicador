@@ -151,10 +151,10 @@ export function useProjects() {
         }
     }
 
-    async function addMember(projectId: string, emailOrUsername: string, role: string): Promise<boolean> {
+    async function addMember(projectId: string, username: string, role: string): Promise<boolean> {
         store.setLoading(true)
         try {
-            await api.post(`/projects/${projectId}/members`, { emailOrUsername, role })
+            await api.post(`/projects/${projectId}/members`, { username, role })
             toast.add({
                 title: t('common.success'),
                 description: t('projectMember.addSuccess'),

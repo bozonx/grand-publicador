@@ -14,7 +14,7 @@ datasource db {
 
 model User {
   id         String   @id @default(uuid())
-  email      String?
+
   fullName   String?  @map("full_name")
   telegramUsername String? @map("telegram_username")
   avatarUrl  String?  @map("avatar_url")

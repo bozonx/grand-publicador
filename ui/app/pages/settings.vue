@@ -167,7 +167,7 @@ function formatDate(date: string | null | undefined): string {
           </div>
 
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {{ user?.email || (user?.telegramId ? `Telegram ID: ${user.telegramId}` : '') }}
+            {{ user?.telegramId ? `Telegram ID: ${user.telegramId}` : '' }}
           </p>
         </div>
       </div>
@@ -182,14 +182,7 @@ function formatDate(date: string | null | undefined): string {
             {{ user?.telegramUsername ? `@${user.telegramUsername}` : '—' }}
           </dd>
         </div>
-        <div>
-          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-            {{ t('auth.email') }}
-          </dt>
-          <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-            {{ user?.email || '—' }}
-          </dd>
-        </div>
+
         <div v-if="user?.telegramId">
           <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
             {{ t('user.telegramId') }}

@@ -23,7 +23,7 @@ const isOpen = computed({
 })
 
 const isLoading = ref(false)
-const emailOrUsername = ref('')
+const username = ref('')
 const selectedRole = ref<ProjectRole>('viewer')
 
 const roleOptions = computed(() => [
@@ -33,10 +33,10 @@ const roleOptions = computed(() => [
 ])
 
 async function handleInvite() {
-  if (!emailOrUsername.value) return
+  if (!username.value) return
 
   isLoading.value = true
-  const success = await addMember(props.projectId, emailOrUsername.value, selectedRole.value)
+  const success = await addMember(props.projectId, username.value, selectedRole.value)
   isLoading.value = false
 
   if (success) {
@@ -47,7 +47,7 @@ async function handleInvite() {
 
 function closeModal() {
   isOpen.value = false
-  emailOrUsername.value = ''
+  username.value = ''
   selectedRole.value = 'viewer'
 }
 </script>
@@ -69,10 +69,10 @@ function closeModal() {
       </div>
 
       <form class="space-y-4" @submit.prevent="handleInvite">
-        <UFormField :label="t('projectMember.userEmailOrUsername')" required>
+        <UFormField :label="t('projectMember.userUsername', 'Telegram Username')" required>
           <UInput
-            v-model="emailOrUsername"
-            :placeholder="t('projectMember.searchPlaceholder')"
+            v-model="username"
+            :placeholder="t('projectMember.searchPlaceholderUsername', '@username')"
             autofocus
           />
         </UFormField>
@@ -90,7 +90,7 @@ function closeModal() {
           <UButton color="neutral" variant="ghost" @click="closeModal">
             {{ t('common.cancel') }}
           </UButton>
-          <UButton type="submit" color="primary" :loading="isLoading" :disabled="!emailOrUsername">
+          <UButton type="submit" color="primary" :loading="isLoading" :disabled="!username">
             {{ t('projectMember.invite') }}
           </UButton>
         </div>

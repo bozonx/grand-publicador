@@ -7,7 +7,7 @@ export interface User {
     telegramUsername?: string;
     fullName?: string;
     avatarUrl?: string;
-    email?: string;
+
     isAdmin: boolean;
     createdAt?: string;
     updatedAt?: string;

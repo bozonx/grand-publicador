@@ -45,7 +45,7 @@ async function main() {
         },
         {
             id: '00000000-0000-0000-0000-000000000002',
-            email: 'editor@example.com',
+
             fullName: 'Анна Редактор',
             isAdmin: false,
         },
@@ -58,7 +58,7 @@ async function main() {
         },
         {
             id: '00000000-0000-0000-0000-000000000004',
-            email: 'admin@example.com',
+
             fullName: 'Алексей Админ',
             isAdmin: true,
         },

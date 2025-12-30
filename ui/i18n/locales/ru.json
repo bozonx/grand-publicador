@@ -52,7 +52,6 @@
     "adminOnly": "Только для администраторов",
     "signIn": "Вход",
     "signUp": "Регистрация",
-    "email": "Email",
     "password": "Пароль",
     "confirmPassword": "Подтвердите пароль",
     "fullName": "Полное имя",
@@ -67,8 +66,6 @@
     "openInTelegram": "Откройте приложение в Telegram для автоматического входа",
     "passwordMismatch": "Пароли не совпадают",
     "weakPassword": "Пароль должен содержать минимум 6 символов",
-    "invalidEmail": "Некорректный email",
-    "emailInUse": "Этот email уже используется",
     "signUpSuccess": "Регистрация успешна! Проверьте email для подтверждения.",
     "authMode": "Режим авторизации",
     "telegramMode": "Telegram",
@@ -123,8 +120,8 @@
     "addSuccess": "Участник успешно добавлен",
     "updateSuccess": "Роль участника обновлена",
     "removeSuccess": "Участник успешно удалён",
-    "searchPlaceholder": "Email или имя пользователя",
-    "userEmailOrUsername": "Email или имя пользователя"
+    "searchPlaceholderUsername": "@username",
+    "userUsername": "Имя пользователя Telegram"
   },
   "roles": {
     "owner": "Владелец",
@@ -259,7 +256,6 @@
     "required": "Это поле обязательно для заполнения",
     "minLength": "Минимальная длина: {min} символов",
     "maxLength": "Максимальная длина: {max} символов",
-    "email": "Введите корректный email",
     "url": "Введите корректный URL",
     "number": "Введите число",
     "positive": "Число должно быть положительным",

@@ -225,7 +225,7 @@ export type Database = {
         Row: {
           id: string
           telegram_id: number | null
-          email: string | null
+
           telegram_username: string | null
           full_name: string | null
           avatar_url: string | null
@@ -236,7 +236,7 @@ export type Database = {
         Insert: {
           id?: string
           telegram_id?: number | null
-          email?: string | null
+
           telegram_username?: string | null
           full_name?: string | null
           avatar_url?: string | null
@@ -247,7 +247,7 @@ export type Database = {
         Update: {
           id?: string
           telegram_id?: number | null
-          email?: string | null
+
           telegram_username?: string | null
           full_name?: string | null
           avatar_url?: string | null
@@ -272,7 +272,7 @@ export type Database = {
         Returns: {
           id: string
           telegram_id: number | null
-          email: string | null
+
           telegram_username: string | null
           full_name: string | null
           avatar_url: string | null

@@ -96,7 +96,7 @@ export class UsersService {
       where.OR = [
         { fullName: { contains: search, mode: 'insensitive' } },
         { telegramUsername: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
+
       ];
     }
 
@@ -123,7 +123,7 @@ export class UsersService {
     const usersWithStats = users.map(user => ({
       id: user.id,
       telegramId: user.telegramId?.toString(),
-      email: user.email,
+
       telegram_username: user.telegramUsername,
       full_name: user.fullName,
       avatar_url: user.avatarUrl,

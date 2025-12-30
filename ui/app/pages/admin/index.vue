@@ -68,7 +68,7 @@ watch(selectedTab, (newTab) => {
 // Users management
 const columns = computed<TableColumn<UserWithStats>[]>(() => [
   { accessorKey: 'user', header: t('user.username') },
-  { accessorKey: 'email', header: t('auth.email') },
+
   { accessorKey: 'role', header: t('user.role') },
   { accessorKey: 'stats', header: t('admin.statistics') },
   { accessorKey: 'created_at', header: t('user.createdAt') },
@@ -231,7 +231,7 @@ const hasActiveFilters = computed(() => {
           <!-- Search -->
           <UInput
             v-model="searchQuery"
-            :placeholder="t('admin.searchUsers', 'Search by name, username, or email')"
+            :placeholder="t('admin.searchUsers', 'Search by name or username')"
             icon="i-heroicons-magnifying-glass"
             class="sm:col-span-2"
           />
@@ -515,7 +515,7 @@ const hasActiveFilters = computed(() => {
                 {{ getUserDisplayName(userToToggle) }}
               </div>
               <div class="text-sm text-gray-500">
-                {{ userToToggle.email || userToToggle.telegram_username }}
+                {{ userToToggle.telegram_username }}
               </div>
             </div>
           </div>
