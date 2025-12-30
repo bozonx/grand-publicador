@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useProjects } from '~/composables/useProjects'
+
 definePageMeta({
   middleware: 'auth',
 })
@@ -15,22 +16,12 @@ const {
   isLoading,
   error,
   fetchProject,
-  updateProject,
-  deleteProject,
   clearCurrentProject,
   canEdit,
-  canDelete,
-  canManageMembers,
   getRoleDisplayName,
 } = useProjects()
 
 const projectId = computed(() => route.params.id as string)
-const isEditMode = computed(() => route.query.edit === 'true')
-
-// Delete confirmation modal state
-const showDeleteModal = ref(false)
-const isDeleting = ref(false)
-const isSaving = ref(false)
 
 // Fetch project on mount
 onMounted(async () => {
@@ -50,74 +41,6 @@ onUnmounted(() => {
 function goBack() {
   router.push('/projects')
 }
-
-/**
- * Toggle edit mode
- */
-function toggleEditMode() {
-  router.replace({
-    query: { ...route.query, edit: isEditMode.value ? undefined : 'true' },
-  })
-}
-
-/**
- * Cancel editing
- */
-function cancelEdit() {
-  router.replace({
-    query: { ...route.query, edit: undefined },
-  })
-}
-
-/**
- * Handle project update
- */
-async function handleUpdate(data: { name: string; description: string }) {
-  if (!projectId.value) return
-
-  isSaving.value = true
-  const result = await updateProject(projectId.value, {
-    name: data.name,
-    description: data.description,
-  })
-  isSaving.value = false
-
-  if (result) {
-    cancelEdit()
-  }
-}
-
-/**
- * Open delete confirmation modal
- */
-function confirmDelete() {
-  showDeleteModal.value = true
-}
-
-/**
- * Handle project deletion
- */
-async function handleDelete() {
-  if (!projectId.value) return
-
-  isDeleting.value = true
-  const success = await deleteProject(projectId.value)
-  isDeleting.value = false
-
-  if (success) {
-    showDeleteModal.value = false
-    router.push('/projects')
-  }
-}
-
-/**
- * Cancel delete action
- */
-function cancelDelete() {
-  showDeleteModal.value = false
-}
-
-
 
 /**
  * Get role badge color based on role
@@ -193,16 +116,6 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
       </UButton>
     </div>
 
-    <!-- Edit mode -->
-    <div v-else-if="isEditMode && canEdit(currentProject)" class="max-w-4xl mx-auto">
-      <FormsProjectForm
-        :project="currentProject"
-        :is-loading="isSaving"
-        @submit="handleUpdate"
-        @cancel="cancelEdit"
-      />
-    </div>
-
     <!-- View mode -->
     <div v-else>
       <!-- Page header -->
@@ -250,21 +163,12 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
             <div class="flex items-center gap-2 ml-4">
               <UButton
                 v-if="canEdit(currentProject)"
-                color="primary"
+                color="neutral"
                 variant="outline"
-                icon="i-heroicons-pencil-square"
-                @click="toggleEditMode"
+                icon="i-heroicons-cog-6-tooth"
+                :to="`/projects/${currentProject.id}/settings`"
               >
-                {{ t('common.edit') }}
-              </UButton>
-              <UButton
-                v-if="canDelete(currentProject)"
-                color="error"
-                variant="ghost"
-                icon="i-heroicons-trash"
-                @click="confirmDelete"
-              >
-                {{ t('common.delete') }}
+                {{ t('common.settings', 'Settings') }}
               </UButton>
             </div>
           </div>
@@ -272,7 +176,7 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
       </div>
 
       <!-- Quick actions grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <!-- Channels card -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div class="flex items-center gap-3 mb-4">
@@ -295,44 +199,6 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
             @click="$el?.querySelector('#channels-section')?.scrollIntoView({ behavior: 'smooth' })"
           >
             {{ t('common.view') }} {{ t('channel.titlePlural').toLowerCase() }}
-          </UButton>
-        </div>
-
-        <!-- Members card -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div class="flex items-center gap-3 mb-4">
-            <div class="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-              <UIcon
-                name="i-heroicons-users"
-                class="w-6 h-6 text-purple-600 dark:text-purple-400"
-              />
-            </div>
-            <div>
-              <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                {{ t('projectMember.titlePlural') }}
-              </h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400">
-                {{ currentProject.memberCount || 0 }} {{ t('projectMember.titlePlural').toLowerCase() }}
-              </p>
-            </div>
-          </div>
-          <UButton
-            v-if="canManageMembers(currentProject)"
-            icon="i-heroicons-user-plus"
-            class="w-full"
-            disabled
-          >
-            {{ t('projectMember.invite') }}
-          </UButton>
-          <UButton
-            v-else
-            icon="i-heroicons-eye"
-            color="neutral"
-            variant="outline"
-            class="w-full"
-            disabled
-          >
-            {{ t('common.view', 'View') }}
           </UButton>
         </div>
 
@@ -374,100 +240,10 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
         </div>
       </div>
 
-      <!-- Project info section -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-            {{ t('common.info', 'Information') }}
-          </h2>
-        </div>
-        <div class="p-6">
-          <dl class="space-y-4">
-            <div class="flex flex-col sm:flex-row sm:gap-4">
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:w-40">
-                {{ t('project.name') }}
-              </dt>
-              <dd class="text-sm text-gray-900 dark:text-white">
-                {{ currentProject.name }}
-              </dd>
-            </div>
-            <div class="flex flex-col sm:flex-row sm:gap-4">
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:w-40">
-                {{ t('project.description') }}
-              </dt>
-              <dd class="text-sm text-gray-900 dark:text-white">
-                {{ currentProject.description || '-' }}
-              </dd>
-            </div>
-            <div class="flex flex-col sm:flex-row sm:gap-4">
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:w-40">
-                {{ t('user.role') }}
-              </dt>
-              <dd class="text-sm">
-                <UBadge :color="getRoleBadgeColor(currentProject.role)" variant="subtle">
-                  {{ getRoleDisplayName(currentProject.role) }}
-                </UBadge>
-              </dd>
-            </div>
-            <div class="flex flex-col sm:flex-row sm:gap-4">
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:w-40">
-                {{ t('user.createdAt') }}
-              </dt>
-              <dd class="text-sm text-gray-900 dark:text-white">
-                {{ d(new Date(currentProject.createdAt || ''), 'long') }}
-              </dd>
-            </div>
-            <div v-if="currentProject.updatedAt" class="flex flex-col sm:flex-row sm:gap-4">
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 sm:w-40">Updated</dt>
-              <dd class="text-sm text-gray-900 dark:text-white">
-                {{ d(new Date(currentProject.updatedAt), 'long') }}
-              </dd>
-            </div>
-          </dl>
-        </div>
-      </div>
-
-      <!-- Members Section -->
-      <div id="members-section" class="bg-white dark:bg-gray-800 rounded-lg shadow mt-6 p-6">
-        <ProjectsProjectMembersList :project-id="currentProject.id" />
-      </div>
-
       <!-- Channels Section -->
       <div id="channels-section" class="bg-white dark:bg-gray-800 rounded-lg shadow mt-6 p-6">
         <FeaturesChannelsList :project-id="currentProject.id" />
       </div>
     </div>
-
-    <!-- Delete confirmation modal -->
-    <UModal v-model:open="showDeleteModal">
-      <template #content>
-        <div class="p-6">
-          <div class="flex items-center gap-4 mb-4">
-            <div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
-              <UIcon
-                name="i-heroicons-exclamation-triangle"
-                class="w-6 h-6 text-red-600 dark:text-red-400"
-              />
-            </div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ t('project.deleteProject') }}
-            </h3>
-          </div>
-
-          <p class="text-gray-600 dark:text-gray-400 mb-6">
-            {{ t('project.deleteConfirm') }}
-          </p>
-
-          <div class="flex justify-end gap-3">
-            <UButton color="neutral" variant="ghost" :disabled="isDeleting" @click="cancelDelete">
-              {{ t('common.cancel') }}
-            </UButton>
-            <UButton color="error" :loading="isDeleting" @click="handleDelete">
-              {{ t('common.delete') }}
-            </UButton>
-          </div>
-        </div>
-      </template>
-    </UModal>
   </div>
 </template>

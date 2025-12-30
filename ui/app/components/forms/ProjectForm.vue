@@ -6,6 +6,14 @@ interface Props {
   project?: ProjectWithRole | null
   /** Whether the form is in loading state */
   isLoading?: boolean
+  /** Custom label for submit button */
+  submitLabel?: string
+  /** Custom label for cancel button */
+  cancelLabel?: string
+  /** Whether to hide the header section */
+  hideHeader?: boolean
+  /** Whether to hide the cancel button */
+  hideCancel?: boolean
 }
 
 interface Emits {
@@ -16,6 +24,10 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   project: null,
   isLoading: false,
+  submitLabel: undefined,
+  cancelLabel: undefined,
+  hideHeader: false,
+  hideCancel: false,
 })
 
 const emit = defineEmits<Emits>()
@@ -49,7 +61,7 @@ function handleCancel() {
 
 <template>
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-    <div class="mb-6">
+    <div v-if="!hideHeader" class="mb-6">
       <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
         {{ isEditMode ? t('project.editProject') : t('project.createProject') }}
       </h2>
@@ -96,13 +108,14 @@ function handleCancel() {
         class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700"
       >
         <UButton
+          v-if="!hideCancel"
           type="button"
           color="neutral"
           variant="ghost"
           :disabled="isLoading"
           @click="handleCancel"
         >
-          {{ t('common.cancel') }}
+          {{ cancelLabel || t('common.cancel') }}
         </UButton>
         <UButton
           type="button"
@@ -111,7 +124,7 @@ function handleCancel() {
           :disabled="!state.name || state.name.length < 2 || state.description.length > 500"
           @click="handleSubmit"
         >
-          {{ isEditMode ? t('common.save') : t('common.create') }}
+          {{ submitLabel || (isEditMode ? t('common.save') : t('common.create')) }}
         </UButton>
       </div>
     </div>

@@ -28,7 +28,10 @@
     "warning": "Warning",
     "info": "Information",
     "view": "View",
-    "viewAll": "View all"
+    "viewAll": "View all",
+    "back_to_project": "Back to Project",
+    "settings": "Settings",
+    "danger_zone": "Danger Zone"
   },
   "navigation": {
     "home": "Home",
@@ -119,7 +122,13 @@
     "myProjects": "My projects",
     "createSuccess": "Project created successfully",
     "updateSuccess": "Project updated successfully",
-    "deleteSuccess": "Project deleted successfully"
+    "deleteSuccess": "Project deleted successfully",
+    "settings": "Project Settings",
+    "settings_description": "Manage your project settings and members",
+    "general_settings": "General Settings",
+    "general_settings_desc": "Update your project name and description",
+    "members_desc": "Manage who has access to this project",
+    "delete_warning": "Once you delete a project, there is no going back. Please be certain."
   },
   "projectMember": {
     "title": "Member",
