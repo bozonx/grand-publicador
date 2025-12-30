@@ -86,24 +86,6 @@
     "isAdmin": "Администратор",
     "createdAt": "Дата регистрации"
   },
-  "blog": {
-    "title": "Блог",
-    "titlePlural": "Блоги",
-    "name": "Название",
-    "description": "Описание",
-    "owner": "Владелец",
-    "members": "Участники",
-    "createBlog": "Создать блог",
-    "editBlog": "Редактировать блог",
-    "deleteBlog": "Удалить блог",
-    "deleteConfirm": "Вы уверены, что хотите удалить этот блог? Это действие нельзя отменить.",
-    "noBlogsFound": "Блоги не найдены",
-    "noBlogsDescription": "У вас пока нет блогов. Создайте первый!",
-    "myBlogs": "Мои блоги",
-    "createSuccess": "Блог успешно создан",
-    "updateSuccess": "Блог успешно обновлён",
-    "deleteSuccess": "Блог успешно удалён"
-  },
   "project": {
     "title": "Проект",
     "titlePlural": "Проекты",

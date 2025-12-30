@@ -45,7 +45,7 @@ onMounted(() => {
 })
 
 // Watch for filter changes
-watch(
+watchDebounced(
   [selectedSocialMedia, selectedActiveStatus, searchQuery],
   () => {
     setFilter({
@@ -55,7 +55,7 @@ watch(
     })
     fetchChannels(props.projectId)
   },
-  { debounce: 300 } as any
+  { debounce: 300 }
 )
 
 /**

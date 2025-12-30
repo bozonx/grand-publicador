@@ -86,24 +86,6 @@
     "isAdmin": "Administrator",
     "createdAt": "Registration date"
   },
-  "blog": {
-    "title": "Blog",
-    "titlePlural": "Blogs",
-    "name": "Name",
-    "description": "Description",
-    "owner": "Owner",
-    "members": "Members",
-    "createBlog": "Create blog",
-    "editBlog": "Edit blog",
-    "deleteBlog": "Delete Blog",
-    "deleteConfirm": "Are you sure you want to delete this blog? This action cannot be undone.",
-    "noBlogsFound": "No blogs found",
-    "noBlogsDescription": "You don't have any blogs yet. Create one to get started!",
-    "myBlogs": "My blogs",
-    "createSuccess": "Blog created successfully",
-    "updateSuccess": "Blog updated successfully",
-    "deleteSuccess": "Blog deleted successfully"
-  },
   "project": {
     "title": "Project",
     "titlePlural": "Projects",
