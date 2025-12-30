@@ -25,12 +25,24 @@ async function main() {
     console.log('🌱 Starting seeding...');
 
     // 1. CREATE TEST USERS
+    const devTelegramId = BigInt(process.env.TELEGRAM_ADMIN_ID || process.env.VITE_DEV_TELEGRAM_ID || '123456789');
+
+    // Ensure no other user has tiles telegramId to avoid unique constraint violation
+    await prisma.user.deleteMany({
+        where: {
+            telegramId: devTelegramId,
+            id: { not: '00000000-0000-0000-0000-000000000001' }
+        }
+    });
+
     const devUser = await prisma.user.upsert({
-        where: { telegramId: 123456789n },
-        update: {},
+        where: { id: '00000000-0000-0000-0000-000000000001' },
+        update: {
+            telegramId: devTelegramId,
+        },
         create: {
             id: '00000000-0000-0000-0000-000000000001',
-            telegramId: 123456789n,
+            telegramId: devTelegramId,
             username: 'dev_user',
             fullName: 'Dev User',
             isAdmin: true,
