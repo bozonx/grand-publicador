@@ -45,8 +45,9 @@ export class AutomationController {
    * POST /api/automation/v1/posts/:id/claim
    */
   @Post('posts/:id/claim')
-  async claimPost(@Param('id') id: string) {
-    return this.automationService.claimPost(id);
+  async claimPost(@Request() req: any, @Param('id') id: string) {
+    const { userId, scopeProjectIds } = req.user;
+    return this.automationService.claimPost(id, userId, scopeProjectIds);
   }
 
   /**
@@ -54,7 +55,12 @@ export class AutomationController {
    * PATCH /api/automation/v1/posts/:id/status
    */
   @Patch('posts/:id/status')
-  async updatePostStatus(@Param('id') id: string, @Body() dto: UpdatePostStatusDto) {
-    return this.automationService.updatePostStatus(id, dto.status, dto.error);
+  async updatePostStatus(
+    @Request() req: any,
+    @Param('id') id: string,
+    @Body() dto: UpdatePostStatusDto,
+  ) {
+    const { userId, scopeProjectIds } = req.user;
+    return this.automationService.updatePostStatus(id, dto.status, userId, scopeProjectIds, dto.error);
   }
 }

@@ -29,19 +29,19 @@ export class AutomationService {
     const now = new Date();
     const lookbackDate = new Date(now.getTime() - lookbackMinutes * 60 * 1000);
 
-    // Get user's owned projects
-    const ownedProjects = await this.prisma.project.findMany({
-      where: { ownerId: userId },
-      select: { id: true },
+    // Get projects where user is a member
+    const userProjects = await this.prisma.projectMember.findMany({
+      where: { userId: userId },
+      select: { projectId: true },
     });
 
-    const ownedProjectIds = ownedProjects.map((p) => p.id);
+    const userProjectIds = userProjects.map((p) => p.projectId);
 
     // Filter by scope if specified
     const allowedProjectIds =
       scopeProjectIds.length > 0
-        ? ownedProjectIds.filter((id) => scopeProjectIds.includes(id))
-        : ownedProjectIds;
+        ? userProjectIds.filter((id) => scopeProjectIds.includes(id))
+        : userProjectIds;
 
     if (allowedProjectIds.length === 0) {
       return []; // No projects accessible with this token
@@ -104,13 +104,21 @@ export class AutomationService {
   /**
    * Claim a post for publishing.
    * Atomic operation that sets a 'processing' flag in the meta field to prevent race conditions.
+   * Verifies that the user has access to the project the post belongs to.
    *
    * @param postId - The ID of the post to claim.
+   * @param userId - The ID of the user claiming the post.
+   * @param scopeProjectIds - Allowed project IDs from the token.
    * @returns The updated post with claim metadata.
-   * @throws Error if post is not found, not scheduled, or already being processed.
+   * @throws Error if post is not found, access denied, not scheduled, or already processed.
    */
-  async claimPost(postId: string) {
-    this.logger.log(`Claiming post ${postId}`);
+  async claimPost(postId: string, userId: string, scopeProjectIds: string[]) {
+    this.logger.log(`Claiming post ${postId} by user ${userId}`);
+
+    // Verify access first (outside transaction to keep it short, though inside might be safer for consistency, 
+    // but here we just need to know if the user generally has access)
+    // Actually, we need to fetch the post to know the project ID.
+    // We can do it inside the transaction.
 
     return this.prisma.$transaction(async tx => {
       const post = await tx.post.findUnique({
@@ -125,6 +133,28 @@ export class AutomationService {
         throw new Error('Post not found');
       }
 
+      // Security Check: explicit project scope validation
+      const projectId = post.channel.projectId;
+
+      // 1. Check Token Scope
+      if (scopeProjectIds.length > 0 && !scopeProjectIds.includes(projectId)) {
+        throw new Error('Access denied: Project not in token scope');
+      }
+
+      // 2. Check User Membership (ensure user actually has access to this project)
+      const member = await tx.projectMember.findUnique({
+        where: {
+          projectId_userId: {
+            projectId,
+            userId,
+          },
+        },
+      });
+
+      if (!member) {
+        throw new Error('Access denied: User is not a member of this project');
+      }
+
       if (post.status !== PostStatus.SCHEDULED) {
         throw new Error('Post is not scheduled');
       }
@@ -136,15 +166,13 @@ export class AutomationService {
       }
 
       // Atomic update within transaction
-      // We could also check version if we had one, but strict transaction isolation
-      // or select for update would be even better. Since we are in a transaction
-      // and checking permissions, this is reasonably safe for this scale.
       return tx.post.update({
         where: { id: postId },
         data: {
           meta: JSON.stringify({
             ...meta,
             processing: true,
+            claimedBy: userId,
             claimedAt: new Date().toISOString(),
           }),
         },
@@ -159,21 +187,55 @@ export class AutomationService {
   /**
    * Update post status after a publishing attempt.
    * Removes the 'processing' flag and updates the status and last error if applicable.
+   * Verifies access.
    *
    * @param postId - The ID of the post.
    * @param status - The new status (e.g., PUBLISHED, FAILED).
+   * @param userId - The ID of the user updating the status.
+   * @param scopeProjectIds - Allowed project IDs from the token.
    * @param error - Optional error message if the attempt failed.
    * @returns The updated post.
    */
-  async updatePostStatus(postId: string, status: PostStatus, error?: string) {
-    this.logger.log(`Updating post ${postId} status to ${status}`);
+  async updatePostStatus(
+    postId: string,
+    status: PostStatus,
+    userId: string,
+    scopeProjectIds: string[],
+    error?: string
+  ) {
+    this.logger.log(`Updating post ${postId} status to ${status} by user ${userId}`);
 
     const post = await this.prisma.post.findUnique({
       where: { id: postId },
+      include: {
+        channel: true,
+      },
     });
 
     if (!post) {
       throw new Error('Post not found');
+    }
+
+    // Security Check
+    const projectId = post.channel.projectId;
+
+    // 1. Check Token Scope
+    if (scopeProjectIds.length > 0 && !scopeProjectIds.includes(projectId)) {
+      throw new Error('Access denied: Project not in token scope');
+    }
+
+    // 2. Check User Membership
+    const member = await this.prisma.projectMember.findUnique({
+      where: {
+        projectId_userId: {
+          projectId,
+          userId,
+        },
+      },
+    });
+
+    if (!member) {
+      throw new Error('Access denied: User is not a member of this project');
     }
 
     const meta = JSON.parse(post.meta);
@@ -184,6 +246,7 @@ export class AutomationService {
       meta: JSON.stringify({
         ...meta,
         ...(error && { lastError: error }),
+        updatedBy: userId,
         updatedAt: new Date().toISOString(),
       }),
     };
