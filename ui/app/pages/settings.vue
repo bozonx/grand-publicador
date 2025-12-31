@@ -22,7 +22,7 @@ const {
   copyToken,
 } = useApiTokens()
 
-const { data: projects } = useFetch<any[]>('/api/v1/projects')
+const projects = ref<any[]>([])
 const showCreateTokenModal = ref(false)
 const showEditTokenModal = ref(false)
 const editingToken = ref<any>(null)
@@ -31,10 +31,19 @@ const newTokenScope = ref<string[]>([])
 const limitToProjects = ref(false)
 const visibleTokens = ref<Set<string>>(new Set())
 
-// Load tokens on mount
+// Load tokens and projects on mount
 onMounted(() => {
   fetchTokens()
+  fetchProjects()
 })
+
+async function fetchProjects() {
+  try {
+    projects.value = await api.get('/projects')
+  } catch (err) {
+    console.error('Failed to fetch projects:', err)
+  }
+}
 
 // Toggle token visibility
 function toggleTokenVisibility(tokenId: string) {
