@@ -193,7 +193,8 @@ function formatDateTime(date: string | null): string {
 /**
  * Truncate content for preview
  */
-function truncateContent(content: string, maxLength = 150): string {
+function truncateContent(content: string | null | undefined, maxLength = 150): string {
+  if (!content) return ''
   // Strip HTML tags
   const text = content.replace(/<[^>]*>/g, '').trim()
   if (text.length <= maxLength) return text

@@ -7,7 +7,7 @@ export interface Post {
     id: string
     channelId: string
     authorId: string | null
-    content: string
+    content: string | null
     socialMedia: string
     postType: PostType
     title: string | null
