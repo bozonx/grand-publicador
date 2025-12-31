@@ -90,11 +90,26 @@ export function usePosts() {
         error.value = null
 
         try {
-            const data = await api.get<PostWithRelations[]>(`/posts?projectId=${projectId}`)
+            const params: Record<string, any> = {}
+
+            // Apply filters
+            if (filter.value.channelId) {
+                params.channelId = filter.value.channelId
+            } else {
+                params.projectId = projectId
+            }
+
+            if (filter.value.status) params.status = filter.value.status
+            if (filter.value.postType) params.postType = filter.value.postType
+            if (filter.value.search) params.search = filter.value.search
+            if (filter.value.authorId) params.authorId = filter.value.authorId
+
+            const data = await api.get<PostWithRelations[]>('/posts', { params })
             posts.value = data
             return data
         } catch (err: any) {
             console.error('[usePosts] fetchPostsByProject error:', err)
+            posts.value = []
             return []
         } finally {
             isLoading.value = false
@@ -244,14 +259,17 @@ export function usePosts() {
 
     // Helpers
     function getStatusDisplayName(status: string): string {
+        if (!status) return '-'
         return t(`postStatus.${status.toLowerCase()}`)
     }
 
     function getTypeDisplayName(type: string): string {
+        if (!type) return '-'
         return t(`postType.${type.toLowerCase()}`)
     }
 
     function getStatusColor(status: string): 'neutral' | 'warning' | 'success' | 'error' {
+        if (!status) return 'neutral'
         const colors: Record<string, 'neutral' | 'warning' | 'success' | 'error'> = {
             draft: 'neutral',
             scheduled: 'warning',

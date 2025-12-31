@@ -171,6 +171,7 @@
     "noChannelsFound": "No channels found",
     "noChannelsFiltered": "No channels match the filter",
     "noChannelsDescription": "Create your first channel to publish content",
+    "noPostsDescription": "Create your first post to get started",
     "socialMediaCannotChange": "Social media cannot be changed after channel creation",
     "createSuccess": "Channel created successfully",
     "updateSuccess": "Channel updated successfully",

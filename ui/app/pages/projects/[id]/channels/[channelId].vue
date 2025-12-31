@@ -349,7 +349,7 @@ function getStatusBadgeColor(isActive: boolean): 'success' | 'neutral' {
                 <div v-else-if="posts.length === 0" class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
                     <UIcon name="i-heroicons-document-text" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
                     <p class="text-gray-500 dark:text-gray-400">
-                        {{ hasActiveFilters ? t('post.noPostsFiltered') : t('channel.noPostsDescription', 'No posts in this channel yet') }}
+                        {{ hasActiveFilters ? t('post.noPostsFiltered') : t('channel.noPostsDescription') }}
                     </p>
                 </div>
 

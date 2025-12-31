@@ -171,6 +171,7 @@
     "noChannelsFound": "Каналы не найдены",
     "noChannelsFiltered": "Нет каналов, соответствующих фильтру",
     "noChannelsDescription": "Создайте первый канал для публикации контента",
+    "noPostsDescription": "Создайте первую публикацию для начала работы",
     "socialMediaCannotChange": "Социальную сеть нельзя изменить после создания канала",
     "createSuccess": "Канал успешно создан",
     "updateSuccess": "Канал успешно обновлён",

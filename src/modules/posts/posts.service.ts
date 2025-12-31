@@ -73,22 +73,41 @@ export class PostsService {
    * @param userId - The ID of the user.
    * @returns A list of posts for all channels in the project.
    */
-  public async findAllForProject(projectId: string, userId: string) {
+  public async findAllForProject(
+    projectId: string,
+    userId: string,
+    filters?: { status?: PostStatus; postType?: PostType; search?: string },
+  ) {
     // Check project permission (owner/admin/editor/viewer)
     const role = await this.permissions.getUserProjectRole(projectId, userId);
     if (!role) {
       throw new ForbiddenException('You are not a member of this project');
     }
 
-    return this.prisma.post.findMany({
-      where: {
+    const where: any = {
+      archivedAt: null,
+      channel: {
+        projectId,
         archivedAt: null,
-        channel: {
-          projectId,
-          archivedAt: null,
-          project: { archivedAt: null },
-        },
+        project: { archivedAt: null },
       },
+    };
+
+    if (filters?.status && typeof filters.status === 'string') {
+      where.status = filters.status.toUpperCase() as PostStatus;
+    }
+    if (filters?.postType && typeof filters.postType === 'string') {
+      where.postType = filters.postType.toUpperCase() as PostType;
+    }
+    if (filters?.search) {
+      where.OR = [
+        { title: { contains: filters.search, mode: 'insensitive' } },
+        { content: { contains: filters.search, mode: 'insensitive' } },
+      ];
+    }
+
+    return this.prisma.post.findMany({
+      where,
       include: {
         channel: {
           select: {
@@ -119,17 +138,37 @@ export class PostsService {
    * @param userId - The ID of the user.
    * @returns A list of posts, ordered by creation date (descending).
    */
-  public async findAllForChannel(channelId: string, userId: string) {
+  public async findAllForChannel(
+    channelId: string,
+    userId: string,
+    filters?: { status?: PostStatus; postType?: PostType; search?: string },
+  ) {
     await this.channelsService.findOne(channelId, userId); // Validates access
-    return this.prisma.post.findMany({
-      where: {
-        channelId,
+
+    const where: any = {
+      channelId,
+      archivedAt: null,
+      channel: {
         archivedAt: null,
-        channel: {
-          archivedAt: null,
-          project: { archivedAt: null },
-        },
+        project: { archivedAt: null },
       },
+    };
+
+    if (filters?.status && typeof filters.status === 'string') {
+      where.status = filters.status.toUpperCase() as PostStatus;
+    }
+    if (filters?.postType && typeof filters.postType === 'string') {
+      where.postType = filters.postType.toUpperCase() as PostType;
+    }
+    if (filters?.search) {
+      where.OR = [
+        { title: { contains: filters.search, mode: 'insensitive' } },
+        { content: { contains: filters.search, mode: 'insensitive' } },
+      ];
+    }
+
+    return this.prisma.post.findMany({
+      where,
       include: {
         channel: {
           select: {
