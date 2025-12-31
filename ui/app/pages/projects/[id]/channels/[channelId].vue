@@ -183,7 +183,8 @@ function formatDateTime(date: string | null): string {
   return new Date(date).toLocaleString()
 }
 
-function truncateContent(content: string, maxLength = 150): string {
+function truncateContent(content: string | null | undefined, maxLength = 150): string {
+  if (!content) return ''
   const text = content.replace(/<[^>]*>/g, '').trim()
   if (text.length <= maxLength) return text
   return text.slice(0, maxLength) + '...'
