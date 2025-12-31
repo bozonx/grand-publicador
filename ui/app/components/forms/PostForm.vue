@@ -35,13 +35,13 @@ const { channels, fetchChannels, isLoading: isChannelsLoading } = useChannels()
 const formData = reactive({
   channelId: props.post?.channelId || props.channelId || '',
   content: props.post?.content || '',
-  postType: (props.post?.postType || 'post') as PostTypeEnum,
+  postType: (props.post?.postType || 'POST') as PostType,
   title: props.post?.title || '',
   description: props.post?.description || '',
   authorComment: props.post?.authorComment || '',
   tags: props.post?.tags || '',
   postDate: props.post?.postDate || '',
-  status: (props.post?.status || 'draft') as PostStatusEnum,
+  status: (props.post?.status || 'DRAFT') as PostStatus,
   scheduledAt: props.post?.scheduledAt || '',
 })
 
@@ -75,7 +75,7 @@ const channelOptions = computed(() => {
 
 // Status options for select (only draft and scheduled for creation/editing)
 const availableStatusOptions = computed(() => {
-  return statusOptions.value.filter((opt) => ['draft', 'scheduled'].includes(opt.value))
+  return statusOptions.value.filter((opt) => ['DRAFT', 'SCHEDULED'].includes(opt.value as string))
 })
 
 /**
@@ -100,7 +100,7 @@ async function handleSubmit() {
       postDate: formData.postDate || undefined,
       status: formData.status,
       scheduledAt:
-        formData.status === 'scheduled' ? formData.scheduledAt || undefined : undefined,
+        formData.status === 'SCHEDULED' ? formData.scheduledAt || undefined : undefined,
     }
 
     const result = await updatePost(props.post.id, updateData)
@@ -124,7 +124,7 @@ async function handleSubmit() {
       postDate: formData.postDate || undefined,
       status: formData.status,
       scheduledAt:
-        formData.status === 'scheduled' ? formData.scheduledAt || undefined : undefined,
+        formData.status === 'SCHEDULED' ? formData.scheduledAt || undefined : undefined,
     }
 
     const result = await createPost(createData)
@@ -160,7 +160,7 @@ const isContentValid = computed(() => {
 const isFormValid = computed(() => {
   if (!isEditMode.value && !formData.channelId) return false
   if (!isContentValid.value) return false
-  if (formData.status === 'scheduled' && !formData.scheduledAt) return false
+  if (formData.status === 'SCHEDULED' && !formData.scheduledAt) return false
   return true
 })
 </script>
@@ -246,7 +246,7 @@ const isFormValid = computed(() => {
       </div>
 
       <!-- Scheduling -->
-      <UFormField v-if="formData.status === 'scheduled'" :label="t('post.scheduledAt')" required>
+      <UFormField v-if="formData.status === 'SCHEDULED'" :label="t('post.scheduledAt')" required>
         <UInput v-model="formData.scheduledAt" type="datetime-local" class="w-full" icon="i-heroicons-clock" />
       </UFormField>
 

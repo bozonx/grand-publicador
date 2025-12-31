@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import type { ChannelWithProject } from '~/composables/useChannels'
-import type { PostWithRelations } from '~/composables/usePosts'
-import type { Database } from '~/types/database.types'
-
-type PostStatusEnum = Database['public']['Enums']['post_status_enum']
-type PostTypeEnum = Database['public']['Enums']['post_type_enum']
+import type { PostWithRelations, PostStatus, PostType } from '~/composables/usePosts'
 
 definePageMeta({
   middleware: 'auth',
@@ -59,8 +55,8 @@ const isDeleteModalOpen = ref(false)
 const isDeletingChannel = ref(false)
 
 // Post Filter States
-const selectedStatus = ref<PostStatusEnum | null>(null)
-const selectedType = ref<PostTypeEnum | null>(null)
+const selectedStatus = ref<PostStatus | null>(null)
+const selectedType = ref<PostType | null>(null)
 const searchQuery = ref('')
 const showDeletePostModal = ref(false)
 const postToDelete = ref<PostWithRelations | null>(null)
@@ -383,7 +379,7 @@ function getStatusBadgeColor(isActive: boolean): 'success' | 'neutral' {
                                         {{ formatDate(post.createdAt) }}
                                     </span>
                                     <span
-                                        v-if="post.status === 'scheduled' && post.scheduledAt"
+                                        v-if="post.status === 'SCHEDULED' && post.scheduledAt"
                                         class="flex items-center gap-1 text-amber-600 dark:text-amber-400"
                                     >
                                         <UIcon name="i-heroicons-clock" class="w-3.5 h-3.5" />

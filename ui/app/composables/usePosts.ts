@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 
-export type PostStatus = 'draft' | 'scheduled' | 'published' | 'failed'
-export type PostType = 'post' | 'article' | 'news' | 'video' | 'short'
+export type PostStatus = 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'FAILED'
+export type PostType = 'POST' | 'ARTICLE' | 'NEWS' | 'VIDEO' | 'SHORT'
 
 export interface Post {
     id: string
@@ -148,6 +148,7 @@ export function usePosts() {
                 title: t('common.success'),
                 description: t('post.createSuccess'),
                 color: 'success',
+
             })
             return post
         } catch (err: any) {
@@ -243,18 +244,18 @@ export function usePosts() {
 
     // Constants
     const statusOptions = computed(() => [
-        { value: 'draft', label: t('postStatus.draft') },
-        { value: 'scheduled', label: t('postStatus.scheduled') },
-        { value: 'published', label: t('postStatus.published') },
-        { value: 'failed', label: t('postStatus.failed') },
+        { value: 'DRAFT', label: t('postStatus.draft') },
+        { value: 'SCHEDULED', label: t('postStatus.scheduled') },
+        { value: 'PUBLISHED', label: t('postStatus.published') },
+        { value: 'FAILED', label: t('postStatus.failed') },
     ])
 
     const typeOptions = computed(() => [
-        { value: 'post', label: t('postType.post') },
-        { value: 'article', label: t('postType.article') },
-        { value: 'news', label: t('postType.news') },
-        { value: 'video', label: t('postType.video') },
-        { value: 'short', label: t('postType.short') },
+        { value: 'POST', label: t('postType.post') },
+        { value: 'ARTICLE', label: t('postType.article') },
+        { value: 'NEWS', label: t('postType.news') },
+        { value: 'VIDEO', label: t('postType.video') },
+        { value: 'SHORT', label: t('postType.short') },
     ])
 
     // Helpers

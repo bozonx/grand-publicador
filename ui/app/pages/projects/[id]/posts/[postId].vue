@@ -234,7 +234,7 @@ function formatDateTime(date: string | null): string {
 
                 <!-- Scheduled date -->
                 <span
-                  v-if="currentPost.status === 'scheduled' && currentPost.scheduledAt"
+                  v-if="currentPost.status === 'SCHEDULED' && currentPost.scheduledAt"
                   class="flex items-center gap-1 text-amber-600 dark:text-amber-400"
                 >
                   <UIcon name="i-heroicons-clock" class="w-4 h-4" />
@@ -243,7 +243,7 @@ function formatDateTime(date: string | null): string {
 
                 <!-- Published date -->
                 <span
-                  v-if="currentPost.status === 'published' && currentPost.publishedAt"
+                  v-if="currentPost.status === 'PUBLISHED' && currentPost.publishedAt"
                   class="flex items-center gap-1 text-green-600 dark:text-green-400"
                 >
                   <UIcon name="i-heroicons-check-circle" class="w-4 h-4" />

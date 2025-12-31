@@ -1,9 +1,5 @@
 <script setup lang="ts">
-import type { PostWithRelations } from '~/composables/usePosts'
-import type { Database } from '~/types/database.types'
-
-type PostStatusEnum = Database['public']['Enums']['post_status_enum']
-type PostTypeEnum = Database['public']['Enums']['post_type_enum']
+import type { PostWithRelations, PostStatus, PostType } from '~/composables/usePosts'
 
 definePageMeta({
   middleware: 'auth',
@@ -38,8 +34,8 @@ const {
 const { channels, fetchChannels } = useChannels()
 
 // Filter state
-const selectedStatus = ref<PostStatusEnum | null>(null)
-const selectedType = ref<PostTypeEnum | null>(null)
+const selectedStatus = ref<PostStatus | null>(null)
+const selectedType = ref<PostType | null>(null)
 const selectedChannel = ref<string | null>(null)
 const searchQuery = ref('')
 
@@ -391,7 +387,7 @@ const hasActiveFilters = computed(() => {
 
                 <!-- Scheduled date -->
                 <span
-                  v-if="post.status === 'scheduled' && post.scheduledAt"
+                  v-if="post.status === 'SCHEDULED' && post.scheduledAt"
                   class="flex items-center gap-1 text-amber-600 dark:text-amber-400"
                 >
                   <UIcon name="i-heroicons-clock" class="w-3.5 h-3.5" />
