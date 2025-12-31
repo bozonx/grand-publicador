@@ -41,7 +41,8 @@
     "posts": "Posts",
     "users": "Users",
     "settings": "Settings",
-    "admin": "Administration"
+    "admin": "Administration",
+    "archive": "Archive"
   },
   "auth": {
     "login": "Log in",
@@ -109,7 +110,11 @@
     "general_settings": "General Settings",
     "general_settings_desc": "Update your project name and description",
     "members_desc": "Manage who has access to this project",
-    "delete_warning": "Once you delete a project, there is no going back. Please be certain."
+    "delete_warning": "Once you delete a project, there is no going back. Please be certain.",
+    "moveToArchive": "Archive",
+    "archiveConfirm": "Are you sure you want to archive this project? All associated channels and posts will also be hidden.",
+    "owner": "Owner",
+    "members": "Members"
   },
   "projectMember": {
     "title": "Member",
@@ -168,7 +173,8 @@
     "socialMediaCannotChange": "Social media cannot be changed after channel creation",
     "createSuccess": "Channel created successfully",
     "updateSuccess": "Channel updated successfully",
-    "deleteSuccess": "Channel deleted successfully"
+    "deleteSuccess": "Channel deleted successfully",
+    "archiveConfirm": "Are you sure you want to archive this channel? All associated posts will also be hidden."
   },
   "socialMedia": {
     "telegram": "Telegram",
@@ -288,6 +294,42 @@
   "editor": {
     "characters": "characters",
     "words": "words"
+  },
+  "archive": {
+    "title": "Archive",
+    "subtitle": "Manage archived items",
+    "projects": "Projects",
+    "channels": "Channels",
+    "publications": "Publications",
+    "posts": "Posts",
+    "total_archived": "Total archived",
+    "entity_name": "Name",
+    "archived_at": "Archived at",
+    "empty": "Archive is empty",
+    "restore": "Restore",
+    "delete_permanent": "Delete",
+    "delete_permanent_title": "Delete permanently?",
+    "delete_permanent_description": "Are you sure you want to delete {name}? This action cannot be undone.",
+    "delete_permanent_warning": "Warning: data will be completely removed from the database and cannot be recovered.",
+    "confirm_delete": "Delete permanently",
+    "delete_confirm_permanent": "Are you sure? This action is irreversible and data will be completely deleted.",
+    "success_archived": "Successfully moved to archive",
+    "success_restored": "Successfully restored from archive",
+    "success_deleted": "Successfully deleted",
+    "success_moved": "Successfully moved",
+    "error_archiving": "Error archiving",
+    "error_restoring": "Error restoring",
+    "error_deleting": "Error deleting",
+    "error_moving": "Error moving",
+    "move_entity_title": "Move item",
+    "move_entity_description": "Select new location for {type}",
+    "target_parent": "New location",
+    "select_target": "Select...",
+    "confirm_move": "Move",
+    "type_project": "project",
+    "type_channel": "channel",
+    "type_publication": "publication",
+    "type_post": "post"
   },
   "admin": {
     "panel": {

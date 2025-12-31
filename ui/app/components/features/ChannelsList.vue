@@ -24,6 +24,9 @@ const {
   getSocialMediaColor,
 } = useChannels()
 
+const { archiveEntity } = useArchive()
+const { ArchiveEntityType } = await import('~/types/archive.types')
+
 // Modal states
 const isCreateModalOpen = ref(false)
 const isEditModalOpen = ref(false)
@@ -81,12 +84,15 @@ async function handleDelete() {
   if (!channelToDelete.value) return
 
   isDeleting.value = true
-  const success = await deleteChannel(channelToDelete.value.id)
-  isDeleting.value = false
-
-  if (success) {
+  try {
+    await archiveEntity(ArchiveEntityType.CHANNEL, channelToDelete.value.id)
     isDeleteModalOpen.value = false
     channelToDelete.value = null
+    await fetchChannels(props.projectId)
+  } catch (err) {
+    // Error handled in useArchive
+  } finally {
+    isDeleting.value = false
   }
 }
 
@@ -340,7 +346,7 @@ const activeStatusFilterOptions = computed(() => {
               icon="i-heroicons-trash"
               @click="openDeleteModal(channel)"
             >
-              {{ t('common.delete') }}
+              {{ t('project.moveToArchive') || t('common.delete') }}
             </UButton>
           </div>
         </div>
@@ -390,7 +396,7 @@ const activeStatusFilterOptions = computed(() => {
               />
             </div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ t('channel.deleteChannel') }}
+              {{ t('project.moveToArchive') || t('channel.deleteChannel') }}
             </h3>
           </div>
 
@@ -419,7 +425,7 @@ const activeStatusFilterOptions = computed(() => {
               {{ t('common.cancel') }}
             </UButton>
             <UButton color="error" :loading="isDeleting" @click="handleDelete">
-              {{ t('common.delete') }}
+              {{ t('project.moveToArchive') || t('common.delete') }}
             </UButton>
           </div>
         </div>

@@ -1,9 +1,8 @@
 -- CreateTable
 CREATE TABLE "users" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "email" TEXT,
     "full_name" TEXT,
-    "username" TEXT,
+    "telegram_username" TEXT,
     "avatar_url" TEXT,
     "telegram_id" BIGINT,
     "is_admin" BOOLEAN NOT NULL DEFAULT false,
@@ -20,6 +19,8 @@ CREATE TABLE "projects" (
     "owner_id" TEXT NOT NULL,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
+    "archived_at" DATETIME,
+    "archived_by" TEXT,
     CONSTRAINT "projects_owner_id_fkey" FOREIGN KEY ("owner_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -45,6 +46,8 @@ CREATE TABLE "channels" (
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
+    "archived_at" DATETIME,
+    "archived_by" TEXT,
     CONSTRAINT "channels_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -61,6 +64,8 @@ CREATE TABLE "publications" (
     "meta" TEXT NOT NULL DEFAULT '{}',
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
+    "archived_at" DATETIME,
+    "archived_by" TEXT,
     CONSTRAINT "publications_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "publications_author_id_fkey" FOREIGN KEY ("author_id") REFERENCES "users" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
@@ -86,13 +91,32 @@ CREATE TABLE "posts" (
     "meta" TEXT NOT NULL DEFAULT '{}',
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
+    "archived_at" DATETIME,
+    "archived_by" TEXT,
     CONSTRAINT "posts_publication_id_fkey" FOREIGN KEY ("publication_id") REFERENCES "publications" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "posts_channel_id_fkey" FOREIGN KEY ("channel_id") REFERENCES "channels" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "posts_author_id_fkey" FOREIGN KEY ("author_id") REFERENCES "users" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
+-- CreateTable
+CREATE TABLE "api_tokens" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "user_id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "hashed_token" TEXT NOT NULL,
+    "encrypted_token" TEXT NOT NULL,
+    "scope_project_ids" TEXT NOT NULL DEFAULT '[]',
+    "last_used_at" DATETIME,
+    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" DATETIME NOT NULL,
+    CONSTRAINT "api_tokens_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_telegram_id_key" ON "users"("telegram_id");
+
+-- CreateIndex
+CREATE INDEX "users_telegram_username_idx" ON "users"("telegram_username");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "project_members_project_id_user_id_key" ON "project_members"("project_id", "user_id");
@@ -114,3 +138,9 @@ CREATE INDEX "posts_channel_id_created_at_idx" ON "posts"("channel_id", "created
 
 -- CreateIndex
 CREATE INDEX "posts_publication_id_idx" ON "posts"("publication_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "api_tokens_hashed_token_key" ON "api_tokens"("hashed_token");
+
+-- CreateIndex
+CREATE INDEX "api_tokens_user_id_idx" ON "api_tokens"("user_id");
