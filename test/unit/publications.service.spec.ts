@@ -122,7 +122,12 @@ describe('PublicationsService (unit)', () => {
       expect(result).toHaveLength(1);
       expect(mockPrismaService.publication.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { projectId, status: PostStatus.DRAFT },
+          where: {
+            projectId,
+            status: PostStatus.DRAFT,
+            archivedAt: null,
+            project: { archivedAt: null },
+          },
         }),
       );
     });
