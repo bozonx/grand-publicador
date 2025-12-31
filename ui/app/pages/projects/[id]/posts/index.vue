@@ -112,7 +112,10 @@ const typeFilterOptions = computed(() => [
  * Navigate to create post page
  */
 function goToCreatePost() {
-  router.push(`/projects/${projectId.value}/posts/new`)
+  router.push({
+    path: `/projects/${projectId.value}/posts/new`,
+    query: selectedChannel.value ? { channelId: selectedChannel.value } : undefined,
+  })
 }
 
 /**

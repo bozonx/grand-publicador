@@ -29,7 +29,7 @@ const emit = defineEmits<Emits>()
 
 const { t } = useI18n()
 const { createPost, updatePost, isLoading, statusOptions, typeOptions } = usePosts()
-const { channels, fetchChannels } = useChannels()
+const { channels, fetchChannels, isLoading: isChannelsLoading } = useChannels()
 
 // Form state
 const formData = reactive({
@@ -47,6 +47,16 @@ const formData = reactive({
 
 const isEditMode = computed(() => !!props.post?.id)
 const showAdvancedFields = ref(false)
+
+// Watch for channelId prop changes (for when page is reused)
+watch(
+  () => props.channelId,
+  (newChannelId) => {
+    if (newChannelId && !isEditMode.value) {
+      formData.channelId = newChannelId
+    }
+  }
+)
 
 // Fetch channels on mount
 onMounted(() => {
@@ -184,6 +194,8 @@ const isFormValid = computed(() => {
             class="w-full"
             size="lg"
             searchable
+            :disabled="!!props.channelId"
+            :loading="isChannelsLoading"
           />
           <template v-if="channelOptions.length === 0" #help>
             <div class="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">

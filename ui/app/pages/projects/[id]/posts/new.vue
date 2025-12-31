@@ -55,6 +55,11 @@ function handleCancel() {
     </div>
 
     <!-- Post form -->
-    <FormsPostForm :project-id="projectId" @success="handleSuccess" @cancel="handleCancel" />
+    <FormsPostForm
+      :project-id="projectId"
+      :channel-id="(route.query.channelId as string)"
+      @success="handleSuccess"
+      @cancel="handleCancel"
+    />
   </div>
 </template>
