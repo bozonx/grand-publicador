@@ -107,9 +107,24 @@ async function handleUpdateToken() {
 }
 
 // Delete token
-async function handleDeleteToken(tokenId: string) {
-  if (confirm(t('settings.confirmDeleteToken', 'Are you sure you want to delete this token?'))) {
-    await deleteToken(tokenId)
+// Delete token
+const showDeleteTokenModal = ref(false)
+const tokenToDeleteId = ref<string | null>(null)
+
+function handleDeleteToken(tokenId: string) {
+  tokenToDeleteId.value = tokenId
+  showDeleteTokenModal.value = true
+}
+
+async function confirmDeleteToken() {
+  if (tokenToDeleteId.value) {
+    try {
+      await deleteToken(tokenToDeleteId.value)
+      showDeleteTokenModal.value = false
+      tokenToDeleteId.value = null
+    } catch (err) {
+      // Error is handled in useApiTokens
+    }
   }
 }
 
@@ -609,5 +624,16 @@ function formatDate(date: string | null | undefined): string {
         </div>
       </template>
     </UModal>
+    <!-- Delete Token Confirmation Modal -->
+    <UiConfirmModal
+      v-model="showDeleteTokenModal"
+      :title="t('settings.deleteTokenTitle', 'Delete API Token')"
+      :description="t('settings.deleteTokenDescription', 'Are you sure you want to delete this API token? This action cannot be undone.')"
+      :confirm-text="t('common.delete')"
+      color="error"
+      icon="i-heroicons-exclamation-triangle"
+      :loading="tokensLoading"
+      @confirm="confirmDeleteToken"
+    />
   </div>
 </template>
