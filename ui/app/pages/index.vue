@@ -202,27 +202,12 @@ const totalPosts = computed(() =>
 
           <!-- Project list -->
           <div v-else class="space-y-3">
-            <NuxtLink
+            <ProjectsProjectListItem
               v-for="project in projects.slice(0, 5)"
               :key="project.id"
-              :to="`/projects/${project.id}`"
-              class="block p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              <div class="flex items-center justify-between">
-                <div class="min-w-0">
-                  <h3 class="font-medium text-gray-900 dark:text-white truncate">
-                    {{ project.name }}
-                  </h3>
-                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                    {{ project.channelCount || 0 }} {{ t('channel.titlePlural').toLowerCase() }} ·
-                    {{ project.postCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
-                  </p>
-                </div>
-                <UBadge v-if="project.role" color="primary" variant="subtle" size="xs">
-                  {{ t(`roles.${project.role}`) }}
-                </UBadge>
-              </div>
-            </NuxtLink>
+              :project="project"
+              :show-description="false"
+            />
           </div>
         </div>
       </div>

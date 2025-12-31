@@ -33,6 +33,7 @@ export interface ProjectWithRole extends ProjectWithOwner {
   memberCount?: number
   channelCount?: number
   postCount?: number
+  lastPostAt?: string | null
 }
 
 export interface ProjectMemberWithUser extends ProjectMember {

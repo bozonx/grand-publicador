@@ -5,7 +5,7 @@ definePageMeta({
 
 const { t } = useI18n()
 const router = useRouter()
-const { projects, isLoading, error, fetchProjects, canEdit, canDelete, getRoleDisplayName } =
+const { projects, isLoading, error, fetchProjects, canEdit, canDelete } =
   useProjects()
 const { archiveEntity } = useArchive()
 const { ArchiveEntityType } = await import('~/types/archive.types')
@@ -25,13 +25,6 @@ onMounted(() => {
  */
 function goToCreateProject() {
   router.push('/projects/new')
-}
-
-/**
- * Navigate to project details page
- */
-function goToProject(projectId: string) {
-  router.push(`/projects/${projectId}`)
 }
 
 /**
@@ -74,28 +67,6 @@ async function handleArchive() {
 function cancelDelete() {
   showDeleteModal.value = false
   projectToDelete.value = null
-}
-
-/**
- * Format date for display
- */
-function formatDate(date: string | null): string {
-  if (!date) return '-'
-  return new Date(date).toLocaleDateString()
-}
-
-/**
- * Get role badge color based on role
- */
-type BadgeColor = 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral'
-function getRoleBadgeColor(role: string | undefined): BadgeColor {
-  const colors: Record<string, BadgeColor> = {
-    owner: 'primary',
-    admin: 'secondary',
-    editor: 'info',
-    viewer: 'neutral',
-  }
-  return colors[role || 'viewer'] || 'neutral'
 }
 </script>
 
@@ -143,44 +114,12 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
 
     <!-- Projects list -->
     <div v-else-if="projects.length > 0" class="space-y-4">
-      <div
+      <ProjectsProjectListItem
         v-for="project in projects"
         :key="project.id"
-        class="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
-        @click="goToProject(project.id)"
-      >
-        <div class="p-6">
-          <div class="flex items-start justify-between">
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-3 mb-2">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate">
-                  {{ project.name }}
-                </h3>
-                <UBadge :color="getRoleBadgeColor(project.role)" variant="subtle" size="sm">
-                  {{ getRoleDisplayName(project.role) }}
-                </UBadge>
-              </div>
-
-              <p
-                v-if="project.description"
-                class="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 mb-3"
-              >
-                {{ project.description }}
-              </p>
-
-              <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                <span v-if="project.owner" class="flex items-center gap-1">
-                  <UIcon name="i-heroicons-user" class="w-4 h-4" />
-                  {{ project.owner.fullName || project.owner.username || 'Unknown' }}
-                </span>
-
-              </div>
-            </div>
-
-
-          </div>
-        </div>
-      </div>
+        :project="project"
+        :show-description="true"
+      />
     </div>
 
     <!-- Empty state -->

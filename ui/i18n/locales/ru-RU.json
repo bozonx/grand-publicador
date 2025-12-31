@@ -31,7 +31,8 @@
     "viewAll": "Смотреть все",
     "back_to_project": "Назад к проекту",
     "settings": "Настройки",
-    "danger_zone": "Опасная зона"
+    "danger_zone": "Опасная зона",
+    "lastPost": "Последний пост"
   },
   "navigation": {
     "home": "Главная",

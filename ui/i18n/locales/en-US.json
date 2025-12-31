@@ -31,7 +31,8 @@
     "viewAll": "View all",
     "back_to_project": "Back to Project",
     "settings": "Settings",
-    "danger_zone": "Danger Zone"
+    "danger_zone": "Danger Zone",
+    "lastPost": "Last post"
   },
   "navigation": {
     "home": "Home",

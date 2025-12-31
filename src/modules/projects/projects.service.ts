@@ -83,6 +83,18 @@ export class ProjectsService {
         _count: {
           select: { channels: true },
         },
+        channels: {
+          select: {
+            _count: {
+              select: { posts: true },
+            },
+            posts: {
+              take: 1,
+              orderBy: { createdAt: 'desc' },
+              select: { createdAt: true },
+            },
+          },
+        },
       },
       take,
       skip,
@@ -91,11 +103,26 @@ export class ProjectsService {
 
     return projects.map(project => {
       const userMember = project.members.find(m => m.userId === userId);
+
+      const postCount = project.channels.reduce((sum, channel) => sum + channel._count.posts, 0);
+
+      const lastPostDates = project.channels
+        .map(c => c.posts[0]?.createdAt)
+        .filter((d): d is Date => !!d)
+        .map(d => d.getTime());
+
+      const lastPostAt = lastPostDates.length > 0 ? new Date(Math.max(...lastPostDates)) : null;
+
+      // Clean up channels from response to avoid bloating
+      const { channels, ...projectData } = project;
+
       return {
-        ...project,
+        ...projectData,
         role: userMember?.role?.toLowerCase(),
         channelCount: project._count.channels,
         memberCount: project.members.length,
+        postCount,
+        lastPostAt,
       };
     });
   }
@@ -120,7 +147,18 @@ export class ProjectsService {
     const project = await this.prisma.project.findUnique({
       where: { id: projectId, archivedAt: null },
       include: {
-        channels: true,
+        channels: {
+          include: {
+            _count: {
+              select: { posts: true },
+            },
+            posts: {
+              take: 1,
+              orderBy: { createdAt: 'desc' },
+              select: { createdAt: true },
+            },
+          },
+        },
         members: {
           include: {
             user: true,
@@ -133,11 +171,22 @@ export class ProjectsService {
       throw new NotFoundException('Project not found');
     }
 
+    const postCount = project.channels.reduce((sum, channel) => sum + channel._count.posts, 0);
+
+    const lastPostDates = project.channels
+      .map(c => c.posts[0]?.createdAt)
+      .filter((d): d is Date => !!d)
+      .map(d => d.getTime());
+
+    const lastPostAt = lastPostDates.length > 0 ? new Date(Math.max(...lastPostDates)) : null;
+
     return {
       ...project,
       role: role.toLowerCase(),
       channelCount: project.channels.length,
       memberCount: project.members.length,
+      postCount,
+      lastPostAt,
     };
   }
 
