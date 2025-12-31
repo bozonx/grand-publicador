@@ -178,6 +178,17 @@ curl -X POST http://localhost:8080/api/v1/auth/telegram \
 
 См. [Automation API Documentation](docs/api-external.md)
 
+### Archive API (требует JWT auth)
+Для управления архивированным контентом с виртуальным каскадированием:
+- `POST /archive/:type/:id` - архивировать сущность
+- `POST /archive/:type/:id/restore` - восстановить из архива
+- `DELETE /archive/:type/:id` - окончательное удаление
+- `POST /archive/:type/:id/move` - переместить сущность
+- `GET /archive/stats` - статистика архива
+- `GET /archive/:type` - список архивных элементов
+
+См. [Archive API Documentation](docs/api-archive.md)
+
 ## Структура проекта
 - `src/` — исходный код NestJS.
 - `ui/` — исходный код Nuxt 4.
