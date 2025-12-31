@@ -176,7 +176,7 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
                 icon="i-heroicons-plus"
                 :to="`/projects/${currentProject.id}/posts/new`"
               >
-                {{ t('common.create', 'Create') }}
+                {{ t('post.createPost', 'Create Post') }}
               </UButton>
 
               <UButton
