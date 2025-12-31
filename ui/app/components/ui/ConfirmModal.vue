@@ -32,10 +32,10 @@ const handleClose = () => {
 
 <template>
   <UModal 
-    :model-value="modelValue" 
+    :open="modelValue" 
     :title="title"
     :ui="{ content: 'sm:max-w-lg' }"
-    @update:model-value="emit('update:modelValue', $event)"
+    @update:open="emit('update:modelValue', $event)"
   >
     <template #body>
       <div class="flex flex-col gap-4">

@@ -142,7 +142,7 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
                 <span v-if="currentProject.owner" class="flex items-center gap-1">
                   <UIcon name="i-heroicons-user" class="w-4 h-4" />
                   {{ t('project.owner') }}:
-                  {{ currentProject.owner.fullName || currentProject.owner.username || 'Unknown' }}
+                  {{ currentProject.owner.fullName || currentProject.owner.telegramUsername || 'Unknown' }}
                 </span>
                 <span class="flex items-center gap-1">
                   <UIcon name="i-heroicons-users" class="w-4 h-4" />
@@ -152,9 +152,10 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
                   <UIcon name="i-heroicons-signal" class="w-4 h-4" />
                   {{ t('channel.titlePlural') }}: {{ currentProject.channelCount || 0 }}
                 </span>
-                <span class="flex items-center gap-1">
-                  <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
-                  {{ d(new Date(currentProject.createdAt || ''), 'long') }}
+                <span v-if="currentProject.lastPostAt" class="flex items-center gap-1">
+                  <UIcon name="i-heroicons-clock" class="w-4 h-4" />
+                  {{ t('project.lastPost', 'Last post') }}:
+                  {{ d(new Date(currentProject.lastPostAt), 'short') }}
                 </span>
               </div>
             </div>
@@ -162,84 +163,33 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
             <!-- Actions -->
             <div class="flex items-center gap-2 ml-4">
               <UButton
+                color="neutral"
+                variant="ghost"
+                icon="i-heroicons-document-text"
+                :to="`/projects/${currentProject.id}/posts`"
+              >
+                {{ t('post.titlePlural', 'Posts') }}
+              </UButton>
+
+              <UButton
+                color="primary"
+                icon="i-heroicons-plus"
+                :to="`/projects/${currentProject.id}/posts/new`"
+              >
+                {{ t('common.create', 'Create') }}
+              </UButton>
+
+              <UButton
                 v-if="canEdit(currentProject)"
                 color="neutral"
-                variant="outline"
+                variant="ghost"
                 icon="i-heroicons-cog-6-tooth"
                 :to="`/projects/${currentProject.id}/settings`"
-              >
-                {{ t('common.settings', 'Settings') }}
-              </UButton>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick actions grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <!-- Channels card -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div class="flex items-center gap-3 mb-4">
-            <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <UIcon name="i-heroicons-signal" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                {{ t('channel.titlePlural') }}
-              </h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400">
-                {{ currentProject.channelCount || 0 }} {{ t('channel.titlePlural').toLowerCase() }}
-              </p>
-            </div>
-          </div>
-          <UButton
-            icon="i-heroicons-arrow-down"
-            class="w-full"
-            variant="outline"
-            @click="$el?.querySelector('#channels-section')?.scrollIntoView({ behavior: 'smooth' })"
-          >
-            {{ t('common.view') }} {{ t('channel.titlePlural').toLowerCase() }}
-          </UButton>
-        </div>
-
-        <!-- Posts card -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div class="flex items-center gap-3 mb-4">
-            <div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <UIcon
-                name="i-heroicons-document-text"
-                class="w-6 h-6 text-green-600 dark:text-green-400"
               />
             </div>
-            <div>
-              <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                {{ t('post.titlePlural') }}
-              </h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400">
-                {{ currentProject.postCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
-              </p>
-            </div>
-          </div>
-          <div class="flex gap-2">
-            <UButton
-              icon="i-heroicons-arrow-right"
-              class="flex-1"
-              variant="outline"
-              :to="`/projects/${currentProject.id}/posts`"
-            >
-              {{ t('common.view') }}
-            </UButton>
-            <UButton
-              icon="i-heroicons-plus"
-              color="primary"
-              :to="`/projects/${currentProject.id}/posts/new`"
-            >
-              {{ t('common.create') }}
-            </UButton>
           </div>
         </div>
       </div>
-
       <!-- Channels Section -->
       <div id="channels-section" class="bg-white dark:bg-gray-800 rounded-lg shadow mt-6 p-6">
         <FeaturesChannelsList :project-id="currentProject.id" />
