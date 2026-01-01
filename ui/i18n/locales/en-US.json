@@ -30,6 +30,7 @@
     "view": "View",
     "viewAll": "View all",
     "back_to_project": "Back to Project",
+    "back_to_channel": "Back to Channel",
     "settings": "Settings",
     "danger_zone": "Danger Zone",
     "lastPost": "Last post"
@@ -176,6 +177,14 @@
     "createSuccess": "Channel created successfully",
     "updateSuccess": "Channel updated successfully",
     "deleteSuccess": "Channel deleted successfully",
+    "settings": "Channel Settings",
+    "settings_description": "Manage your channel settings and connection",
+    "general_settings": "General Settings",
+    "general_settings_desc": "Update your channel name and connection details",
+    "control": "Channel Control",
+    "control_desc": "Activate or deactivate this channel for posting",
+    "deactivate_warning": "Deactivating the channel will stop all scheduled posts.",
+    "activate_info": "Activating the channel will resume posting for scheduled posts.",
     "archiveConfirm": "Are you sure you want to archive this channel? All associated posts will also be hidden."
   },
   "socialMedia": {

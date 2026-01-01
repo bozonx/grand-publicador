@@ -74,7 +74,7 @@ function formatDate(date: string | null | undefined): string {
             <div class="flex items-center gap-1.5" :title="t('post.titlePlural')">
               <UIcon name="i-heroicons-document-text" class="w-4 h-4 flex-shrink-0" />
               <span>
-                {{ project.postCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
+                {{ project.publicationsCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
               </span>
             </div>
           </div>

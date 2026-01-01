@@ -17,10 +17,9 @@ const {
   fetchChannel,
   currentChannel: channel,
   isLoading: isChannelLoading,
-  toggleChannelActive,
   getSocialMediaIcon,
   getSocialMediaColor,
-  getSocialMediaDisplayName
+  getSocialMediaDisplayName,
 } = useChannels()
 
 const {
@@ -50,9 +49,6 @@ const { archiveEntity } = useArchive()
 const { ArchiveEntityType } = await import('~/types/archive.types')
 
 // UI States
-const isEditModalOpen = ref(false)
-const isDeleteModalOpen = ref(false)
-const isDeletingChannel = ref(false)
 
 // Post Filter States
 const selectedStatus = ref<PostStatus | null>(null)
@@ -90,32 +86,6 @@ watch(
   }
 )
 
-/**
- * Handle Channel Actions
- */
-function handleUpdateSuccess() {
-    isEditModalOpen.value = false
-    fetchChannel(channelId.value)
-}
-
-async function handleToggleActive() {
-    if (!channel.value) return
-    await toggleChannelActive(channel.value.id)
-}
-
-async function handleDeleteChannel() {
-    if (!channel.value) return
-    isDeletingChannel.value = true
-    try {
-        await archiveEntity(ArchiveEntityType.CHANNEL, channel.value.id)
-        router.push(`/projects/${projectId.value}`)
-    } catch (e) {
-        // handled in useArchive
-    } finally {
-        isDeletingChannel.value = false
-        isDeleteModalOpen.value = false
-    }
-}
 
 /**
  * Handle Post Navigation
@@ -224,79 +194,65 @@ function getStatusBadgeColor(isActive: boolean): 'success' | 'neutral' {
 
         <!-- Channel Content -->
         <div v-else class="space-y-6">
-            <!-- Channel Info Panel -->
+            <!-- Channel Header -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
                 <!-- Color bar -->
                 <div class="h-2" :style="{ backgroundColor: getSocialMediaColor(channel.socialMedia) }" />
                 
                 <div class="p-6">
-                    <div class="flex flex-col md:flex-row md:items-start justify-between gap-6">
-                        <!-- Main Info -->
-                        <div class="flex items-start gap-4">
-                            <div 
-                                class="p-3 rounded-lg"
-                                :style="{ backgroundColor: getSocialMediaColor(channel.socialMedia) + '20' }"
-                            >
-                                <UIcon 
-                                    :name="getSocialMediaIcon(channel.socialMedia)" 
-                                    class="w-8 h-8"
-                                    :style="{ color: getSocialMediaColor(channel.socialMedia) }"
-                                />
-                            </div>
-                            <div>
-                                <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div 
+                                    class="p-2 rounded-lg"
+                                    :style="{ backgroundColor: getSocialMediaColor(channel.socialMedia) + '20' }"
+                                >
+                                    <UIcon 
+                                        :name="getSocialMediaIcon(channel.socialMedia)" 
+                                        class="w-6 h-6"
+                                        :style="{ color: getSocialMediaColor(channel.socialMedia) }"
+                                    />
+                                </div>
+                                <h1 class="text-2xl font-bold text-gray-900 dark:text-white truncate">
                                     {{ channel.name }}
                                 </h1>
-                                <div class="flex flex-wrap items-center gap-3">
-                                    <UBadge :color="getStatusBadgeColor(channel.isActive)" variant="subtle">
-                                        {{ channel.isActive ? t('channel.active') : t('channel.inactive') }}
-                                    </UBadge>
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">
-                                        {{ getSocialMediaDisplayName(channel.socialMedia) }}
-                                    </span>
-                                    <span class="text-sm text-gray-500 dark:text-gray-400 font-mono bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">
-                                        {{ channel.channelIdentifier }}
-                                    </span>
-                                </div>
+                                <UBadge :color="getStatusBadgeColor(channel.isActive)" variant="subtle">
+                                    {{ channel.isActive ? t('channel.active') : t('channel.inactive') }}
+                                </UBadge>
+                            </div>
+
+                            <div
+                                class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400"
+                            >
+                                <span class="flex items-center gap-1">
+                                    <UIcon name="i-heroicons-signal" class="w-4 h-4" />
+                                    {{ getSocialMediaDisplayName(channel.socialMedia) }}
+                                </span>
+                                <span class="flex items-center gap-1 font-mono">
+                                    <UIcon name="i-heroicons-hashtag" class="w-4 h-4" />
+                                    {{ channel.channelIdentifier }}
+                                </span>
+                                <span class="flex items-center gap-1">
+                                    <UIcon name="i-heroicons-document-text" class="w-4 h-4" />
+                                    {{ t('post.titlePlural') }}: {{ channel.postsCount || 0 }}
+                                </span>
+                                <span v-if="channel.lastPostAt" class="flex items-center gap-1">
+                                    <UIcon name="i-heroicons-clock" class="w-4 h-4" />
+                                    {{ t('project.lastPost', 'Last post') }}:
+                                    {{ formatDateTime(channel.lastPostAt) }}
+                                </span>
                             </div>
                         </div>
 
-                         <!-- Actions -->
-                        <div class="flex flex-wrap items-center gap-2">
+                        <!-- Actions -->
+                        <div class="flex items-center gap-2 ml-4">
                             <UButton
                                 color="neutral"
-                                variant="outline"
-                                icon="i-heroicons-pencil-square"
-                                @click="isEditModalOpen = true"
-                            >
-                                {{ t('common.edit') }}
-                            </UButton>
-                            <UButton
-                                :color="channel.isActive ? 'warning' : 'success'"
-                                variant="outline"
-                                :icon="channel.isActive ? 'i-heroicons-pause' : 'i-heroicons-play'"
-                                @click="handleToggleActive"
-                            >
-                                {{ channel.isActive ? t('channel.deactivate') : t('channel.activate') }}
-                            </UButton>
-                             <UButton
-                                color="error"
-                                variant="outline"
-                                icon="i-heroicons-trash"
-                                @click="isDeleteModalOpen = true"
-                            >
-                                {{ t('project.moveToArchive') || t('common.delete') }}
-                            </UButton>
+                                variant="ghost"
+                                icon="i-heroicons-cog-6-tooth"
+                                :to="`/projects/${projectId}/channels/${channelId}/settings`"
+                            />
                         </div>
-                    </div>
-
-                    <!-- Stats -->
-                    <div class="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4 border-t border-gray-100 dark:border-gray-700 pt-6">
-                         <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">{{ t('post.titlePlural') }}</p>
-                            <p class="text-xl font-semibold text-gray-900 dark:text-white">{{ channel.postsCount || 0 }}</p>
-                         </div>
-                         <!-- We could add more stats here if available, e.g. followers count if sync implemented -->
                     </div>
                 </div>
             </div>
@@ -433,47 +389,6 @@ function getStatusBadgeColor(isActive: boolean): 'success' | 'neutral' {
              </div>
         </div>
 
-        <!-- Edit Modal -->
-        <UModal v-model:open="isEditModalOpen">
-            <template #content>
-                <div class="p-6">
-                    <FormsChannelForm
-                        v-if="channel"
-                        :project-id="projectId"
-                        :channel="channel"
-                        @success="handleUpdateSuccess"
-                        @cancel="isEditModalOpen = false"
-                    />
-                </div>
-            </template>
-        </UModal>
-
-        <!-- Archive/Delete Channel Modal -->
-        <UModal v-model:open="isDeleteModalOpen">
-             <template #content>
-                <div class="p-6">
-                    <div class="flex items-center gap-4 mb-4">
-                        <div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                            <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 text-red-600 dark:text-red-400" />
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                            {{ t('project.moveToArchive') || t('channel.deleteChannel') }}
-                        </h3>
-                    </div>
-                    <p class="text-gray-600 dark:text-gray-400 mb-6">
-                        {{ t('channel.deleteConfirm') }}
-                    </p>
-                    <div class="flex justify-end gap-3">
-                        <UButton color="neutral" variant="ghost" :disabled="isDeletingChannel" @click="isDeleteModalOpen = false">
-                             {{ t('common.cancel') }}
-                        </UButton>
-                        <UButton color="error" :loading="isDeletingChannel" @click="handleDeleteChannel">
-                             {{ t('project.moveToArchive') || t('common.delete') }}
-                        </UButton>
-                    </div>
-                </div>
-             </template>
-        </UModal>
 
         <!-- Delete Post Modal -->
          <UModal v-model:open="showDeletePostModal">

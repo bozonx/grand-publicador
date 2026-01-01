@@ -149,6 +149,10 @@ function getRoleBadgeColor(role: string | undefined): BadgeColor {
                   {{ t('project.members') }}: {{ currentProject.memberCount || 0 }}
                 </span>
                 <span class="flex items-center gap-1">
+                  <UIcon name="i-heroicons-document-text" class="w-4 h-4" />
+                  {{ t('post.titlePlural') }}: {{ currentProject.publicationsCount || 0 }}
+                </span>
+                <span class="flex items-center gap-1">
                   <UIcon name="i-heroicons-signal" class="w-4 h-4" />
                   {{ t('channel.titlePlural') }}: {{ currentProject.channelCount || 0 }}
                 </span>

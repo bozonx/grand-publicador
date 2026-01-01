@@ -13,7 +13,7 @@ export class ProjectsService {
   constructor(
     private prisma: PrismaService,
     private permissions: PermissionsService,
-  ) {}
+  ) { }
 
   /**
    * Creates a new project and assigns the creator as the owner.
@@ -81,14 +81,19 @@ export class ProjectsService {
       include: {
         members: true,
         _count: {
-          select: { channels: true },
+          select: {
+            channels: { where: { archivedAt: null } },
+            publications: { where: { archivedAt: null } },
+          },
         },
         channels: {
-          select: {
+          where: { archivedAt: null },
+          include: {
             _count: {
               select: { posts: true },
             },
             posts: {
+              where: { archivedAt: null },
               take: 1,
               orderBy: { createdAt: 'desc' },
               select: { createdAt: true },
@@ -113,13 +118,21 @@ export class ProjectsService {
 
       const lastPostAt = lastPostDates.length > 0 ? new Date(Math.max(...lastPostDates)) : null;
 
+      const mappedChannels = project.channels.map(channel => ({
+        ...channel,
+        postsCount: channel._count.posts,
+        lastPostAt: channel.posts[0]?.createdAt || null,
+      }));
+
       // Clean up channels from response to avoid bloating
       const { channels: _, ...projectData } = project;
 
       return {
         ...projectData,
+        channels: mappedChannels,
         role: userMember?.role?.toLowerCase(),
         channelCount: project._count.channels,
+        publicationsCount: project._count.publications,
         memberCount: project.members.length,
         postCount,
         lastPostAt,
@@ -147,12 +160,20 @@ export class ProjectsService {
     const project = await this.prisma.project.findUnique({
       where: { id: projectId, archivedAt: null },
       include: {
+        _count: {
+          select: {
+            channels: { where: { archivedAt: null } },
+            publications: { where: { archivedAt: null } },
+          },
+        },
         channels: {
+          where: { archivedAt: null },
           include: {
             _count: {
               select: { posts: true },
             },
             posts: {
+              where: { archivedAt: null },
               take: 1,
               orderBy: { createdAt: 'desc' },
               select: { createdAt: true },
@@ -180,10 +201,18 @@ export class ProjectsService {
 
     const lastPostAt = lastPostDates.length > 0 ? new Date(Math.max(...lastPostDates)) : null;
 
+    const mappedChannels = project.channels.map(channel => ({
+      ...channel,
+      postsCount: channel._count.posts,
+      lastPostAt: channel.posts[0]?.createdAt || null,
+    }));
+
     return {
       ...project,
+      channels: mappedChannels,
       role: role.toLowerCase(),
-      channelCount: project.channels.length,
+      channelCount: project._count.channels,
+      publicationsCount: project._count.publications,
       memberCount: project.members.length,
       postCount,
       lastPostAt,

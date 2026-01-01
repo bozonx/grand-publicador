@@ -1,18 +1,20 @@
 <script setup lang="ts">
-import type { Database } from '~/types/database.types'
 import type {
   ChannelWithProject,
   ChannelCreateInput,
   ChannelUpdateInput,
+  SocialMedia,
 } from '~/composables/useChannels'
-
-type SocialMediaEnum = Database['public']['Enums']['social_media_enum']
 
 interface Props {
   /** Project ID for creating new channel */
   projectId: string
   /** Channel data for editing, null for creating new */
   channel?: ChannelWithProject | null
+  /** Whether to hide the header */
+  hideHeader?: boolean
+  /** Whether to hide the cancel button */
+  hideCancel?: boolean
 }
 
 interface Emits {
@@ -21,6 +23,8 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
   channel: null,
+  hideHeader: false,
+  hideCancel: false,
 })
 
 const emit = defineEmits<Emits>()
@@ -37,10 +41,9 @@ const {
 
 const isEditMode = computed(() => !!props.channel?.id)
 
-// Form state
 const state = reactive({
   name: props.channel?.name || '',
-  socialMedia: (props.channel?.socialMedia || 'telegram') as SocialMediaEnum,
+  socialMedia: (props.channel?.socialMedia || 'TELEGRAM') as SocialMedia,
   channelIdentifier: props.channel?.channelIdentifier || '',
   isActive: props.channel?.isActive ?? true,
 })
@@ -86,16 +89,17 @@ function handleCancel() {
 /**
  * Get identifier placeholder based on selected social media
  */
-function getIdentifierPlaceholder(socialMedia: SocialMediaEnum | undefined): string {
-  const placeholders: Record<SocialMediaEnum, string> = {
-    telegram: '@channel_name',
-    instagram: '@username',
-    vk: 'club123456789',
-    youtube: '@channelhandle',
-    tiktok: '@username',
-    x: '@username',
-    facebook: 'page_username',
-    site: 'https://example.com',
+function getIdentifierPlaceholder(socialMedia: SocialMedia | undefined): string {
+  const placeholders: Record<SocialMedia, string> = {
+    TELEGRAM: '@channel_name',
+    INSTAGRAM: '@username',
+    VK: 'club123456789',
+    YOUTUBE: '@channelhandle',
+    TIKTOK: '@username',
+    X: '@username',
+    FACEBOOK: 'page_username',
+    SITE: 'https://example.com',
+    LINKEDIN: 'username',
   }
   return socialMedia ? placeholders[socialMedia] : t('channel.identifierPlaceholder')
 }
@@ -103,16 +107,17 @@ function getIdentifierPlaceholder(socialMedia: SocialMediaEnum | undefined): str
 /**
  * Get identifier help text based on selected social media
  */
-function getIdentifierHelp(socialMedia: SocialMediaEnum | undefined): string {
-  const helps: Record<SocialMediaEnum, string> = {
-    telegram: t('channel.identifierHelpTelegram'),
-    instagram: t('channel.identifierHelpInstagram'),
-    vk: t('channel.identifierHelpVk'),
-    youtube: t('channel.identifierHelpYoutube'),
-    tiktok: t('channel.identifierHelpTiktok'),
-    x: t('channel.identifierHelpX'),
-    facebook: t('channel.identifierHelpFacebook'),
-    site: t('channel.identifierHelpSite'),
+function getIdentifierHelp(socialMedia: SocialMedia | undefined): string {
+  const helps: Record<SocialMedia, string> = {
+    TELEGRAM: t('channel.identifierHelpTelegram'),
+    INSTAGRAM: t('channel.identifierHelpInstagram'),
+    VK: t('channel.identifierHelpVk'),
+    YOUTUBE: t('channel.identifierHelpYoutube'),
+    TIKTOK: t('channel.identifierHelpTiktok'),
+    X: t('channel.identifierHelpX'),
+    FACEBOOK: t('channel.identifierHelpFacebook'),
+    SITE: t('channel.identifierHelpSite'),
+    LINKEDIN: t('channel.identifierHelpLinkedin'),
   }
   return socialMedia ? helps[socialMedia] : t('channel.identifierHelp')
 }
@@ -121,8 +126,8 @@ const currentSocialMedia = computed(() => (isEditMode.value ? props.channel?.soc
 </script>
 
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-    <div class="mb-6">
+  <div :class="[hideHeader ? '' : 'bg-white dark:bg-gray-800 rounded-lg shadow p-6']">
+    <div v-if="!hideHeader" class="mb-6">
       <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
         {{ isEditMode ? t('channel.editChannel') : t('channel.createChannel') }}
       </h2>
@@ -186,13 +191,13 @@ const currentSocialMedia = computed(() => (isEditMode.value ? props.channel?.soc
           <div
             class="p-2 rounded"
             :style="{
-              backgroundColor: getSocialMediaColor(channel?.socialMedia || 'telegram') + '20',
+              backgroundColor: getSocialMediaColor(channel?.socialMedia || 'TELEGRAM') + '20',
             }"
           >
             <UIcon
-              :name="getSocialMediaIcon(channel?.socialMedia || 'telegram')"
+              :name="getSocialMediaIcon(channel?.socialMedia || 'TELEGRAM')"
               class="w-5 h-5"
-              :style="{ color: getSocialMediaColor(channel?.socialMedia || 'telegram') }"
+              :style="{ color: getSocialMediaColor(channel?.socialMedia || 'TELEGRAM') }"
             />
           </div>
           <span class="font-medium text-gray-900 dark:text-white">
@@ -225,11 +230,12 @@ const currentSocialMedia = computed(() => (isEditMode.value ? props.channel?.soc
         {{ t('channel.isActiveHelp') }}
       </p>
 
-      <!-- Form actions -->
       <div
-        class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700"
+        class="flex items-center justify-end gap-3 pt-6"
+        :class="[hideHeader ? '' : 'border-t border-gray-200 dark:border-gray-700']"
       >
         <UButton
+          v-if="!hideCancel"
           type="button"
           color="neutral"
           variant="ghost"
