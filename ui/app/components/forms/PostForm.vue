@@ -83,13 +83,7 @@ const availableStatusOptions = computed(() => {
   return statusOptions.value.filter((opt) => ['DRAFT', 'SCHEDULED'].includes(opt.value as string))
 })
 
-// Language options
-const languageOptions = [
-  { value: 'ru-RU', label: 'Русский (RU)', icon: 'i-heroicons-language' },
-  { value: 'en-US', label: 'English (US)', icon: 'i-heroicons-language' },
-  { value: 'uz-UZ', label: 'Oʻzbekча (UZ)', icon: 'i-heroicons-language' },
-  { value: 'es-ES', label: 'Español (ES)', icon: 'i-heroicons-language' },
-]
+const { languageOptions } = useLanguages()
 
 // Watch for channel selection to set default language
 watch(() => formData.channelId, (newChannelId) => {
@@ -298,7 +292,7 @@ const isFormValid = computed(() => {
           class="w-full"
           :disabled="isEditMode"
         >
-          <template #leading-icon>
+          <template #leading>
             <UIcon name="i-heroicons-language" class="w-4 h-4" />
           </template>
         </USelectMenu>

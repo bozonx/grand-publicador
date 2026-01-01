@@ -60,6 +60,7 @@ export interface PostCreateInput {
     postDate?: string
     status?: PostStatus
     scheduledAt?: string
+    language?: string
 }
 
 export interface PostUpdateInput {
@@ -73,6 +74,7 @@ export interface PostUpdateInput {
     postDate?: string
     status?: PostStatus
     scheduledAt?: string
+    language?: string
 }
 
 export interface PostsFilter {

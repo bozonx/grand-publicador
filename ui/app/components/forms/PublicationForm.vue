@@ -281,7 +281,7 @@ function toggleChannel(channelId: string) {
                 label-key="label"
                 class="w-full"
             >
-                <template #leading-icon>
+                <template #leading>
                     <UIcon name="i-heroicons-language" class="w-4 h-4" />
                 </template>
             </USelectMenu>
@@ -309,13 +309,7 @@ function toggleChannel(channelId: string) {
                 class="w-full"
                 @update:model-value="handleTranslationLink"
             >
-                 <template #label>
-                    <span v-if="formData.translationGroupId" class="text-primary-500 font-medium">
-                        {{ t('publication.linked', 'Linked') }}
-                        <span v-if="linkedPublicationId" class="text-xs text-gray-400"> (Pending Update)</span>
-                    </span>
-                    <span v-else class="text-gray-400">{{ t('publication.selectToLink', 'Select to link...') }}</span>
-                </template>
+
             </USelectMenu>
          </UFormField>
       </div>
