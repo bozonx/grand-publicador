@@ -138,9 +138,9 @@ const projectsByRole = computed(() => {
               {{ t('common.viewAll') }}
             </UButton>
           </div>
-          <div class="p-6">
+          <div class="p-4 sm:p-5">
             <!-- Loading -->
-            <div v-if="isLoading && projects.length === 0" class="flex items-center justify-center py-8">
+            <div v-if="isLoading && projects.length === 0" class="flex items-center justify-center py-4">
               <UIcon name="i-heroicons-arrow-path" class="w-6 h-6 text-gray-400 animate-spin" />
             </div>
 
@@ -159,12 +159,12 @@ const projectsByRole = computed(() => {
             </div>
 
             <!-- Project list grouped by role -->
-            <div v-else class="space-y-6">
-              <div v-for="group in projectsByRole" :key="group.role" class="space-y-3">
-                <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-1">
+            <div v-else class="space-y-4">
+              <div v-for="group in projectsByRole" :key="group.role" class="space-y-2">
+                <h3 class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest px-1">
                   {{ t(`dashboard.group_${group.role}`) }}
                 </h3>
-                <div class="space-y-3">
+                <div class="grid grid-cols-1 gap-2">
                   <ProjectsProjectListItem
                     v-for="project in group.projects"
                     :key="project.id"
