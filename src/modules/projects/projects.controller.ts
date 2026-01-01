@@ -3,7 +3,9 @@ import {
   Controller,
   DefaultValuePipe,
   Delete,
+  ForbiddenException,
   Get,
+  Logger,
   Param,
   ParseIntPipe,
   Patch,
@@ -15,6 +17,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 
 import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
+import { ApiTokenGuard } from '../../common/guards/api-token.guard.js';
 import { JwtOrApiTokenGuard } from '../../common/guards/jwt-or-api-token.guard.js';
 import type { UnifiedAuthRequest } from '../../common/types/unified-auth-request.interface.js';
 import { CreateProjectDto, UpdateProjectDto } from './dto/index.js';
@@ -27,38 +30,76 @@ import { ProjectsService } from './projects.service.js';
 @Controller('projects')
 @UseGuards(JwtOrApiTokenGuard)
 export class ProjectsController {
+  private readonly logger = new Logger(ProjectsController.name);
+
   constructor(private readonly projectsService: ProjectsService) { }
 
   @Post()
-  public create(@Request() req: UnifiedAuthRequest, @Body() createProjectDto: CreateProjectDto) {
+  public async create(@Request() req: UnifiedAuthRequest, @Body() createProjectDto: CreateProjectDto) {
+    // API tokens with limited scope cannot create new projects
+    if (req.user.scopeProjectIds && req.user.scopeProjectIds.length > 0) {
+      this.logger.warn(`Project creation attempt blocked for limited scope API token! User: ${req.user.userId}, TokenUID: ${req.user.tokenId}`);
+      throw new ForbiddenException('API tokens with limited scope cannot create projects');
+    }
     return this.projectsService.create(req.user.userId, createProjectDto);
   }
 
   @Get()
-  public findAll(
+  public async findAll(
     @Request() req: UnifiedAuthRequest,
     @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit?: number,
     @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset?: number,
   ) {
-    return this.projectsService.findAllForUser(req.user.userId, { limit, offset });
+    const projects = await this.projectsService.findAllForUser(req.user.userId, { limit, offset });
+
+    // Filter projects based on token scope
+    if (req.user.scopeProjectIds && req.user.scopeProjectIds.length > 0) {
+      return projects.filter(p => req.user.scopeProjectIds!.includes(p.id));
+    }
+
+    return projects;
   }
 
   @Get(':id')
-  public findOne(@Request() req: UnifiedAuthRequest, @Param('id') id: string) {
+  public async findOne(@Request() req: UnifiedAuthRequest, @Param('id') id: string) {
+    // Validate project scope for API token users
+    if (req.user.scopeProjectIds) {
+      ApiTokenGuard.validateProjectScope(id, req.user.scopeProjectIds, {
+        userId: req.user.userId,
+        tokenId: req.user.tokenId,
+      });
+    }
+
     return this.projectsService.findOne(id, req.user.userId);
   }
 
   @Patch(':id')
-  public update(
+  public async update(
     @Request() req: UnifiedAuthRequest,
     @Param('id') id: string,
     @Body() updateProjectDto: UpdateProjectDto,
   ) {
+    // Validate project scope for API token users
+    if (req.user.scopeProjectIds) {
+      ApiTokenGuard.validateProjectScope(id, req.user.scopeProjectIds, {
+        userId: req.user.userId,
+        tokenId: req.user.tokenId,
+      });
+    }
+
     return this.projectsService.update(id, req.user.userId, updateProjectDto);
   }
 
   @Delete(':id')
-  public remove(@Request() req: UnifiedAuthRequest, @Param('id') id: string) {
+  public async remove(@Request() req: UnifiedAuthRequest, @Param('id') id: string) {
+    // Validate project scope for API token users
+    if (req.user.scopeProjectIds) {
+      ApiTokenGuard.validateProjectScope(id, req.user.scopeProjectIds, {
+        userId: req.user.userId,
+        tokenId: req.user.tokenId,
+      });
+    }
+
     return this.projectsService.remove(id, req.user.userId);
   }
 }

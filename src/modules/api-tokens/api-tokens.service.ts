@@ -4,6 +4,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -25,6 +26,7 @@ import {
 export class ApiTokensService {
   private readonly algorithm = 'aes-256-cbc';
   private readonly encryptionKey: Buffer;
+  private readonly logger = new Logger(ApiTokensService.name);
 
   constructor(
     private prisma: PrismaService,
@@ -83,13 +85,32 @@ export class ApiTokensService {
    * Generate a secure random token
    */
   private generateToken(): string {
-    return randomBytes(32).toString('base64url');
+    return 'gpt_' + randomBytes(32).toString('base64url');
   }
 
   /**
    * Create a new API token for a user
    */
   public async create(userId: string, dto: CreateApiTokenDto): Promise<ApiTokenDto> {
+    // Validate project scope - ensure user is a member of all projects in scope
+    if (dto.scopeProjectIds && dto.scopeProjectIds.length > 0) {
+      const memberRecords = await this.prisma.projectMember.findMany({
+        where: {
+          userId,
+          projectId: { in: dto.scopeProjectIds },
+        },
+      });
+
+      if (memberRecords.length !== dto.scopeProjectIds.length) {
+        const foundIds = memberRecords.map(r => r.projectId);
+        const missingIds = dto.scopeProjectIds.filter(id => !foundIds.includes(id));
+        this.logger.warn(
+          `User ${userId} attempted to create API token with unauthorized projects: ${missingIds.join(', ')}`,
+        );
+        throw new ForbiddenException(`Insufficient permissions for projects: ${missingIds.join(', ')}`);
+      }
+    }
+
     const plainToken = this.generateToken();
     const hashedToken = this.hashToken(plainToken);
     const encryptedToken = this.encryptToken(plainToken);
@@ -158,6 +179,24 @@ export class ApiTokensService {
       updateData.name = dto.name;
     }
     if (dto.scopeProjectIds !== undefined) {
+      // Validate project scope
+      if (dto.scopeProjectIds.length > 0) {
+        const memberRecords = await this.prisma.projectMember.findMany({
+          where: {
+            userId,
+            projectId: { in: dto.scopeProjectIds },
+          },
+        });
+
+        if (memberRecords.length !== dto.scopeProjectIds.length) {
+          const foundIds = memberRecords.map(r => r.projectId);
+          const missingIds = dto.scopeProjectIds.filter(id => !foundIds.includes(id));
+          this.logger.warn(
+            `User ${userId} attempted to update API token ${id} with unauthorized projects: ${missingIds.join(', ')}`,
+          );
+          throw new ForbiddenException(`Insufficient permissions for projects: ${missingIds.join(', ')}`);
+        }
+      }
       updateData.scopeProjectIds = JSON.stringify(dto.scopeProjectIds);
     }
 

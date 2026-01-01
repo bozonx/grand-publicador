@@ -40,7 +40,10 @@ export class PublicationsController {
   ) {
     // Validate project scope for API token users
     if (req.user.scopeProjectIds && req.user.scopeProjectIds.length > 0) {
-      ApiTokenGuard.validateProjectScope(createPublicationDto.projectId, req.user.scopeProjectIds);
+      ApiTokenGuard.validateProjectScope(createPublicationDto.projectId, req.user.scopeProjectIds, {
+        userId: req.user.userId,
+        tokenId: req.user.tokenId,
+      });
     }
     return this.publicationsService.create(createPublicationDto, req.user.userId);
   }
@@ -103,7 +106,10 @@ export class PublicationsController {
     // Validate project scope for API token users
     const publication = await this.publicationsService.findOne(id, req.user.userId);
     if (req.user.scopeProjectIds && req.user.scopeProjectIds.length > 0) {
-      ApiTokenGuard.validateProjectScope(publication.projectId, req.user.scopeProjectIds);
+      ApiTokenGuard.validateProjectScope(publication.projectId, req.user.scopeProjectIds, {
+        userId: req.user.userId,
+        tokenId: req.user.tokenId,
+      });
     }
 
     return this.publicationsService.createPostsFromPublication(

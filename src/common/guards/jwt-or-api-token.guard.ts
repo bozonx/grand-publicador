@@ -73,9 +73,14 @@ export class JwtOrApiTokenGuard implements CanActivate {
         const authHeader = request.headers['authorization'];
         if (authHeader && !Array.isArray(authHeader) && authHeader.startsWith('Bearer ')) {
             const token = authHeader.substring(7);
-            // Simple heuristic: JWT tokens are much longer and have 3 parts separated by dots
-            // API tokens are shorter UUIDs
-            // This helps distinguish between JWT and API tokens in Authorization header
+
+            // Check for our API token prefix for reliable identification
+            if (token.startsWith('gpt_')) {
+                return token;
+            }
+
+            // Fallback heuristic for safety: JWT tokens have 3 parts separated by dots, 
+            // while legacy API tokens don't.
             if (token.split('.').length !== 3) {
                 return token;
             }

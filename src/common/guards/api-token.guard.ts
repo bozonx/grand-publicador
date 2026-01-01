@@ -3,6 +3,7 @@ import {
   type ExecutionContext,
   ForbiddenException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
@@ -16,6 +17,9 @@ import type { ApiTokenRequest } from '../types/api-token-user.interface.js';
  */
 @Injectable()
 export class ApiTokenGuard implements CanActivate {
+  private readonly logger = new Logger(ApiTokenGuard.name);
+  private static readonly scopeLogger = new Logger('ApiTokenScope');
+
   constructor(private apiTokensService: ApiTokensService) { }
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -29,6 +33,7 @@ export class ApiTokenGuard implements CanActivate {
     const tokenData = await this.apiTokensService.validateToken(token);
 
     if (!tokenData) {
+      this.logger.warn(`Invalid API token attempt from IP: ${request.ip}`);
       throw new UnauthorizedException('Invalid API token');
     }
 
@@ -67,13 +72,20 @@ export class ApiTokenGuard implements CanActivate {
    * Helper method to check if a project is in the token's scope.
    * Can be called from controllers to validate project access.
    */
-  public static validateProjectScope(projectId: string, scopeProjectIds: string[]): void {
+  public static validateProjectScope(
+    projectId: string,
+    scopeProjectIds: string[],
+    context?: { userId: string; tokenId?: string },
+  ): void {
     // Empty scope means all projects are allowed
     if (scopeProjectIds.length === 0) {
       return;
     }
 
     if (!scopeProjectIds.includes(projectId)) {
+      this.scopeLogger.warn(
+        `Unauthorized project access blocked! User: ${context?.userId}, TokenUID: ${context?.tokenId}, ProjectID: ${projectId}. Allowed: [${scopeProjectIds.join(', ')}]`,
+      );
       throw new ForbiddenException('Access denied: project not in token scope');
     }
   }

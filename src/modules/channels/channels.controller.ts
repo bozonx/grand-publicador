@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
-import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
+import { ApiTokenGuard } from '../../common/guards/api-token.guard.js';
 import { JwtOrApiTokenGuard } from '../../common/guards/jwt-or-api-token.guard.js';
 import type { UnifiedAuthRequest } from '../../common/types/unified-auth-request.interface.js';
 import { ChannelsService } from './channels.service.js';
@@ -27,32 +27,79 @@ export class ChannelsController {
   constructor(private readonly channelsService: ChannelsService) { }
 
   @Post()
-  public create(@Request() req: UnifiedAuthRequest, @Body() createChannelDto: CreateChannelDto) {
+  public async create(@Request() req: UnifiedAuthRequest, @Body() createChannelDto: CreateChannelDto) {
     const { projectId, ...data } = createChannelDto;
+
+    // Validate project scope for API token users
+    if (req.user.scopeProjectIds) {
+      ApiTokenGuard.validateProjectScope(projectId, req.user.scopeProjectIds, {
+        userId: req.user.userId,
+        tokenId: req.user.tokenId,
+      });
+    }
+
     return this.channelsService.create(req.user.userId, projectId, data);
   }
 
   @Get()
-  public findAll(@Request() req: UnifiedAuthRequest, @Query('projectId') projectId: string) {
+  public async findAll(@Request() req: UnifiedAuthRequest, @Query('projectId') projectId: string) {
+    // Validate project scope for API token users
+    if (req.user.scopeProjectIds) {
+      ApiTokenGuard.validateProjectScope(projectId, req.user.scopeProjectIds, {
+        userId: req.user.userId,
+        tokenId: req.user.tokenId,
+      });
+    }
+
     return this.channelsService.findAllForProject(projectId, req.user.userId);
   }
 
   @Get(':id')
-  public findOne(@Request() req: UnifiedAuthRequest, @Param('id') id: string) {
-    return this.channelsService.findOne(id, req.user.userId);
+  public async findOne(@Request() req: UnifiedAuthRequest, @Param('id') id: string) {
+    const channel = await this.channelsService.findOne(id, req.user.userId);
+
+    // Validate project scope for API token users
+    if (req.user.scopeProjectIds) {
+      ApiTokenGuard.validateProjectScope(channel.projectId, req.user.scopeProjectIds, {
+        userId: req.user.userId,
+        tokenId: req.user.tokenId,
+      });
+    }
+
+    return channel;
   }
 
   @Patch(':id')
-  public update(
+  public async update(
     @Request() req: UnifiedAuthRequest,
     @Param('id') id: string,
     @Body() updateChannelDto: UpdateChannelDto,
   ) {
+    const channel = await this.channelsService.findOne(id, req.user.userId);
+
+    // Validate project scope for API token users
+    if (req.user.scopeProjectIds) {
+      ApiTokenGuard.validateProjectScope(channel.projectId, req.user.scopeProjectIds, {
+        userId: req.user.userId,
+        tokenId: req.user.tokenId,
+      });
+    }
+
     return this.channelsService.update(id, req.user.userId, updateChannelDto);
   }
 
   @Delete(':id')
-  public remove(@Request() req: UnifiedAuthRequest, @Param('id') id: string) {
+  public async remove(@Request() req: UnifiedAuthRequest, @Param('id') id: string) {
+    const channel = await this.channelsService.findOne(id, req.user.userId);
+
+    // Validate project scope for API token users
+    if (req.user.scopeProjectIds) {
+      ApiTokenGuard.validateProjectScope(channel.projectId, req.user.scopeProjectIds, {
+        userId: req.user.userId,
+        tokenId: req.user.tokenId,
+      });
+    }
+
     return this.channelsService.remove(id, req.user.userId);
   }
 }

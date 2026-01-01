@@ -1,5 +1,5 @@
 import { plainToClass } from 'class-transformer';
-import { IsIn, IsInt, IsString, Max, Min, validateSync } from 'class-validator';
+import { IsIn, IsInt, IsString, Max, Min, MinLength, validateSync } from 'class-validator';
 import { registerAs } from '@nestjs/config';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -74,6 +74,9 @@ export class AppConfig {
    * JWT Secret for auth.
    */
   @IsString()
+  @MinLength(32, {
+    message: 'JWT_SECRET must be at least 32 characters long for security reasons (AES-256 requirement)',
+  })
   public jwtSecret!: string;
 }
 
