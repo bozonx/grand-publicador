@@ -14,9 +14,15 @@ const archivedProjects = ref<ProjectWithRole[]>([])
 const showArchived = ref(false)
 const isLoadingArchived = ref(false)
 
-// Fetch active projects on mount
+// Fetch active projects and init sorting on mount
 onMounted(() => {
   fetchProjects(false)
+  sortOptions.value = [
+    { id: 'alphabetical', label: t('project.sort.alphabetical'), icon: 'i-heroicons-bars-3-bottom-left' },
+    { id: 'role', label: t('project.sort.role'), icon: 'i-heroicons-user-circle' },
+    { id: 'publicationsCount', label: t('project.sort.publicationsCount'), icon: 'i-heroicons-document-text' },
+    { id: 'lastPublication', label: t('project.sort.lastPublication'), icon: 'i-heroicons-calendar' }
+  ]
 })
 
 /**
@@ -53,14 +59,9 @@ interface SortOption {
   icon: string
 }
 
-const sortOptions = computed<SortOption[]>(() => [
-  { id: 'alphabetical', label: t('project.sort.alphabetical'), icon: 'i-heroicons-bars-3-bottom-left' },
-  { id: 'role', label: t('project.sort.role'), icon: 'i-heroicons-user-circle' },
-  { id: 'publicationsCount', label: t('project.sort.publicationsCount'), icon: 'i-heroicons-document-text' },
-  { id: 'lastPublication', label: t('project.sort.lastPublication'), icon: 'i-heroicons-calendar' }
-])
+const sortOptions = ref<SortOption[]>([])
 
-const sortBy = ref<SortOption>(sortOptions.value[0]!)
+const sortBy = ref('alphabetical')
 const sortOrder = ref<'asc' | 'desc'>('asc')
 
 const roleWeights: Record<string, number> = {
@@ -73,15 +74,15 @@ const roleWeights: Record<string, number> = {
 function sortProjects(list: ProjectWithRole[]) {
   return [...list].sort((a, b) => {
     let result = 0
-    if (sortBy.value.id === 'alphabetical') {
+    if (sortBy.value === 'alphabetical') {
       result = a.name.localeCompare(b.name)
-    } else if (sortBy.value.id === 'role') {
+    } else if (sortBy.value === 'role') {
       const weightA = roleWeights[a.role || 'viewer'] || 0
       const weightB = roleWeights[b.role || 'viewer'] || 0
       result = weightB - weightA
-    } else if (sortBy.value.id === 'publicationsCount') {
+    } else if (sortBy.value === 'publicationsCount') {
       result = (a.publicationsCount || 0) - (b.publicationsCount || 0)
-    } else if (sortBy.value.id === 'lastPublication') {
+    } else if (sortBy.value === 'lastPublication') {
       const dateA = a.lastPublicationAt ? new Date(a.lastPublicationAt).getTime() : 0
       const dateB = b.lastPublicationAt ? new Date(b.lastPublicationAt).getTime() : 0
       result = dateA - dateB
@@ -91,8 +92,12 @@ function sortProjects(list: ProjectWithRole[]) {
   })
 }
 
+const currentSortOption = computed(() => sortOptions.value.find((opt: SortOption) => opt.id === sortBy.value))
+
 const sortedProjects = computed(() => sortProjects(projects.value))
-const sortedArchivedProjects = computed(() => sortProjects(archivedProjects.value))
+// Archived projects follow a separate logic or simple reversal if explicitly requested, 
+// here we stop sorting them as confirmed by the user.
+const sortedArchivedProjects = computed(() => archivedProjects.value)
 
 
 </script>
@@ -147,11 +152,15 @@ const sortedArchivedProjects = computed(() => sortProjects(archivedProjects.valu
       <div class="flex items-center justify-end gap-2 mb-4">
         <USelectMenu
           v-model="sortBy"
-          :options="sortOptions"
+          :items="sortOptions"
+          value-key="id"
+          label-key="label"
           class="w-56"
+          :searchable="false"
+          :loading="sortOptions.length === 0"
         >
           <template #leading>
-            <UIcon :name="sortBy.icon" class="w-4 h-4" />
+            <UIcon v-if="currentSortOption" :name="currentSortOption.icon" class="w-4 h-4" />
           </template>
         </USelectMenu>
         <UButton
