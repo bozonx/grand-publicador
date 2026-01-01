@@ -26,6 +26,17 @@ function formatDate(date: string | null | undefined): string {
   if (!date) return '-'
   return new Date(date).toLocaleDateString()
 }
+
+// Warning if no new posts for more than 3 days
+const isWarningActive = computed(() => {
+  if (!props.project.lastPublicationAt) return true // No posts ever is also a warning
+  
+  const lastDate = new Date(props.project.lastPublicationAt).getTime()
+  const now = new Date().getTime()
+  const diffDays = (now - lastDate) / (1000 * 60 * 60 * 24)
+  
+  return diffDays > 3
+})
 </script>
 
 <template>
@@ -39,18 +50,30 @@ function formatDate(date: string | null | undefined): string {
         <div class="flex-1 min-w-0">
           <!-- Header: Name + Role -->
           <div class="flex items-center gap-2 mb-1 flex-wrap">
-            <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white truncate max-w-full">
+            <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white truncate">
               {{ project.name }}
             </h3>
-            <UBadge 
-              v-if="project.role" 
-              :color="getRoleBadgeColor(project.role)" 
-              variant="subtle" 
-              size="xs"
-              class="capitalize"
-            >
-              {{ t(`roles.${project.role}`) }}
-            </UBadge>
+            <div class="flex items-center gap-1.5">
+              <UBadge 
+                v-if="project.role" 
+                :color="getRoleBadgeColor(project.role)" 
+                variant="subtle" 
+                size="xs"
+                class="capitalize"
+              >
+                {{ t(`roles.${project.role}`) }}
+              </UBadge>
+
+              <UBadge 
+                color="neutral" 
+                variant="subtle" 
+                size="xs"
+                class="flex items-center gap-1"
+              >
+                <UIcon name="i-heroicons-document-text" class="w-3 h-3" />
+                {{ project.publicationsCount || 0 }}
+              </UBadge>
+            </div>
           </div>
 
           <!-- Description (optional) -->
@@ -61,30 +84,11 @@ function formatDate(date: string | null | undefined): string {
             {{ project.description }}
           </p>
 
-          <!-- Metrics / Stats -->
-          <div class="flex items-center gap-3 text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-2 flex-wrap">
-            <div class="flex items-center gap-1.5" :title="t('channel.titlePlural')">
-              <UIcon name="i-heroicons-signal" class="w-4 h-4 shrink-0" />
-              <span>
-                {{ project.channelCount || 0 }} {{ t('channel.titlePlural').toLowerCase() }}
-              </span>
-            </div>
-            
-            <div class="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
-
-            <div class="flex items-center gap-1.5" :title="t('publication.titlePlural')">
-              <UIcon name="i-heroicons-document-text" class="w-4 h-4 shrink-0" />
-              <span>
-                {{ project.publicationsCount || 0 }} {{ t('publication.titlePlural').toLowerCase() }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Last Publication Date -->
-          <div v-if="project.lastPublicationAt" class="mt-2 flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
-             <UIcon name="i-heroicons-clock" class="w-3.5 h-3.5 shrink-0" />
-             <span>
-                {{ t('project.lastPublication', 'Last publication') }}: {{ formatDate(project.lastPublicationAt) }}
+          <!-- Warning -->
+          <div v-if="isWarningActive" class="mt-2 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
+             <UIcon name="i-heroicons-exclamation-triangle" class="w-4 h-4 shrink-0" />
+             <span class="truncate">
+                {{ t('project.noRecentPostsWarning') }}
              </span>
           </div>
 

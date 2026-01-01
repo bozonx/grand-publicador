@@ -120,7 +120,9 @@
     "moveToArchive": "Archive",
     "archiveConfirm": "Are you sure you want to archive this project? All associated channels and posts will also be hidden.",
     "owner": "Owner",
-    "members": "Members"
+    "members": "Members",
+    "lastPublication": "Last publication",
+    "noRecentPostsWarning": "No new posts for more than 3 days!"
   },
   "projectMember": {
     "title": "Member",

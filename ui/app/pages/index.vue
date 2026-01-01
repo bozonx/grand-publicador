@@ -86,6 +86,28 @@ function getStatusColor(status: string | null): 'success' | 'warning' | 'error' 
 // Quick stats
 const totalProjects = computed(() => projects.value.length)
 
+// Group projects by role: Owner > Admin > Editor > Viewer
+const groupedProjects = computed(() => {
+  const rolePriority: Record<string, number> = {
+    owner: 1,
+    admin: 2,
+    editor: 3,
+    viewer: 4
+  }
+
+  return [...projects.value].sort((a, b) => {
+    const priorityA = rolePriority[a.role || 'viewer'] || 99
+    const priorityB = rolePriority[b.role || 'viewer'] || 99
+    
+    if (priorityA !== priorityB) {
+      return priorityA - priorityB
+    }
+    
+    // Within same role, sort by name
+    return a.name.localeCompare(b.name)
+  })
+})
+
 </script>
 
 <template>
@@ -142,7 +164,7 @@ const totalProjects = computed(() => projects.value.length)
             <!-- Project list -->
             <div v-else class="space-y-3">
               <ProjectsProjectListItem
-                v-for="project in projects.slice(0, 5)"
+                v-for="project in groupedProjects"
                 :key="project.id"
                 :project="project"
                 :show-description="false"
