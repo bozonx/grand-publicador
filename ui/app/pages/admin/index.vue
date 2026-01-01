@@ -89,6 +89,7 @@ const {
   setPage,
   getUserDisplayName,
   getUserInitials,
+  toggleBan,
 } = useUsers()
 
 // Filter state
@@ -99,6 +100,12 @@ const searchQuery = ref('')
 const showConfirmModal = ref(false)
 const userToToggle = ref<UserWithStats | null>(null)
 const isToggling = ref(false)
+
+// Ban modal state
+const showBanModal = ref(false)
+const userToBan = ref<UserWithStats | null>(null)
+const banReason = ref('')
+const isBanning = ref(false)
 
 // Fetch users on mount
 onMounted(() => {
@@ -159,6 +166,42 @@ async function handleToggleAdmin() {
 function cancelToggle() {
   showConfirmModal.value = false
   userToToggle.value = null
+}
+
+/**
+ * Open ban modal
+ */
+function confirmBan(user: UserWithStats) {
+  userToBan.value = user
+  banReason.value = ''
+  showBanModal.value = true
+}
+
+/**
+ * Handle ban action
+ */
+async function handleBan() {
+  if (!userToBan.value) return
+
+  isBanning.value = true
+  // If user is already banned, we are unbanning (toggle logic handled here or pass explicit bool)
+  // toggleBan(id, isBanned, reason) -> if passing true, we are banning.
+  
+  const isBanningAction = !userToBan.value.isBanned
+  await toggleBan(userToBan.value.id, isBanningAction, banReason.value)
+  
+  isBanning.value = false
+  showBanModal.value = false
+  userToBan.value = null
+}
+
+/**
+ * Cancel ban
+ */
+function cancelBan() {
+  showBanModal.value = false
+  userToBan.value = null
+  banReason.value = ''
 }
 
 /**
@@ -336,13 +379,23 @@ const hasActiveFilters = computed(() => {
 
           <!-- Role column -->
           <template #role-cell="{ row }">
-            <UBadge
-              :color="row.original.is_admin ? 'primary' : 'neutral'"
-              :variant="row.original.is_admin ? 'solid' : 'outline'"
-              size="sm"
-            >
-              {{ row.original.is_admin ? t('user.isAdmin') : t('admin.regularUser') }}
-            </UBadge>
+            <div class="flex flex-wrap gap-1">
+              <UBadge
+                :color="row.original.is_admin ? 'primary' : 'neutral'"
+                :variant="row.original.is_admin ? 'solid' : 'outline'"
+                size="sm"
+              >
+                {{ row.original.is_admin ? t('user.isAdmin') : t('admin.regularUser') }}
+              </UBadge>
+              <UBadge
+                v-if="row.original.isBanned"
+                color="error"
+                variant="solid"
+                size="sm"
+              >
+                {{ t('admin.banned', 'BANNED') }}
+              </UBadge>
+            </div>
           </template>
 
           <!-- Statistics column -->
@@ -366,17 +419,24 @@ const hasActiveFilters = computed(() => {
 
           <!-- Actions column -->
           <template #actions-cell="{ row }">
-            <div class="text-right">
-              <UButton
-                :color="row.original.is_admin ? 'warning' : 'success'"
-                variant="ghost"
-                size="sm"
-                :icon="row.original.is_admin ? 'i-heroicons-shield-exclamation' : 'i-heroicons-shield-check'"
-                @click="confirmToggleAdmin(row.original)"
-              >
-                {{ row.original.is_admin ? t('admin.revokeAdmin') : t('admin.grantAdmin') }}
-              </UButton>
-            </div>
+              <div class="flex items-center justify-end gap-2">
+                <UButton
+                  :color="row.original.is_admin ? 'warning' : 'success'"
+                  variant="ghost"
+                  size="sm"
+                  :icon="row.original.is_admin ? 'i-heroicons-shield-exclamation' : 'i-heroicons-shield-check'"
+                  :title="row.original.is_admin ? t('admin.revokeAdmin') : t('admin.grantAdmin')"
+                  @click="confirmToggleAdmin(row.original)"
+                />
+                <UButton
+                  :color="row.original.isBanned ? 'primary' : 'error'"
+                  variant="ghost"
+                  size="sm"
+                  :icon="row.original.isBanned ? 'i-heroicons-lock-open' : 'i-heroicons-lock-closed'"
+                  :title="row.original.isBanned ? t('admin.unban') : t('admin.ban')"
+                  @click="confirmBan(row.original)"
+                />
+              </div>
           </template>
         </UTable>
       </div>
@@ -538,6 +598,89 @@ const hasActiveFilters = computed(() => {
                 userToToggle?.is_admin
                   ? t('admin.revokeAdmin', 'Revoke admin')
                   : t('admin.grantAdmin', 'Grant admin')
+              }}
+            </UButton>
+          </div>
+        </div>
+      </template>
+    </UModal>
+
+    <!-- Ban user modal -->
+    <UModal v-model:open="showBanModal">
+      <template #content>
+        <div class="p-6">
+          <div class="flex items-center gap-4 mb-4">
+            <div
+              class="p-2 rounded-lg"
+              :class="
+                userToBan?.isBanned
+                  ? 'bg-green-100 dark:bg-green-900/30'
+                  : 'bg-red-100 dark:bg-red-900/30'
+              "
+            >
+              <UIcon
+                :name="
+                  userToBan?.isBanned
+                    ? 'i-heroicons-lock-open'
+                    : 'i-heroicons-lock-closed'
+                "
+                class="w-6 h-6"
+                :class="
+                  userToBan?.isBanned
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-red-600 dark:text-red-400'
+                "
+              />
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              {{
+                userToBan?.isBanned
+                  ? t('admin.unbanUser', 'Unban User')
+                  : t('admin.banUser', 'Ban User')
+              }}
+            </h3>
+          </div>
+
+          <div v-if="!userToBan?.isBanned" class="mb-4">
+             <UTextarea
+               v-model="banReason"
+               :placeholder="t('admin.banReason', 'Reason for blocking (optional)...')"
+               :rows="3"
+             />
+          </div>
+
+          <p class="text-gray-600 dark:text-gray-400 mb-6">
+            {{
+              userToBan?.isBanned
+                ? t(
+                    'admin.unbanConfirm',
+                    'Are you sure you want to unban this user? They will regain access to the platform.'
+                  )
+                : t(
+                    'admin.banConfirm',
+                    'Are you sure you want to ban this user? They will lose access to the platform immediately.'
+                  )
+            }}
+          </p>
+
+          <div class="flex justify-end gap-3">
+            <UButton
+              color="neutral"
+              variant="ghost"
+              :disabled="isBanning"
+              @click="cancelBan"
+            >
+              {{ t('common.cancel') }}
+            </UButton>
+            <UButton
+              :color="userToBan?.isBanned ? 'primary' : 'error'"
+              :loading="isBanning"
+              @click="handleBan"
+            >
+              {{
+                userToBan?.isBanned
+                  ? t('admin.unban', 'Unban')
+                  : t('admin.ban', 'Ban')
               }}
             </UButton>
           </div>

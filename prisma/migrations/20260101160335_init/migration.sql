@@ -6,9 +6,25 @@ CREATE TABLE "users" (
     "avatar_url" TEXT,
     "telegram_id" BIGINT,
     "is_admin" BOOLEAN NOT NULL DEFAULT false,
+    "is_banned" BOOLEAN NOT NULL DEFAULT false,
+    "ban_reason" TEXT,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
     "preferences" TEXT NOT NULL DEFAULT '{}'
+);
+
+-- CreateTable
+CREATE TABLE "api_tokens" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "user_id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "hashed_token" TEXT NOT NULL,
+    "encrypted_token" TEXT NOT NULL,
+    "scope_project_ids" TEXT NOT NULL DEFAULT '[]',
+    "last_used_at" DATETIME,
+    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" DATETIME NOT NULL,
+    CONSTRAINT "api_tokens_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -98,25 +114,17 @@ CREATE TABLE "posts" (
     CONSTRAINT "posts_author_id_fkey" FOREIGN KEY ("author_id") REFERENCES "users" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
--- CreateTable
-CREATE TABLE "api_tokens" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "user_id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "hashed_token" TEXT NOT NULL,
-    "encrypted_token" TEXT NOT NULL,
-    "scope_project_ids" TEXT NOT NULL DEFAULT '[]',
-    "last_used_at" DATETIME,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
-    CONSTRAINT "api_tokens_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
 -- CreateIndex
 CREATE UNIQUE INDEX "users_telegram_id_key" ON "users"("telegram_id");
 
 -- CreateIndex
 CREATE INDEX "users_telegram_username_idx" ON "users"("telegram_username");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "api_tokens_hashed_token_key" ON "api_tokens"("hashed_token");
+
+-- CreateIndex
+CREATE INDEX "api_tokens_user_id_idx" ON "api_tokens"("user_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "project_members_project_id_user_id_key" ON "project_members"("project_id", "user_id");
@@ -138,9 +146,3 @@ CREATE INDEX "posts_channel_id_created_at_idx" ON "posts"("channel_id", "created
 
 -- CreateIndex
 CREATE INDEX "posts_publication_id_idx" ON "posts"("publication_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "api_tokens_hashed_token_key" ON "api_tokens"("hashed_token");
-
--- CreateIndex
-CREATE INDEX "api_tokens_user_id_idx" ON "api_tokens"("user_id");

@@ -26,6 +26,12 @@ export class UserDto {
   public isAdmin!: boolean;
 
   @Expose()
+  public isBanned!: boolean;
+
+  @Expose()
+  public banReason?: string | null;
+
+  @Expose()
   public createdAt!: Date;
 
   @Expose()
@@ -48,4 +54,10 @@ export class UpdateUserProfileDto {
   @IsString()
   @IsOptional()
   public avatarUrl?: string;
+}
+
+export class BanUserDto {
+  @IsString()
+  @IsOptional()
+  public reason?: string;
 }

@@ -127,6 +127,8 @@ export class UsersService {
       avatarUrl: user.avatarUrl,
       telegramId: user.telegramId?.toString(),
       isAdmin: user.isAdmin,
+      isBanned: user.isBanned,
+      banReason: user.banReason,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       projectsCount: user._count.ownedProjects,
@@ -165,6 +167,33 @@ export class UsersService {
       data: {
         ...(data.fullName !== undefined && { fullName: data.fullName }),
         ...(data.avatarUrl !== undefined && { avatarUrl: data.avatarUrl }),
+      },
+    });
+  }
+
+
+  /**
+   * Ban a user.
+   */
+  public async banUser(userId: string, reason?: string): Promise<User> {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        isBanned: true,
+        banReason: reason,
+      },
+    });
+  }
+
+  /**
+   * Unban a user.
+   */
+  public async unbanUser(userId: string): Promise<User> {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        isBanned: false,
+        banReason: null,
       },
     });
   }

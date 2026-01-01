@@ -5,6 +5,10 @@ type User = Database['public']['Tables']['users']['Row']
 export interface UserWithStats extends User {
   projectsCount?: number
   postsCount?: number
+  isBanned?: boolean
+  banReason?: string | null
+  fullName?: string | null
+  telegramUsername?: string | null
 }
 
 export interface UsersFilter {

@@ -85,12 +85,7 @@ function getStatusColor(status: string | null): 'success' | 'warning' | 'error' 
 
 // Quick stats
 const totalProjects = computed(() => projects.value.length)
-const totalChannels = computed(() =>
-  projects.value.reduce((sum: number, project: ProjectWithRole) => sum + (project.channelCount || 0), 0)
-)
-const totalPosts = computed(() =>
-  projects.value.reduce((sum: number, project: ProjectWithRole) => sum + (project.postCount || 0), 0)
-)
+
 </script>
 
 <template>
@@ -105,65 +100,7 @@ const totalPosts = computed(() =>
       </p>
     </div>
 
-    <!-- Stats cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-      <!-- Projects stat -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
-              {{ t('project.titlePlural') }}
-            </p>
-            <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">
-              {{ totalProjects }}
-            </p>
-          </div>
-          <div class="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
-            <UIcon
-              name="i-heroicons-briefcase"
-              class="w-6 h-6 text-primary-600 dark:text-primary-400"
-            />
-          </div>
-        </div>
-      </div>
 
-      <!-- Channels stat -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
-              {{ t('channel.titlePlural') }}
-            </p>
-            <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">
-              {{ totalChannels }}
-            </p>
-          </div>
-          <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-            <UIcon name="i-heroicons-signal" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
-          </div>
-        </div>
-      </div>
-
-      <!-- Posts stat -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
-              {{ t('post.titlePlural') }}
-            </p>
-            <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">
-              {{ totalPosts }}
-            </p>
-          </div>
-          <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-            <UIcon
-              name="i-heroicons-document-text"
-              class="w-6 h-6 text-green-600 dark:text-green-400"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
 
 
     <!-- Content grid -->
@@ -174,7 +111,7 @@ const totalPosts = computed(() =>
           class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between"
         >
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-            {{ t('project.titlePlural') }}
+            {{ t('project.titlePlural') }} ({{ totalProjects }})
           </h2>
           <UButton variant="ghost" color="primary" size="sm" to="/projects">
             {{ t('common.viewAll') }}

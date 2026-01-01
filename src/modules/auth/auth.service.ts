@@ -1,6 +1,6 @@
 import { createHash, createHmac } from 'node:crypto';
 
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { plainToInstance } from 'class-transformer';
@@ -80,6 +80,10 @@ export class AuthService {
       avatarUrl: tgUser.photo_url,
     });
 
+    if (user.isBanned) {
+      throw new ForbiddenException(`User is banned: ${user.banReason || 'Access denied'}`);
+    }
+
     const payload = {
       sub: user.id,
       telegramId: user.telegramId?.toString(),
@@ -120,6 +124,10 @@ export class AuthService {
       lastName: widgetData.last_name,
       avatarUrl: widgetData.photo_url,
     });
+
+    if (user.isBanned) {
+      throw new ForbiddenException(`User is banned: ${user.banReason || 'Access denied'}`);
+    }
 
     const payload = {
       sub: user.id,

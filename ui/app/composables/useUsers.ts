@@ -78,6 +78,33 @@ export function useUsers() {
         }
     }
 
+    async function toggleBan(userId: string, isBanned: boolean, reason?: string) {
+        try {
+            if (isBanned) {
+                await api.post(`/users/${userId}/ban`, { reason })
+            } else {
+                await api.post(`/users/${userId}/unban`)
+            }
+
+            toast.add({
+                title: t('common.success'),
+                description: isBanned ? t('admin.userBanned') : t('admin.userUnbanned'),
+                color: 'success',
+            })
+
+            // Refresh list
+            await fetchUsers()
+
+        } catch (err: any) {
+            const message = err.message || 'Failed to update user'
+            toast.add({
+                title: t('common.error'),
+                description: message,
+                color: 'error',
+            })
+        }
+    }
+
     function setFilter(newFilter: UsersFilter) {
         store.setFilter(newFilter)
     }
@@ -91,7 +118,7 @@ export function useUsers() {
     }
 
     function getUserDisplayName(user: UserWithStats): string {
-        return user.full_name || user.telegram_username || 'User'
+        return user.fullName || user.telegramUsername || user.full_name || user.telegram_username || 'User'
     }
 
     function getUserInitials(user: UserWithStats): string {
@@ -109,6 +136,7 @@ export function useUsers() {
         totalPages,
         fetchUsers,
         toggleAdminStatus,
+        toggleBan,
         setFilter,
         clearFilter,
         setPage,
