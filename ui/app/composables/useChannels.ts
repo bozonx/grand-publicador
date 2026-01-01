@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { ArchiveEntityType } from '~/types/archive.types'
+import { getSocialMediaColor as getColorBase, getSocialMediaIcon as getIconBase } from '~/utils/socialMedia'
 
 export type SocialMedia = 'TELEGRAM' | 'INSTAGRAM' | 'VK' | 'YOUTUBE' | 'TIKTOK' | 'X' | 'FACEBOOK' | 'LINKEDIN' | 'SITE'
 
@@ -298,33 +299,11 @@ export function useChannels() {
     }
 
     function getSocialMediaColor(socialMedia: SocialMedia): string {
-        const colors: Record<string, string> = {
-            TELEGRAM: '#0088cc',
-            INSTAGRAM: '#e1306c',
-            VK: '#4a76a8',
-            YOUTUBE: '#ff0000',
-            TIKTOK: '#000000',
-            X: '#000000',
-            FACEBOOK: '#1877f2',
-            LINKEDIN: '#0077b5',
-            SITE: '#6b7280',
-        }
-        return colors[socialMedia] || '#6b7280'
+        return getColorBase(socialMedia)
     }
 
     function getSocialMediaIcon(socialMedia: SocialMedia): string {
-        const icons: Record<string, string> = {
-            TELEGRAM: 'i-simple-icons-telegram',
-            INSTAGRAM: 'i-simple-icons-instagram',
-            VK: 'i-simple-icons-vk',
-            YOUTUBE: 'i-simple-icons-youtube',
-            TIKTOK: 'i-simple-icons-tiktok',
-            X: 'i-simple-icons-x',
-            FACEBOOK: 'i-simple-icons-facebook',
-            LINKEDIN: 'i-simple-icons-linkedin',
-            SITE: 'i-heroicons-globe-alt',
-        }
-        return icons[socialMedia] || 'i-heroicons-hashtag'
+        return getIconBase(socialMedia)
     }
 
     function getSocialMediaDisplayName(socialMedia: SocialMedia): string {

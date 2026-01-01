@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ProjectWithRole } from '~/stores/projects'
+import { useSorting } from '~/composables/useSorting'
 
 definePageMeta({
   middleware: 'auth',
@@ -7,22 +8,74 @@ definePageMeta({
 
 const { t } = useI18n()
 const router = useRouter()
-const { projects, isLoading, error, fetchProjects, fetchArchivedProjects, canEdit, canDelete } =
-  useProjects()
+const { projects, isLoading, error, fetchProjects, fetchArchivedProjects } = useProjects()
 
 const archivedProjects = ref<ProjectWithRole[]>([])
 const showArchived = ref(false)
 const isLoadingArchived = ref(false)
 
-// Fetch active projects and init sorting on mount
+// Sorting
+const roleWeights: Record<string, number> = {
+  owner: 4,
+  admin: 3,
+  editor: 2,
+  viewer: 1
+}
+
+const sortOptions = computed(() => [
+  { id: 'alphabetical', label: t('project.sort.alphabetical'), icon: 'i-heroicons-bars-3-bottom-left' },
+  { id: 'role', label: t('project.sort.role'), icon: 'i-heroicons-user-circle' },
+  { id: 'publicationsCount', label: t('project.sort.publicationsCount'), icon: 'i-heroicons-document-text' },
+  { id: 'lastPublication', label: t('project.sort.lastPublication'), icon: 'i-heroicons-calendar' }
+])
+
+function sortProjectsFn(list: ProjectWithRole[], sortBy: string, sortOrder: 'asc' | 'desc') {
+  return [...list].sort((a, b) => {
+    let result = 0
+    if (sortBy === 'alphabetical') {
+      result = a.name.localeCompare(b.name)
+    } else if (sortBy === 'role') {
+      const weightA = roleWeights[a.role || 'viewer'] || 0
+      const weightB = roleWeights[b.role || 'viewer'] || 0
+      result = weightB - weightA // Descending weight for better roles first? Usually Owner first.
+      // If we want Owner first (weight 4) then desc logic means 4 > 1.
+    } else if (sortBy === 'publicationsCount') {
+      result = (a.publicationsCount || 0) - (b.publicationsCount || 0)
+    } else if (sortBy === 'lastPublication') {
+      const dateA = a.lastPublicationAt ? new Date(a.lastPublicationAt).getTime() : 0
+      const dateB = b.lastPublicationAt ? new Date(b.lastPublicationAt).getTime() : 0
+      result = dateA - dateB
+    }
+
+    // Usually we want Ascending for alphabetical, but Descending for counts/dates?
+    // The previous implementation used a global sortOrder switch.
+    // So if user selects Count and ASC, it shows 0...10.
+    // If we want to standard behavior, valid.
+    return sortOrder === 'asc' ? result : -result
+  })
+}
+
+const { 
+  sortBy, 
+  sortOrder, 
+  toggleSortOrder,
+  sortList
+} = useSorting<ProjectWithRole>({
+  storageKey: 'projects',
+  defaultSortBy: 'alphabetical',
+  sortOptions: sortOptions.value,
+  sortFn: sortProjectsFn
+})
+
+// Use local sortOptions for template
+const activeSortOption = computed(() => sortOptions.value.find(opt => opt.id === sortBy.value))
+
+const sortedProjects = computed(() => sortList(projects.value))
+const sortedArchivedProjects = computed(() => archivedProjects.value) // Not sorted by default logic for now to keep simple
+
+// Fetch active projects
 onMounted(() => {
   fetchProjects(false)
-  sortOptions.value = [
-    { id: 'alphabetical', label: t('project.sort.alphabetical'), icon: 'i-heroicons-bars-3-bottom-left' },
-    { id: 'role', label: t('project.sort.role'), icon: 'i-heroicons-user-circle' },
-    { id: 'publicationsCount', label: t('project.sort.publicationsCount'), icon: 'i-heroicons-document-text' },
-    { id: 'lastPublication', label: t('project.sort.lastPublication'), icon: 'i-heroicons-calendar' }
-  ]
 })
 
 /**
@@ -33,8 +86,11 @@ async function toggleArchivedProjects() {
   
   if (showArchived.value && archivedProjects.value.length === 0) {
     isLoadingArchived.value = true
-    archivedProjects.value = await fetchArchivedProjects()
-    isLoadingArchived.value = false
+    try {
+        archivedProjects.value = await fetchArchivedProjects()
+    } finally {
+        isLoadingArchived.value = false
+    }
   }
 }
 
@@ -44,65 +100,6 @@ async function toggleArchivedProjects() {
 function goToCreateProject() {
   router.push('/projects/new')
 }
-
-/**
- * Navigate to edit project page
- */
-function goToEditProject(projectId: string) {
-  router.push(`/projects/${projectId}?edit=true`)
-}
-
-// Sorting
-interface SortOption {
-  id: string
-  label: string
-  icon: string
-}
-
-const sortOptions = ref<SortOption[]>([])
-
-const sortBy = ref(localStorage.getItem('projects-sort-by') || 'alphabetical')
-const sortOrder = ref<'asc' | 'desc'>((localStorage.getItem('projects-sort-order') as 'asc' | 'desc') || 'asc')
-
-watch(sortBy, (val) => localStorage.setItem('projects-sort-by', val))
-watch(sortOrder, (val) => localStorage.setItem('projects-sort-order', val))
-
-const roleWeights: Record<string, number> = {
-  owner: 4,
-  admin: 3,
-  editor: 2,
-  viewer: 1
-}
-
-function sortProjects(list: ProjectWithRole[]) {
-  return [...list].sort((a, b) => {
-    let result = 0
-    if (sortBy.value === 'alphabetical') {
-      result = a.name.localeCompare(b.name)
-    } else if (sortBy.value === 'role') {
-      const weightA = roleWeights[a.role || 'viewer'] || 0
-      const weightB = roleWeights[b.role || 'viewer'] || 0
-      result = weightB - weightA
-    } else if (sortBy.value === 'publicationsCount') {
-      result = (a.publicationsCount || 0) - (b.publicationsCount || 0)
-    } else if (sortBy.value === 'lastPublication') {
-      const dateA = a.lastPublicationAt ? new Date(a.lastPublicationAt).getTime() : 0
-      const dateB = b.lastPublicationAt ? new Date(b.lastPublicationAt).getTime() : 0
-      result = dateA - dateB
-    }
-
-    return sortOrder.value === 'asc' ? result : -result
-  })
-}
-
-const currentSortOption = computed(() => sortOptions.value.find((opt: SortOption) => opt.id === sortBy.value))
-
-const sortedProjects = computed(() => sortProjects(projects.value))
-// Archived projects follow a separate logic or simple reversal if explicitly requested, 
-// here we stop sorting them as confirmed by the user.
-const sortedArchivedProjects = computed(() => archivedProjects.value)
-
-
 </script>
 
 <template>
@@ -127,17 +124,17 @@ const sortedArchivedProjects = computed(() => archivedProjects.value)
             label-key="label"
             class="w-56"
             :searchable="false"
-            :loading="sortOptions.length === 0"
+            :loading="projects.length === 0"
           >
             <template #leading>
-              <UIcon v-if="currentSortOption" :name="currentSortOption.icon" class="w-4 h-4" />
+              <UIcon v-if="activeSortOption" :name="activeSortOption.icon" class="w-4 h-4" />
             </template>
           </USelectMenu>
           <UButton
             :icon="sortOrder === 'asc' ? 'i-heroicons-bars-arrow-up' : 'i-heroicons-bars-arrow-down'"
             color="neutral"
             variant="ghost"
-            @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+            @click="toggleSortOrder"
             :title="sortOrder === 'asc' ? t('common.sortOrder.asc') : t('common.sortOrder.desc')"
           />
         </template>
@@ -194,7 +191,7 @@ const sortedArchivedProjects = computed(() => archivedProjects.value)
           @click="toggleArchivedProjects"
           :loading="isLoadingArchived"
         >
-          {{ showArchived ? 'Скрыть архивные' : 'Показать архивные' }}
+          {{ showArchived ? t('common.hideArchived', 'Hide Archived') : t('common.showArchived', 'Show Archived') }}
         </UButton>
       </div>
 
@@ -209,7 +206,7 @@ const sortedArchivedProjects = computed(() => archivedProjects.value)
           />
         </div>
         <div v-else class="text-center py-8">
-          <p class="text-gray-500 dark:text-gray-400">Нет архивных проектов</p>
+          <p class="text-gray-500 dark:text-gray-400">{{ t('project.noArchived', 'No archived projects') }}</p>
         </div>
       </div>
     </div>

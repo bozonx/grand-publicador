@@ -1,42 +1,18 @@
 <script setup lang="ts">
 import type { ProjectWithRole } from '~/stores/projects'
+import { getRoleBadgeColor } from '~/utils/roles'
 
 const props = defineProps<{
   project: ProjectWithRole
   showDescription?: boolean
 }>()
 
-const { t } = useI18n()
-
-// Role badge color mapping
-type BadgeColor = 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral'
-
-function getRoleBadgeColor(role: string | undefined | null): BadgeColor {
-  if (!role) return 'neutral'
-  const colors: Record<string, BadgeColor> = {
-    owner: 'primary',
-    admin: 'secondary',
-    editor: 'info',
-    viewer: 'neutral',
-  }
-  return colors[role.toLowerCase()] || 'neutral'
-}
+const { t, d } = useI18n()
 
 function formatDate(date: string | null | undefined): string {
   if (!date) return '-'
-  return new Date(date).toLocaleDateString()
+  return d(new Date(date), 'short')
 }
-
-// Warning if no new posts for more than 3 days
-const isWarningActive = computed(() => {
-  if (!props.project.lastPublicationAt) return true // No posts ever is also a warning
-  
-  const lastDate = new Date(props.project.lastPublicationAt).getTime()
-  const now = new Date().getTime()
-  const diffDays = (now - lastDate) / (1000 * 60 * 60 * 24)
-  
-  return diffDays > 3
-})
 </script>
 
 <template>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ProjectWithRole } from '~/stores/projects'
 import type { ChannelWithProject } from '~/composables/useChannels'
+import { getSocialMediaIcon, getSocialMediaColor } from '~/utils/socialMedia'
 
 const { t } = useI18n()
 const { isAdmin } = useAuth()
@@ -27,11 +28,13 @@ const mainNavItems = computed<NavItem[]>(() => [
     icon: 'i-heroicons-hashtag',
   },
   {
-    label: t('navigation.publications', 'Публикации'),
+    label: t('navigation.publications', 'Publications'),
     to: '/publications',
     icon: 'i-heroicons-document-text',
   },
 ])
+
+
 
 // Static functional items (Settings) - Admin is handled separately
 const bottomNavItems = computed<NavItem[]>(() => [
@@ -191,49 +194,9 @@ function getChannelLink(projectId: string, channelId: string) {
                   :class="{ 'bg-primary-100 dark:bg-primary-900 ring-2 ring-primary-500': route.query.channelId === channel.id }"
                 >
                   <UIcon 
-                    v-if="channel.socialMedia === 'TELEGRAM'" 
-                    name="i-simple-icons-telegram" 
-                    class="w-5 h-5 text-blue-500" 
-                  />
-                  <UIcon 
-                    v-else-if="channel.socialMedia === 'INSTAGRAM'" 
-                    name="i-simple-icons-instagram" 
-                    class="w-5 h-5 text-pink-600" 
-                  />
-                  <UIcon 
-                    v-else-if="channel.socialMedia === 'FACEBOOK'" 
-                    name="i-simple-icons-facebook" 
-                    class="w-5 h-5 text-blue-600" 
-                  />
-                  <UIcon 
-                    v-else-if="channel.socialMedia === 'X'" 
-                    name="i-simple-icons-x" 
-                    class="w-5 h-5 text-gray-900 dark:text-white" 
-                  />
-                  <UIcon 
-                    v-else-if="channel.socialMedia === 'YOUTUBE'" 
-                    name="i-simple-icons-youtube" 
-                    class="w-5 h-5 text-red-600" 
-                  />
-                  <UIcon 
-                    v-else-if="channel.socialMedia === 'VK'" 
-                    name="i-simple-icons-vk" 
-                    class="w-5 h-5 text-blue-700" 
-                  />
-                  <UIcon 
-                    v-else-if="channel.socialMedia === 'TIKTOK'" 
-                    name="i-simple-icons-tiktok" 
-                    class="w-5 h-5 text-gray-900 dark:text-white" 
-                  />
-                  <UIcon 
-                    v-else-if="channel.socialMedia === 'LINKEDIN'" 
-                    name="i-simple-icons-linkedin" 
-                    class="w-5 h-5 text-blue-700" 
-                  />
-                  <UIcon 
-                    v-else 
-                    name="i-heroicons-globe-alt" 
-                    class="w-5 h-5 text-gray-500" 
+                    :name="getSocialMediaIcon(channel.socialMedia)" 
+                    class="w-5 h-5"
+                    :style="{ color: getSocialMediaColor(channel.socialMedia) }"
                   />
                 </NuxtLink>
               </UTooltip>

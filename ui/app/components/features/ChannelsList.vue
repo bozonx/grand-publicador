@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import type { Database } from '~/types/database.types'
 import type { ChannelWithProject } from '~/composables/useChannels'
-
-type SocialMediaEnum = Database['public']['Enums']['social_media_enum']
+import { SOCIAL_MEDIA_WEIGHTS } from '~/utils/socialMedia'
+import ChannelListItem from '~/components/channels/ChannelListItem.vue'
 
 const props = defineProps<{
   projectId: string
@@ -14,138 +13,84 @@ const {
   isLoading,
   fetchChannels,
   fetchArchivedChannels,
-  setFilter,
-  socialMediaOptions,
-  getSocialMediaDisplayName,
-  getSocialMediaIcon,
-  getSocialMediaColor
+  setFilter
 } = useChannels()
 
 // Sorting
-interface SortOption {
-  id: string
-  label: string
-  icon: string
-}
-
-const sortOptions = computed<SortOption[]>(() => [
+const sortOptions = computed(() => [
   { id: 'alphabetical', label: t('channel.sort.alphabetical'), icon: 'i-heroicons-bars-3-bottom-left' },
   { id: 'activity', label: t('channel.sort.activity'), icon: 'i-heroicons-bolt' },
   { id: 'socialMedia', label: t('channel.sort.socialMedia'), icon: 'i-heroicons-share' },
   { id: 'language', label: t('channel.sort.language'), icon: 'i-heroicons-language' }
 ])
 
-const sortBy = ref(localStorage.getItem('channels-sort-by') || 'alphabetical')
-const sortOrder = ref<'asc' | 'desc'>((localStorage.getItem('channels-sort-order') as 'asc' | 'desc') || 'asc')
-
-watch(sortBy, (val) => localStorage.setItem('channels-sort-by', val))
-watch(sortOrder, (val) => localStorage.setItem('channels-sort-order', val))
-
-const socialMediaWeights: Record<string, number> = {
-  FACEBOOK: 1,
-  VK: 1,
-  YOUTUBE: 2,
-  TIKTOK: 2,
-  INSTAGRAM: 2,
-  TELEGRAM: 3,
-  X: 4,
-  LINKEDIN: 4,
-  SITE: 4
-}
-
-function sortChannels(list: ChannelWithProject[]) {
+function sortChannelsFn(list: ChannelWithProject[], sortBy: string, sortOrder: 'asc' | 'desc') {
   return [...list].sort((a, b) => {
     let result = 0
-    if (sortBy.value === 'alphabetical') {
+    if (sortBy === 'alphabetical') {
       result = a.name.localeCompare(b.name)
-    } else if (sortBy.value === 'activity') {
-      // Active first (isActive: true)
+    } else if (sortBy === 'activity') {
       const valA = a.isActive ? 1 : 0
       const valB = b.isActive ? 1 : 0
       result = valB - valA
-      // Sub-sort by name
       if (result === 0) result = a.name.localeCompare(b.name)
-    } else if (sortBy.value === 'socialMedia') {
-      const weightA = socialMediaWeights[a.socialMedia] || 99
-      const weightB = socialMediaWeights[b.socialMedia] || 99
+    } else if (sortBy === 'socialMedia') {
+      const weightA = SOCIAL_MEDIA_WEIGHTS[a.socialMedia] || 99
+      const weightB = SOCIAL_MEDIA_WEIGHTS[b.socialMedia] || 99
       result = weightA - weightB
-      // Sub-sort by name
       if (result === 0) result = a.name.localeCompare(b.name)
-    } else if (sortBy.value === 'language') {
-      // Sort by language, empty languages go last
+    } else if (sortBy === 'language') {
       const langA = a.language || 'zzz'
       const langB = b.language || 'zzz'
       result = langA.localeCompare(langB)
-      // Sub-sort by name
       if (result === 0) result = a.name.localeCompare(b.name)
     }
 
-    return sortOrder.value === 'asc' ? result : -result
+    return sortOrder === 'asc' ? result : -result
   })
 }
 
-const currentSortOption = computed(() => sortOptions.value.find(opt => opt.id === sortBy.value))
-const sortedChannels = computed(() => sortChannels(channels.value))
+const { 
+  sortBy, 
+  sortOrder, 
+  currentSortOption, 
+  toggleSortOrder,
+  sortList
+} = useSorting<ChannelWithProject>({
+  storageKey: 'channels',
+  defaultSortBy: 'alphabetical',
+  sortOptions: sortOptions.value,
+  sortFn: sortChannelsFn
+})
 
-// Local filter state
-const statusFilter = ref<'all' | 'active' | 'inactive'>('all')
+// Use local sortOptions for template to ensure reactivity to language changes
+const activeSortOption = computed(() => sortOptions.value.find(opt => opt.id === sortBy.value))
+
+const sortedChannels = computed(() => sortList(channels.value))
+
+// Archived Logic
 const archivedChannels = ref<ChannelWithProject[]>([])
 const showArchived = ref(false)
 const isLoadingArchived = ref(false)
 
-const statusOptions = computed(() => [
-  { value: 'all', label: t('common.all') },
-  { value: 'active', label: t('channel.active') },
-  { value: 'inactive', label: t('channel.inactive') }
-])
-
-// Fetch active channels on mount
 onMounted(() => {
   if (props.projectId) {
-    // Initialize filter with default values
-    setFilter({
-      isActive: null,
-      includeArchived: false
-    })
+    setFilter({ isActive: null, includeArchived: false })
     fetchChannels(props.projectId)
   }
 })
 
-// Watch for status filter changes
-watch(statusFilter, (statusVal) => {
-  const map: Record<string, boolean | null> = {
-    all: null,
-    active: true,
-    inactive: false
-  }
-  setFilter({
-    isActive: map[statusVal],
-    includeArchived: false
-  })
-  if (props.projectId) {
-    fetchChannels(props.projectId)
-  }
-})
-
-/**
- * Toggle archived channels visibility
- */
 async function toggleArchivedChannels() {
   showArchived.value = !showArchived.value
   
   if (showArchived.value && archivedChannels.value.length === 0) {
     isLoadingArchived.value = true
-    archivedChannels.value = await fetchArchivedChannels(props.projectId)
-    isLoadingArchived.value = false
+    try {
+        archivedChannels.value = await fetchArchivedChannels(props.projectId)
+    } finally {
+        isLoadingArchived.value = false
+    }
   }
-}
-
-/**
- * Format date for display
- */
-function formatDate(date: string | null | undefined): string {
-  if (!date) return '-'
-  return new Date(date).toLocaleDateString()
 }
 </script>
 
@@ -172,7 +117,7 @@ function formatDate(date: string | null | undefined): string {
           :searchable="false"
         >
           <template #leading>
-            <UIcon v-if="currentSortOption" :name="currentSortOption.icon" class="w-4 h-4" />
+            <UIcon v-if="activeSortOption" :name="activeSortOption.icon" class="w-4 h-4" />
           </template>
         </USelectMenu>
 
@@ -180,7 +125,7 @@ function formatDate(date: string | null | undefined): string {
           :icon="sortOrder === 'asc' ? 'i-heroicons-bars-arrow-up' : 'i-heroicons-bars-arrow-down'"
           color="neutral"
           variant="ghost"
-          @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+          @click="toggleSortOrder"
           :title="sortOrder === 'asc' ? t('common.sortOrder.asc') : t('common.sortOrder.desc')"
         />
 
@@ -218,14 +163,9 @@ function formatDate(date: string | null | undefined): string {
         {{ t('channel.noChannelsFound') }}
       </h3>
       <p class="text-gray-500 dark:text-gray-400 mb-6">
-        {{
-          statusFilter !== 'all'
-            ? t('channel.noChannelsFiltered')
-            : t('channel.noChannelsDescription')
-        }}
+        {{ t('channel.noChannelsDescription') }}
       </p>
       <UButton
-        v-if="statusFilter === 'all'"
         icon="i-heroicons-plus"
         :to="`/projects/${projectId}/channels/new`"
       >
@@ -235,82 +175,11 @@ function formatDate(date: string | null | undefined): string {
 
     <!-- Channels List -->
     <div v-else class="space-y-4">
-      <NuxtLink
+      <ChannelListItem
         v-for="channel in sortedChannels"
         :key="channel.id"
-        :to="`/projects/${projectId}/channels/${channel.id}`"
-        class="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100 dark:border-gray-700 p-4 sm:p-5"
-      >
-        <div class="flex items-start justify-between gap-4">
-            <div class="flex-1 min-w-0">
-                 <!-- Header: Name + Social Media + Status -->
-                 <div class="flex items-center gap-3 mb-2 flex-wrap">
-                    <div 
-                        class="shrink-0 p-1.5 rounded-md"
-                        :style="{ backgroundColor: getSocialMediaColor(channel.socialMedia) + '20' }"
-                    >
-                        <UIcon 
-                            :name="getSocialMediaIcon(channel.socialMedia)" 
-                            class="w-5 h-5"
-                            :style="{ color: getSocialMediaColor(channel.socialMedia) }"
-                        />
-                    </div>
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
-                        {{ channel.name }}
-                    </h3>
-                    <span class="text-sm text-gray-500 dark:text-gray-400">
-                         {{ getSocialMediaDisplayName(channel.socialMedia) }}
-                    </span>
-                    <UBadge 
-                        v-if="!channel.isActive" 
-                        color="neutral" 
-                        variant="subtle" 
-                        size="xs"
-                    >
-                        {{ t('channel.inactive') }}
-                    </UBadge>
-                    <UBadge 
-                        v-else 
-                        color="success" 
-                        variant="subtle" 
-                        size="xs"
-                    >
-                        {{ t('channel.active') }}
-                    </UBadge>
-                 </div>
-
-                 <!-- ID -->
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 font-mono">
-                    ID: {{ channel.channelIdentifier }}
-                </p>
-
-                 <!-- Metrics -->
-                <div class="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
-                    <div class="flex items-center gap-1.5" :title="t('post.titlePlural')">
-                        <UIcon name="i-heroicons-document-text" class="w-4 h-4" />
-                        <span>
-                           {{ channel.postsCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
-                        </span>
-                    </div>
-
-                    <div class="flex items-center gap-1.5" :title="t('common.lastPost')">
-                        <UIcon name="i-heroicons-clock" class="w-4 h-4" />
-                        <span>
-                           {{ t('common.lastPost') }}: {{ formatDate(channel.lastPostAt) }}
-                        </span>
-                    </div>
-
-                    <div class="flex items-center gap-1.5" :title="t('channel.language')">
-                        <UIcon name="i-heroicons-language" class="w-4 h-4" />
-                        <span>
-                           {{ channel.language }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-            <!-- Actions removed as per request -->
-        </div>
-      </NuxtLink>
+        :channel="channel"
+      />
 
       <!-- Show/Hide Archived Button -->
       <div class="flex justify-center pt-4">
@@ -321,95 +190,24 @@ function formatDate(date: string | null | undefined): string {
           @click="toggleArchivedChannels"
           :loading="isLoadingArchived"
         >
-          {{ showArchived ? 'Скрыть архивные' : 'Показать архивные' }}
+          {{ showArchived ? t('common.hideArchived', 'Hide Archived') : t('common.showArchived', 'Show Archived') }}
         </UButton>
       </div>
 
       <!-- Archived Channels Section -->
       <div v-if="showArchived" class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
         <div v-if="archivedChannels.length > 0">
-          <NuxtLink
+           <ChannelListItem
             v-for="channel in archivedChannels"
             :key="channel.id"
-            :to="`/projects/${projectId}/channels/${channel.id}`"
-            class="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100 dark:border-gray-700 p-4 sm:p-5 opacity-75 grayscale-[0.5]"
-          >
-            <div class="flex items-start justify-between gap-4">
-                <div class="flex-1 min-w-0">
-                     <!-- Header: Name + Social Media + Status -->
-                     <div class="flex items-center gap-3 mb-2 flex-wrap">
-                        <div 
-                            class="shrink-0 p-1.5 rounded-md"
-                            :style="{ backgroundColor: getSocialMediaColor(channel.socialMedia) + '20' }"
-                        >
-                            <UIcon 
-                                :name="getSocialMediaIcon(channel.socialMedia)" 
-                                class="w-5 h-5"
-                                :style="{ color: getSocialMediaColor(channel.socialMedia) }"
-                            />
-                        </div>
-                        <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
-                            {{ channel.name }}
-                        </h3>
-                        <span class="text-sm text-gray-500 dark:text-gray-400">
-                             {{ getSocialMediaDisplayName(channel.socialMedia) }}
-                        </span>
-                        <UBadge 
-                            v-if="!channel.isActive" 
-                            color="neutral" 
-                            variant="subtle" 
-                            size="xs"
-                        >
-                            {{ t('channel.inactive') }}
-                        </UBadge>
-                        <UBadge 
-                            v-else 
-                            color="success" 
-                            variant="subtle" 
-                            size="xs"
-                        >
-                            {{ t('channel.active') }}
-                        </UBadge>
-                     </div>
-
-                     <!-- ID -->
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 font-mono">
-                        ID: {{ channel.channelIdentifier }}
-                    </p>
-
-                     <!-- Metrics -->
-                    <div class="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
-                        <div class="flex items-center gap-1.5" :title="t('post.titlePlural')">
-                            <UIcon name="i-heroicons-document-text" class="w-4 h-4" />
-                            <span>
-                               {{ channel.postsCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
-                            </span>
-                        </div>
-
-                        <div class="flex items-center gap-1.5" :title="t('common.lastPost')">
-                            <UIcon name="i-heroicons-clock" class="w-4 h-4" />
-                            <span>
-                               {{ t('common.lastPost') }}: {{ formatDate(channel.lastPostAt) }}
-                            </span>
-                        </div>
-
-                        <div class="flex items-center gap-1.5" :title="t('channel.language')">
-                            <UIcon name="i-heroicons-language" class="w-4 h-4" />
-                            <span>
-                               {{ channel.language }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-          </NuxtLink>
+            :channel="channel"
+            is-archived
+          />
         </div>
         <div v-else class="text-center py-8">
-          <p class="text-gray-500 dark:text-gray-400">Нет архивных каналов</p>
+          <p class="text-gray-500 dark:text-gray-400">{{ t('channel.noArchived', 'No archived channels') }}</p>
         </div>
       </div>
     </div>
-
-
   </div>
 </template>
