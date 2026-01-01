@@ -248,6 +248,7 @@
     "deleteSuccess": "Post deleted successfully"
   },
   "publication": {
+    "titlePlural": "Publications",
     "create": "Create Publication",
     "edit": "Edit Publication",
     "createDescription": "Create content to distribute across channels",

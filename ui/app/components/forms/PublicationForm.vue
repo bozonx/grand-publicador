@@ -124,6 +124,15 @@ const isFormValid = computed(() => {
   if (formData.status === 'SCHEDULED' && !formData.scheduledAt) return false
   return true
 })
+
+function toggleChannel(channelId: string) {
+    const index = formData.channelIds.indexOf(channelId)
+    if (index === -1) {
+        formData.channelIds.push(channelId)
+    } else {
+        formData.channelIds.splice(index, 1)
+    }
+}
 </script>
 
 <template>
@@ -145,18 +154,27 @@ const isFormValid = computed(() => {
     <form class="p-6 space-y-6" @submit.prevent="handleSubmit">
       
       <!-- Channels (Multi-select) - Only for new publications for now -->
+      <!-- Channels (Multi-select) -->
       <div v-if="!isEditMode">
         <UFormField :label="t('channel.titlePlural', 'Channels')" :help="t('publication.channelsHelp', 'Select channels to create posts immediately')">
-            <USelectMenu
-                v-model="formData.channelIds"
-                :items="channelOptions"
-                value-key="value"
-                label-key="label"
-                multiple
-                placeholder="Select channels..."
-                class="w-full"
-            >
-            </USelectMenu>
+            <div v-if="channelOptions.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                <div 
+                    v-for="channel in channelOptions" 
+                    :key="channel.value" 
+                    class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors"
+                    @click="toggleChannel(channel.value)"
+                >
+                    <UCheckbox 
+                        :model-value="formData.channelIds.includes(channel.value)"
+                        @update:model-value="toggleChannel(channel.value)"
+                        :label="channel.label"
+                        class="pointer-events-none" 
+                    />
+                </div>
+            </div>
+            <div v-else class="text-sm text-gray-500 dark:text-gray-400 italic">
+                {{ t('publication.noChannels', 'No channels available. Create a channel first to publish.') }}
+            </div>
         </UFormField>
       </div>
 

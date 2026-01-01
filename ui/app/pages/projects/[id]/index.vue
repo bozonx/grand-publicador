@@ -79,6 +79,13 @@ function truncateContent(content: string | null | undefined, maxLength = 150): s
 }
 
 /**
+ * Go to draft publication details
+ */
+function goToDraft(id: string) {
+    router.push(`/projects/${projectId.value}/publications/${id}`)
+}
+
+/**
  * Handle project unarchiving from banner
  */
 async function handleUnarchive() {
@@ -205,9 +212,9 @@ async function handleUnarchive() {
                 color="neutral"
                 variant="ghost"
                 icon="i-heroicons-document-text"
-                :to="`/projects/${currentProject.id}/posts`"
+                :to="`/projects/${currentProject.id}/publications`"
               >
-                {{ t('post.titlePlural', 'Posts') }}
+                {{ t('publication.titlePlural', 'Publications') }}
               </UButton>
 
               <UButton
@@ -266,7 +273,7 @@ async function handleUnarchive() {
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
             <UIcon name="i-heroicons-document-duplicate" class="w-5 h-5 text-gray-400" />
-            {{ t('postStatus.draft') }} {{ t('post.titlePlural').toLowerCase() }}
+            {{ t('postStatus.draft') }} {{ t('publication.titlePlural').toLowerCase() }}
           </h2>
           <UButton
             variant="ghost"
@@ -274,7 +281,7 @@ async function handleUnarchive() {
             size="sm"
             icon="i-heroicons-arrow-right"
             trailing
-            :to="`/projects/${projectId}/posts?status=DRAFT`"
+            :to="`/projects/${projectId}/publications`"
           >
             {{ t('common.viewAll') }}
           </UButton>
@@ -284,7 +291,8 @@ async function handleUnarchive() {
           <div
             v-for="draft in draftPublications"
             :key="draft.id"
-            class="border border-gray-100 dark:border-gray-700 rounded-lg p-4 bg-gray-50/30 dark:bg-gray-800/30 transition-all"
+            class="border border-gray-100 dark:border-gray-700 rounded-lg p-4 bg-gray-50/30 dark:bg-gray-800/30 transition-all hover:shadow-md cursor-pointer"
+            @click="goToDraft(draft.id)"
           >
             <div class="flex flex-col h-full">
               <h3 class="font-medium text-gray-900 dark:text-white mb-2 line-clamp-1">
