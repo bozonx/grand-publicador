@@ -161,7 +161,8 @@
     "sort": {
       "alphabetical": "По алфавиту",
       "activity": "Активные сначала",
-      "socialMedia": "По соцсетям"
+      "socialMedia": "По соцсетям",
+      "language": "По языку"
     },
     "name": "Название канала",
     "namePlaceholder": "Введите название канала",
@@ -177,6 +178,10 @@
     "identifierHelpX": "Username аккаунта, например {'@'}username",
     "identifierHelpFacebook": "Username страницы, например page_username",
     "identifierHelpSite": "URL сайта, например https://example.com",
+    "identifierHelpLinkedin": "Username страницы, например company-name",
+    "language": "Язык канала",
+    "languagePlaceholder": "Выберите или введите язык",
+    "languageHelp": "Язык контента канала (например, ru-RU, en-US)",
     "selected": "выбрано",
     "isActive": "Активен",
     "isActiveHelp": "Деактивированные каналы не используются для публикации",

@@ -31,7 +31,8 @@ interface SortOption {
 const sortOptions = computed<SortOption[]>(() => [
   { id: 'alphabetical', label: t('channel.sort.alphabetical'), icon: 'i-heroicons-bars-3-bottom-left' },
   { id: 'activity', label: t('channel.sort.activity'), icon: 'i-heroicons-bolt' },
-  { id: 'socialMedia', label: t('channel.sort.socialMedia'), icon: 'i-heroicons-share' }
+  { id: 'socialMedia', label: t('channel.sort.socialMedia'), icon: 'i-heroicons-share' },
+  { id: 'language', label: t('channel.sort.language'), icon: 'i-heroicons-language' }
 ])
 
 const sortBy = ref(localStorage.getItem('channels-sort-by') || 'alphabetical')
@@ -68,6 +69,13 @@ function sortChannels(list: ChannelWithProject[]) {
       const weightA = socialMediaWeights[a.socialMedia] || 99
       const weightB = socialMediaWeights[b.socialMedia] || 99
       result = weightA - weightB
+      // Sub-sort by name
+      if (result === 0) result = a.name.localeCompare(b.name)
+    } else if (sortBy.value === 'language') {
+      // Sort by language, empty languages go last
+      const langA = a.language || 'zzz'
+      const langB = b.language || 'zzz'
+      result = langA.localeCompare(langB)
       // Sub-sort by name
       if (result === 0) result = a.name.localeCompare(b.name)
     }
@@ -291,6 +299,13 @@ function formatDate(date: string | null | undefined): string {
                            {{ t('common.lastPost') }}: {{ formatDate(channel.lastPostAt) }}
                         </span>
                     </div>
+
+                    <div v-if="channel.language" class="flex items-center gap-1.5" :title="t('channel.language')">
+                        <UIcon name="i-heroicons-language" class="w-4 h-4" />
+                        <span>
+                           {{ channel.language }}
+                        </span>
+                    </div>
                 </div>
             </div>
             <!-- Actions removed as per request -->
@@ -375,6 +390,13 @@ function formatDate(date: string | null | undefined): string {
                             <UIcon name="i-heroicons-clock" class="w-4 h-4" />
                             <span>
                                {{ t('common.lastPost') }}: {{ formatDate(channel.lastPostAt) }}
+                            </span>
+                        </div>
+
+                        <div v-if="channel.language" class="flex items-center gap-1.5" :title="t('channel.language')">
+                            <UIcon name="i-heroicons-language" class="w-4 h-4" />
+                            <span>
+                               {{ channel.language }}
                             </span>
                         </div>
                     </div>

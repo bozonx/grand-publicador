@@ -40,6 +40,7 @@ export class ChannelsService {
         socialMedia: data.socialMedia,
         name: data.name,
         channelIdentifier: data.channelIdentifier,
+        language: data.language,
         credentials: JSON.stringify(data.credentials ?? {}),
         isActive: data.isActive ?? true,
       },
@@ -257,6 +258,7 @@ export class ChannelsService {
       data: {
         name: data.name,
         channelIdentifier: data.channelIdentifier,
+        language: data.language,
         credentials: data.credentials ? JSON.stringify(data.credentials) : undefined,
         isActive: data.isActive,
       },

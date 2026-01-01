@@ -38,6 +38,7 @@ const {
   isLoading,
   getSocialMediaIcon,
   getSocialMediaColor,
+  languageOptions,
 } = useChannels()
 
 const isEditMode = computed(() => !!props.channel?.id)
@@ -46,6 +47,7 @@ const state = reactive({
   name: props.channel?.name || '',
   socialMedia: (props.channel?.socialMedia || 'TELEGRAM') as SocialMedia,
   channelIdentifier: props.channel?.channelIdentifier || '',
+  language: props.channel?.language || '',
   isActive: props.channel?.isActive ?? true,
 })
 
@@ -60,6 +62,7 @@ async function handleSubmit() {
     const updateData: ChannelUpdateInput = {
       name: state.name,
       channelIdentifier: state.channelIdentifier,
+      language: state.language || undefined,
     }
 
     const result = await updateChannel(props.channel.id, updateData)
@@ -73,6 +76,7 @@ async function handleSubmit() {
       name: state.name,
       socialMedia: state.socialMedia,
       channelIdentifier: state.channelIdentifier,
+      language: state.language || undefined,
       isActive: state.isActive,
     })
 
@@ -220,6 +224,24 @@ const currentSocialMedia = computed(() => (isEditMode.value ? props.channel?.soc
           :placeholder="getIdentifierPlaceholder(currentSocialMedia)"
           class="w-full"
         />
+      </UFormField>
+
+      <!-- Channel language -->
+      <UFormField
+        :label="t('channel.language')"
+        :help="t('channel.languageHelp')"
+      >
+        <UInput
+          v-model="state.language"
+          :placeholder="t('channel.languagePlaceholder')"
+          list="language-suggestions"
+          class="w-full"
+        />
+        <datalist id="language-suggestions">
+          <option v-for="lang in languageOptions" :key="lang.value" :value="lang.value">
+            {{ lang.label }}
+          </option>
+        </datalist>
       </UFormField>
 
 

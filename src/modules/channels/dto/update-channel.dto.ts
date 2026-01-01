@@ -12,6 +12,10 @@ export class UpdateChannelDto {
   @IsOptional()
   public channelIdentifier?: string;
 
+  @IsString()
+  @IsOptional()
+  public language?: string;
+
   @IsObject()
   @IsOptional()
   public credentials?: Record<string, any>;

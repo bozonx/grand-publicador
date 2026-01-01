@@ -106,6 +106,8 @@ model Channel {
   name              String
   // Platform-specific channel identifier (e.g., @channel_name, channel_id)
   channelIdentifier String      @map("channel_identifier")
+  // Channel language in format like ru-RU, en-US, etc.
+  language          String?
   // Encrypted credentials for channel access stored as JSON string
   credentials       String      @default("{}") // Store as JSON string in SQLite
   // Whether channel is active for posting

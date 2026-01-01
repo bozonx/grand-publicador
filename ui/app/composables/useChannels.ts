@@ -9,6 +9,7 @@ export interface Channel {
     socialMedia: SocialMedia
     name: string
     channelIdentifier: string
+    language?: string | null
     isActive: boolean
     archivedAt?: string | null
     createdAt: string
@@ -29,6 +30,7 @@ export interface ChannelCreateInput {
     name: string
     socialMedia: SocialMedia
     channelIdentifier: string
+    language?: string
     isActive?: boolean
     credentials?: Record<string, any>
 }
@@ -36,6 +38,7 @@ export interface ChannelCreateInput {
 export interface ChannelUpdateInput {
     name?: string
     channelIdentifier?: string
+    language?: string
     isActive?: boolean
 }
 
@@ -70,6 +73,32 @@ export function useChannels() {
             { value: 'FACEBOOK', label: t('socialMedia.facebook') },
             { value: 'LINKEDIN', label: t('socialMedia.linkedin') },
             { value: 'SITE', label: t('socialMedia.site') },
+        ]
+        return options
+    })
+
+    const languageOptions = computed(() => {
+        const options: { value: string; label: string }[] = [
+            { value: 'ru-RU', label: 'Русский (ru-RU)' },
+            { value: 'en-US', label: 'English (en-US)' },
+            { value: 'en-GB', label: 'English UK (en-GB)' },
+            { value: 'de-DE', label: 'Deutsch (de-DE)' },
+            { value: 'fr-FR', label: 'Français (fr-FR)' },
+            { value: 'es-ES', label: 'Español (es-ES)' },
+            { value: 'it-IT', label: 'Italiano (it-IT)' },
+            { value: 'pt-PT', label: 'Português (pt-PT)' },
+            { value: 'pt-BR', label: 'Português Brasil (pt-BR)' },
+            { value: 'pl-PL', label: 'Polski (pl-PL)' },
+            { value: 'uk-UA', label: 'Українська (uk-UA)' },
+            { value: 'tr-TR', label: 'Türkçe (tr-TR)' },
+            { value: 'zh-CN', label: '简体中文 (zh-CN)' },
+            { value: 'zh-TW', label: '繁體中文 (zh-TW)' },
+            { value: 'ja-JP', label: '日本語 (ja-JP)' },
+            { value: 'ko-KR', label: '한국어 (ko-KR)' },
+            { value: 'ar-SA', label: 'العربية (ar-SA)' },
+            { value: 'hi-IN', label: 'हिन्दी (hi-IN)' },
+            { value: 'th-TH', label: 'ไทย (th-TH)' },
+            { value: 'vi-VN', label: 'Tiếng Việt (vi-VN)' },
         ]
         return options
     })
@@ -333,6 +362,7 @@ export function useChannels() {
         error,
         filter,
         socialMediaOptions,
+        languageOptions,
         fetchChannels,
         fetchArchivedChannels,
         fetchChannel,
