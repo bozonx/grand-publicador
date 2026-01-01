@@ -55,16 +55,6 @@ const isWarningActive = computed(() => {
             </h3>
             <div class="flex items-center gap-1.5">
               <UBadge 
-                v-if="project.role" 
-                :color="getRoleBadgeColor(project.role)" 
-                variant="subtle" 
-                size="xs"
-                class="capitalize"
-              >
-                {{ t(`roles.${project.role}`) }}
-              </UBadge>
-
-              <UBadge 
                 color="neutral" 
                 variant="subtle" 
                 size="xs"

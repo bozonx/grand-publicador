@@ -317,7 +317,11 @@
     "welcome": "Welcome",
     "recentPosts": "Recent publications",
     "quickActions": "Quick actions",
-    "statistics": "Statistics"
+    "statistics": "Statistics",
+    "group_owner": "Your projects",
+    "group_admin": "Projects where you are an admin",
+    "group_editor": "Projects where you are an editor",
+    "group_viewer": "Projects where you are a viewer"
   },
   "editor": {
     "characters": "characters",

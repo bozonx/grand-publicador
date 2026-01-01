@@ -87,25 +87,22 @@ function getStatusColor(status: string | null): 'success' | 'warning' | 'error' 
 const totalProjects = computed(() => projects.value.length)
 
 // Group projects by role: Owner > Admin > Editor > Viewer
-const groupedProjects = computed(() => {
-  const rolePriority: Record<string, number> = {
-    owner: 1,
-    admin: 2,
-    editor: 3,
-    viewer: 4
-  }
-
-  return [...projects.value].sort((a, b) => {
-    const priorityA = rolePriority[a.role || 'viewer'] || 99
-    const priorityB = rolePriority[b.role || 'viewer'] || 99
-    
-    if (priorityA !== priorityB) {
-      return priorityA - priorityB
-    }
-    
-    // Within same role, sort by name
-    return a.name.localeCompare(b.name)
+const projectsByRole = computed(() => {
+  const groups: Record<string, ProjectWithRole[]> = {}
+  
+  projects.value.forEach(p => {
+    const role = p.role || 'viewer'
+    if (!groups[role]) groups[role] = []
+    groups[role].push(p)
   })
+
+  const roleOrder = ['owner', 'admin', 'editor', 'viewer']
+  return roleOrder
+    .filter(role => groups[role] && groups[role].length > 0)
+    .map(role => ({
+      role,
+      projects: groups[role]!.sort((a, b) => a.name.localeCompare(b.name))
+    }))
 })
 
 </script>
@@ -161,14 +158,21 @@ const groupedProjects = computed(() => {
               </UButton>
             </div>
 
-            <!-- Project list -->
-            <div v-else class="space-y-3">
-              <ProjectsProjectListItem
-                v-for="project in groupedProjects"
-                :key="project.id"
-                :project="project"
-                :show-description="false"
-              />
+            <!-- Project list grouped by role -->
+            <div v-else class="space-y-6">
+              <div v-for="group in projectsByRole" :key="group.role" class="space-y-3">
+                <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-1">
+                  {{ t(`dashboard.group_${group.role}`) }}
+                </h3>
+                <div class="space-y-3">
+                  <ProjectsProjectListItem
+                    v-for="project in group.projects"
+                    :key="project.id"
+                    :project="project"
+                    :show-description="false"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
