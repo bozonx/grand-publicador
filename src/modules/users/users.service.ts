@@ -13,7 +13,7 @@ export class UsersService {
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
-  ) {}
+  ) { }
 
   public async findByTelegramId(telegramId: bigint): Promise<User | null> {
     return this.prisma.user.findUnique({
@@ -60,10 +60,6 @@ export class UsersService {
         telegramUsername: userData.username,
         fullName: fullName,
         avatarUrl: userData.avatarUrl,
-        // Only promote to admin if the env variable matches.
-        // We don't demote here if it doesn't match, unless you want that.
-        // Usually, once an admin, always an admin, but for "via env" we might want strict sync.
-        ...(isAdmin ? { isAdmin: true } : {}),
       },
       create: {
         telegramId: userData.telegramId,
