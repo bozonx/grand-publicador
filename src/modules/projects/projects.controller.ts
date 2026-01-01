@@ -50,13 +50,9 @@ export class ProjectsController {
   @Get()
   public async findAll(
     @Request() req: UnifiedAuthRequest,
-    @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit?: number,
-    @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset?: number,
     @Query('includeArchived') includeArchived?: string,
   ) {
     const projects = await this.projectsService.findAllForUser(req.user.userId, {
-      limit,
-      offset,
       includeArchived: includeArchived === 'true'
     });
 
@@ -71,13 +67,8 @@ export class ProjectsController {
   @Get('archived')
   public async findArchived(
     @Request() req: UnifiedAuthRequest,
-    @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit?: number,
-    @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset?: number,
   ) {
-    const projects = await this.projectsService.findArchivedForUser(req.user.userId, {
-      limit,
-      offset,
-    });
+    const projects = await this.projectsService.findArchivedForUser(req.user.userId);
 
     // Filter projects based on token scope
     if (req.user.scopeProjectIds && req.user.scopeProjectIds.length > 0) {

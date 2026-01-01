@@ -74,14 +74,16 @@ export function useChannels() {
         return options
     })
 
-    async function fetchChannels(projectId: string): Promise<ChannelWithProject[]> {
+    async function fetchChannels(projectId?: string): Promise<ChannelWithProject[]> {
         isLoading.value = true
         error.value = null
 
         try {
             // Build params with explicit values
-            const params: any = {
-                projectId,
+            const params: any = {}
+
+            if (projectId) {
+                params.projectId = projectId
             }
 
             // Add filter values if they are defined
@@ -321,7 +323,7 @@ export function useChannels() {
     }
 
     function getSocialMediaDisplayName(socialMedia: SocialMedia): string {
-        return t(`socialMedia.${socialMedia}`)
+        return t(`socialMedia.${socialMedia.toLowerCase()}`)
     }
 
     return {

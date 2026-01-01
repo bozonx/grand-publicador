@@ -46,22 +46,31 @@ export class ChannelsController {
   @Get()
   public async findAll(
     @Request() req: UnifiedAuthRequest,
-    @Query('projectId') projectId: string,
+    @Query('projectId') projectId?: string,
     @Query('isActive') isActive?: string,
     @Query('includeArchived') includeArchived?: string,
   ) {
-    // Validate project scope for API token users
-    if (req.user.scopeProjectIds) {
-      ApiTokenGuard.validateProjectScope(projectId, req.user.scopeProjectIds, {
-        userId: req.user.userId,
-        tokenId: req.user.tokenId,
-      });
-    }
-
-    return this.channelsService.findAllForProject(projectId, req.user.userId, {
+    const options = {
       isActive: isActive !== undefined ? isActive === 'true' : undefined,
       allowArchived: includeArchived === 'true'
-    });
+    };
+
+    if (projectId) {
+      // Validate project scope for API token users
+      if (req.user.scopeProjectIds) {
+        ApiTokenGuard.validateProjectScope(projectId, req.user.scopeProjectIds, {
+          userId: req.user.userId,
+          tokenId: req.user.tokenId,
+        });
+      }
+
+      return this.channelsService.findAllForProject(projectId, req.user.userId, options);
+    }
+
+    // If no projectId, fetch all channels for the user
+    const projectIds = req.user.scopeProjectIds;
+
+    return this.channelsService.findAllForUser(req.user.userId, { ...options, projectIds });
   }
 
   @Get('archived')

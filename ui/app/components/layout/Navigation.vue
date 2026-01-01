@@ -14,12 +14,19 @@ interface NavItem {
   adminOnly?: boolean
 }
 
-// Static nav items (Dashboard)
-const dashboardItem = computed<NavItem>(() => ({
-  label: t('navigation.dashboard'),
-  to: '/',
-  icon: 'i-heroicons-home',
-}))
+// Static nav items (Dashboard, Channels)
+const mainNavItems = computed<NavItem[]>(() => [
+  {
+    label: t('navigation.dashboard'),
+    to: '/',
+    icon: 'i-heroicons-home',
+  },
+  {
+    label: t('navigation.channels'),
+    to: '/channels',
+    icon: 'i-heroicons-hashtag',
+  },
+])
 
 // Static functional items (Settings) - Admin is handled separately
 const bottomNavItems = computed<NavItem[]>(() => [
@@ -104,14 +111,16 @@ function getChannelLink(projectId: string, channelId: string) {
 
 <template>
   <nav class="flex flex-col gap-1 h-full">
-    <!-- Dashboard -->
+    <!-- Main Items (Dashboard, Channels) -->
     <NuxtLink
-      :to="dashboardItem.to"
+      v-for="item in mainNavItems"
+      :key="item.to"
+      :to="item.to"
       class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
       active-class="bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 !text-primary-700 dark:!text-primary-300"
     >
-      <UIcon :name="dashboardItem.icon" class="w-5 h-5 shrink-0" />
-      <span>{{ dashboardItem.label }}</span>
+      <UIcon :name="item.icon" class="w-5 h-5 shrink-0" />
+      <span>{{ item.label }}</span>
     </NuxtLink>
 
     <!-- Projects Header -->

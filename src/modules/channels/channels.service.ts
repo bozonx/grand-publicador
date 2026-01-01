@@ -92,6 +92,62 @@ export class ChannelsService {
   }
 
   /**
+   * Retrieves all channels for a given user across all projects they are members of.
+   *
+   * @param userId - The ID of the user requesting the channels.
+   * @param options - Optional filters (isActive, allowArchived, projectIds).
+   * @returns A list of channels with project info and post counts.
+   */
+  public async findAllForUser(
+    userId: string,
+    options: { allowArchived?: boolean, isActive?: boolean, projectIds?: string[] } = {}
+  ) {
+    const where: any = {
+      project: {
+        members: {
+          some: { userId }
+        },
+        archivedAt: null
+      },
+      ...(options.allowArchived ? {} : { archivedAt: null }),
+      ...(options.isActive !== undefined ? { isActive: options.isActive } : {}),
+    };
+
+    if (options.projectIds && options.projectIds.length > 0) {
+      where.projectId = { in: options.projectIds };
+    }
+
+    const channels = await this.prisma.channel.findMany({
+      where,
+      include: {
+        project: {
+          select: { id: true, name: true }
+        },
+        _count: {
+          select: { posts: true },
+        },
+        posts: {
+          where: { archivedAt: null },
+          take: 1,
+          orderBy: { createdAt: 'desc' },
+          select: { createdAt: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return channels.map(channel => {
+      const { posts, _count, ...channelData } = channel;
+      return {
+        ...channelData,
+        postsCount: _count.posts,
+        lastPostAt: posts[0]?.createdAt || null,
+      };
+    });
+  }
+
+
+  /**
    * Retrieves all archived channels for a given project.
    * Sorted by archival date (newest first).
    *

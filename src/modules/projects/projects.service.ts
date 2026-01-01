@@ -67,10 +67,8 @@ export class ProjectsService {
    */
   public async findAllForUser(
     userId: string,
-    options?: { limit?: number; offset?: number; includeArchived?: boolean },
+    options?: { includeArchived?: boolean },
   ) {
-    const take = options?.limit ?? 50;
-    const skip = options?.offset ?? 0;
     const includeArchived = options?.includeArchived ?? false;
 
     const projects = await this.prisma.project.findMany({
@@ -111,8 +109,6 @@ export class ProjectsService {
           },
         },
       },
-      take,
-      skip,
       orderBy: { createdAt: 'desc' },
     });
 
@@ -153,10 +149,7 @@ export class ProjectsService {
    */
   public async findArchivedForUser(
     userId: string,
-    options?: { limit?: number; offset?: number },
   ) {
-    const take = options?.limit ?? 50;
-    const skip = options?.offset ?? 0;
 
     const projects = await this.prisma.project.findMany({
       where: {
@@ -196,8 +189,6 @@ export class ProjectsService {
           },
         },
       },
-      take,
-      skip,
       orderBy: { archivedAt: 'desc' },
     });
 
