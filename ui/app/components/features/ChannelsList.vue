@@ -33,6 +33,11 @@ const statusOptions = computed(() => [
 // Fetch channels on mount
 onMounted(() => {
   if (props.projectId) {
+    // Initialize filter with default values
+    setFilter({
+      isActive: null,
+      includeArchived: showArchived.value
+    })
     fetchChannels(props.projectId)
   }
 })
@@ -48,7 +53,9 @@ watch([statusFilter, showArchived], ([statusVal, archivedVal]) => {
     isActive: map[statusVal],
     includeArchived: archivedVal
   })
-  fetchChannels(props.projectId)
+  if (props.projectId) {
+    fetchChannels(props.projectId)
+  }
 })
 
 
@@ -85,15 +92,11 @@ function formatDate(date: string | null | undefined): string {
             }"
          />
 
-        <UToggle 
-            v-model="showArchived" 
-            :label="t('common.showArchived', 'Show Archived')" 
-            color="primary"
-        >
-             <template #label>
-                 <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('common.showArchived', 'Show Archived') }}</span>
-             </template>
-        </UToggle>
+        <USwitch 
+          v-model="showArchived" 
+          label="Показать архивные"
+          color="primary"
+        />
 
         <UButton 
             icon="i-heroicons-plus" 
@@ -160,7 +163,7 @@ function formatDate(date: string | null | undefined): string {
                  <!-- Header: Name + Social Media + Status -->
                  <div class="flex items-center gap-3 mb-2 flex-wrap">
                     <div 
-                        class="flex-shrink-0 p-1.5 rounded-md"
+                        class="shrink-0 p-1.5 rounded-md"
                         :style="{ backgroundColor: getSocialMediaColor(channel.socialMedia) + '20' }"
                     >
                         <UIcon 

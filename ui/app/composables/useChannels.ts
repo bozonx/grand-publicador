@@ -79,18 +79,30 @@ export function useChannels() {
         error.value = null
 
         try {
-            // Merge projectId arg with local filter state
+            // Build params with explicit values
             const params: any = {
                 projectId,
-                ...filter.value
             }
 
+            // Add filter values if they are defined
+            if (filter.value.isActive !== undefined && filter.value.isActive !== null) {
+                params.isActive = filter.value.isActive
+            }
+
+            // Always include includeArchived parameter
+            params.includeArchived = filter.value.includeArchived || false
+
+            console.log('Fetching channels with params:', params)
+            console.log('Filter value:', filter.value)
+
             const data = await api.get<ChannelWithProject[]>('/channels', { params })
+            console.log('Received channels:', data)
             channels.value = data
             return data
         } catch (err: any) {
             const message = err.message || 'Failed to fetch channels'
             error.value = message
+            console.error('Error fetching channels:', err)
             return []
         } finally {
             isLoading.value = false

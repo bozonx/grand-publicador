@@ -55,23 +55,20 @@ function goToEditProject(projectId: string) {
           {{ t('project.myProjects') }}
         </p>
       </div>
-      <UButton icon="i-heroicons-plus" @click="goToCreateProject">
-        {{ t('project.createProject') }}
-      </UButton>
+      <div class="flex items-center gap-4">
+        <USwitch 
+          v-model="showArchived" 
+          label="Показать архивные"
+          color="primary"
+        />
+
+        <UButton icon="i-heroicons-plus" @click="goToCreateProject">
+            {{ t('project.createProject') }}
+        </UButton>
+      </div>
     </div>
 
-    <!-- Filters -->
-    <div class="flex items-center justify-end mb-4">
-        <UToggle 
-            v-model="showArchived" 
-            :label="t('common.showArchived', 'Show Archived')" 
-            color="primary"
-        >
-             <template #label>
-                 <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('common.showArchived', 'Show Archived') }}</span>
-             </template>
-        </UToggle>
-    </div>
+
 
     <!-- Error state -->
     <div
