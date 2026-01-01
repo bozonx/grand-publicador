@@ -17,10 +17,10 @@ const {
   currentChannel: channel,
   isLoading,
   toggleChannelActive,
+  archiveChannel,
+  unarchiveChannel,
+  deleteChannel,
 } = useChannels()
-
-const { archiveEntity } = useArchive()
-const { ArchiveEntityType } = await import('~/types/archive.types')
 
 const projectId = computed(() => route.params.id as string)
 const channelId = computed(() => route.params.channelId as string)
@@ -28,8 +28,10 @@ const channelId = computed(() => route.params.channelId as string)
 // UI States
 const isSaving = ref(false)
 const isTogglingActive = ref(false)
+const isArchiving = ref(false)
 const isDeleting = ref(false)
 const showDeleteModal = ref(false)
+const deleteConfirmationInput = ref('')
 
 // Fetch channel on mount
 onMounted(async () => {
@@ -66,16 +68,41 @@ async function handleToggleActive() {
 }
 
 /**
- * Handle channel archiving
+ * Handle channel archive toggle
  */
-async function handleArchive() {
+async function handleArchiveToggle() {
+  if (!channel.value) return
+  isArchiving.value = true
+  try {
+    if (channel.value.archivedAt) {
+      await unarchiveChannel(channel.value.id)
+    } else {
+      await archiveChannel(channel.value.id)
+    }
+  } finally {
+    isArchiving.value = false
+  }
+}
+
+/**
+ * Open delete confirmation modal
+ */
+function confirmDelete() {
+  deleteConfirmationInput.value = ''
+  showDeleteModal.value = true
+}
+
+/**
+ * Handle channel deletion
+ */
+async function handleDelete() {
   if (!channel.value) return
   isDeleting.value = true
   try {
-    await archiveEntity(ArchiveEntityType.CHANNEL, channel.value.id)
-    router.push(`/projects/${projectId.value}`)
-  } catch (e) {
-    // handled in useArchive
+    const success = await deleteChannel(channel.value.id)
+    if (success) {
+      router.push(`/projects/${projectId.value}`)
+    }
   } finally {
     isDeleting.value = false
     showDeleteModal.value = false
@@ -136,37 +163,31 @@ async function handleArchive() {
           />
         </UCard>
 
-        <!-- Channel Control -->
+        <!-- Archive Channel -->
         <UCard>
           <template #header>
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ t('channel.control', 'Channel Control') }}
+              {{ channel.archivedAt ? t('channel.unarchiveChannel', 'Unarchive Channel') : t('channel.archiveChannel', 'Archive Channel') }}
             </h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-              {{ t('channel.control_desc', 'Activate or deactivate this channel for posting') }}
-            </p>
           </template>
-          
+
           <div class="flex items-center justify-between">
             <div>
               <h3 class="font-medium text-gray-900 dark:text-white">
-                {{ channel.isActive ? t('channel.deactivate') : t('channel.activate') }}
+                {{ channel.archivedAt ? t('channel.channelIsArchived', 'Channel is archived') : t('channel.archive_desc', 'Archived channels are hidden from the project but their history is preserved.') }}
               </h3>
               <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                {{ channel.isActive 
-                  ? t('channel.deactivate_warning', 'Deactivating the channel will stop all scheduled posts.') 
-                  : t('channel.activate_info', 'Activating the channel will resume posting for scheduled posts.') 
-                }}
+                {{ channel.archivedAt ? t('channel.unarchive_info', 'Restoring the channel will make it visible again.') : t('channel.archive_info', 'Archive this channel if it is no longer active but you want to keep the data.') }}
               </p>
             </div>
             <UButton
-              :color="channel.isActive ? 'warning' : 'success'"
+              :color="channel.archivedAt ? 'primary' : 'neutral'"
               variant="solid"
-              :icon="channel.isActive ? 'i-heroicons-pause' : 'i-heroicons-play'"
-              :loading="isTogglingActive"
-              @click="handleToggleActive"
+              :icon="channel.archivedAt ? 'i-heroicons-archive-box-arrow-down' : 'i-heroicons-archive-box'"
+              :loading="isArchiving"
+              @click="handleArchiveToggle"
             >
-              {{ channel.isActive ? t('channel.deactivate') : t('channel.activate') }}
+              {{ channel.archivedAt ? t('channel.unarchive', 'Unarchive') : t('channel.archive', 'Archive') }}
             </UButton>
           </div>
         </UCard>
@@ -182,19 +203,19 @@ async function handleArchive() {
           <div class="flex items-center justify-between">
             <div>
               <h3 class="font-medium text-gray-900 dark:text-white">
-                {{ t('project.moveToArchive') || t('channel.deleteChannel') }}
+                {{ t('channel.deleteChannel', 'Delete Channel') }}
               </h3>
               <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                {{ t('channel.deleteConfirm') }}
+                {{ t('channel.delete_warning', 'Once you delete a channel, all its data will be permanently removed. This action cannot be undone.') }}
               </p>
             </div>
             <UButton
               color="error"
               variant="solid"
               icon="i-heroicons-trash"
-              @click="showDeleteModal = true"
+              @click="confirmDelete"
             >
-              {{ t('project.moveToArchive') || t('common.delete') }}
+              {{ t('channel.deleteChannel', 'Delete Channel') }}
             </UButton>
           </div>
         </UCard>
@@ -213,20 +234,34 @@ async function handleArchive() {
               />
             </div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ t('project.moveToArchive') || t('channel.deleteChannel') }}
+              {{ t('channel.deleteChannel', 'Delete Channel') }}
             </h3>
           </div>
 
-          <p class="text-gray-600 dark:text-gray-400 mb-6">
-            {{ t('channel.deleteConfirm') }}
+          <p v-if="channel" class="text-gray-600 dark:text-gray-400 mb-6">
+            {{ t('channel.deleteConfirmWithInput', 'To confirm deletion, please type the channel name: ') }}
+            <span class="font-bold text-gray-900 dark:text-white">{{ channel.name }}</span>
           </p>
+
+          <UInput
+            v-if="channel"
+            v-model="deleteConfirmationInput"
+            :placeholder="channel.name"
+            class="mb-6"
+            autofocus
+          />
 
           <div class="flex justify-end gap-3">
             <UButton color="neutral" variant="ghost" :disabled="isDeleting" @click="showDeleteModal = false">
               {{ t('common.cancel') }}
             </UButton>
-            <UButton color="error" :loading="isDeleting" @click="handleArchive">
-              {{ t('project.moveToArchive') || t('common.delete') }}
+            <UButton 
+              color="error" 
+              :loading="isDeleting" 
+              :disabled="!channel || deleteConfirmationInput !== channel.name"
+              @click="handleDelete"
+            >
+              {{ t('common.delete') }}
             </UButton>
           </div>
         </div>

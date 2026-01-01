@@ -30,7 +30,7 @@ import { ProjectsService } from './projects.service.js';
 export class ProjectsController {
   private readonly logger = new Logger(ProjectsController.name);
 
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(private readonly projectsService: ProjectsService) { }
 
   @Post()
   public async create(
@@ -73,7 +73,7 @@ export class ProjectsController {
       });
     }
 
-    return this.projectsService.findOne(id, req.user.userId);
+    return this.projectsService.findOne(id, req.user.userId, true);
   }
 
   @Patch(':id')
@@ -92,7 +92,6 @@ export class ProjectsController {
 
     return this.projectsService.update(id, req.user.userId, updateProjectDto);
   }
-
   @Delete(':id')
   public async remove(@Request() req: UnifiedAuthRequest, @Param('id') id: string) {
     // Validate project scope for API token users
@@ -104,5 +103,31 @@ export class ProjectsController {
     }
 
     return this.projectsService.remove(id, req.user.userId);
+  }
+
+  @Post(':id/archive')
+  public async archive(@Request() req: UnifiedAuthRequest, @Param('id') id: string) {
+    // Validate project scope for API token users
+    if (req.user.scopeProjectIds) {
+      ApiTokenGuard.validateProjectScope(id, req.user.scopeProjectIds, {
+        userId: req.user.userId,
+        tokenId: req.user.tokenId,
+      });
+    }
+
+    return this.projectsService.archive(id, req.user.userId);
+  }
+
+  @Post(':id/unarchive')
+  public async unarchive(@Request() req: UnifiedAuthRequest, @Param('id') id: string) {
+    // Validate project scope for API token users
+    if (req.user.scopeProjectIds) {
+      ApiTokenGuard.validateProjectScope(id, req.user.scopeProjectIds, {
+        userId: req.user.userId,
+        tokenId: req.user.tokenId,
+      });
+    }
+
+    return this.projectsService.unarchive(id, req.user.userId);
   }
 }

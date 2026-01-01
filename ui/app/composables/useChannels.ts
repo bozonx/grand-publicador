@@ -9,6 +9,7 @@ export interface Channel {
     name: string
     channelIdentifier: string
     isActive: boolean
+    archivedAt?: string | null
     createdAt: string
     updatedAt: string
 }
@@ -187,6 +188,60 @@ export function useChannels() {
         }
     }
 
+    async function archiveChannel(channelId: string): Promise<Channel | null> {
+        isLoading.value = true
+        error.value = null
+
+        try {
+            const updatedChannel = await api.post<Channel>(`/channels/${channelId}/archive`)
+            toast.add({
+                title: t('common.success'),
+                description: t('channel.archiveSuccess', 'Channel archived successfully'),
+                color: 'success',
+            })
+            currentChannel.value = updatedChannel as ChannelWithProject
+            return updatedChannel
+        } catch (err: any) {
+            const message = err.message || 'Failed to archive channel'
+            error.value = message
+            toast.add({
+                title: t('common.error'),
+                description: message,
+                color: 'error',
+            })
+            return null
+        } finally {
+            isLoading.value = false
+        }
+    }
+
+    async function unarchiveChannel(channelId: string): Promise<Channel | null> {
+        isLoading.value = true
+        error.value = null
+
+        try {
+            const updatedChannel = await api.post<Channel>(`/channels/${channelId}/unarchive`)
+            toast.add({
+                title: t('common.success'),
+                description: t('channel.unarchiveSuccess', 'Channel unarchived successfully'),
+                color: 'success',
+            })
+            currentChannel.value = updatedChannel as ChannelWithProject
+            return updatedChannel
+        } catch (err: any) {
+            const message = err.message || 'Failed to unarchive channel'
+            error.value = message
+            toast.add({
+                title: t('common.error'),
+                description: message,
+                color: 'error',
+            })
+            return null
+        } finally {
+            isLoading.value = false
+        }
+    }
+
     async function toggleChannelActive(channelId: string): Promise<boolean> {
         const channel = channels.value.find(c => c.id === channelId)
         if (!channel) return false
@@ -256,6 +311,8 @@ export function useChannels() {
         createChannel,
         updateChannel,
         deleteChannel,
+        archiveChannel,
+        unarchiveChannel,
         toggleChannelActive,
         setFilter,
         clearFilter,

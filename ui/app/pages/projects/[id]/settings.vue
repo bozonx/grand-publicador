@@ -18,6 +18,8 @@ const {
   fetchProject,
   updateProject,
   deleteProject,
+  archiveProject,
+  unarchiveProject,
   clearCurrentProject,
   canEdit,
   canDelete,
@@ -28,8 +30,10 @@ const projectId = computed(() => route.params.id as string)
 
 // Delete confirmation modal state
 const showDeleteModal = ref(false)
+const deleteConfirmationInput = ref('')
 const isDeleting = ref(false)
 const isSaving = ref(false)
+const isArchiving = ref(false)
 
 // Fetch project on mount
 onMounted(async () => {
@@ -68,7 +72,23 @@ async function handleUpdate(data: { name: string; description: string }) {
  * Open delete confirmation modal
  */
 function confirmDelete() {
+  deleteConfirmationInput.value = ''
   showDeleteModal.value = true
+}
+
+/**
+ * Handle project archive toggle
+ */
+async function handleArchiveToggle() {
+  if (!projectId.value || !currentProject.value) return
+
+  isArchiving.value = true
+  if (currentProject.value.archivedAt) {
+    await unarchiveProject(projectId.value)
+  } else {
+    await archiveProject(projectId.value)
+  }
+  isArchiving.value = false
 }
 
 /**
@@ -150,7 +170,7 @@ function cancelDelete() {
 
         <!-- Members Management -->
         <UCard v-if="canManageMembers(currentProject)">
-           <template #header>
+          <template #header>
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{ t('project.members', 'Members') }}
             </h2>
@@ -160,6 +180,35 @@ function cancelDelete() {
           </template>
 
           <ProjectsProjectMembersList :project-id="currentProject.id" />
+        </UCard>
+
+        <!-- Archive Project -->
+        <UCard v-if="canEdit(currentProject)">
+          <template #header>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+              {{ currentProject.archivedAt ? t('project.unarchiveProject', 'Unarchive Project') : t('project.archiveProject', 'Archive Project') }}
+            </h2>
+          </template>
+
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-medium text-gray-900 dark:text-white">
+                {{ currentProject.archivedAt ? t('project.projectIsArchived', 'Project is archived') : t('project.archive_desc', 'Archived projects are hidden from the main list but can be restored later.') }}
+              </h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                {{ currentProject.archivedAt ? t('project.unarchive_info', 'Restoring the project will make it visible again.') : t('project.archive_info', 'Archive this project if you no longer need it but want to keep the data.') }}
+              </p>
+            </div>
+            <UButton
+              :color="currentProject.archivedAt ? 'primary' : 'neutral'"
+              variant="solid"
+              :icon="currentProject.archivedAt ? 'i-heroicons-archive-box-arrow-down' : 'i-heroicons-archive-box'"
+              :loading="isArchiving"
+              @click="handleArchiveToggle"
+            >
+              {{ currentProject.archivedAt ? t('project.unarchive', 'Unarchive') : t('project.archive', 'Archive') }}
+            </UButton>
+          </div>
         </UCard>
 
         <!-- Danger Zone -->
@@ -208,15 +257,29 @@ function cancelDelete() {
             </h3>
           </div>
 
-          <p class="text-gray-600 dark:text-gray-400 mb-6">
-            {{ t('project.deleteConfirm') }}
+          <p v-if="currentProject" class="text-gray-600 dark:text-gray-400 mb-6">
+            {{ t('project.deleteConfirmWithInput', 'To confirm deletion, please type the project name: ') }}
+            <span class="font-bold text-gray-900 dark:text-white">{{ currentProject.name }}</span>
           </p>
+
+          <UInput
+            v-if="currentProject"
+            v-model="deleteConfirmationInput"
+            :placeholder="currentProject.name"
+            class="mb-6"
+            autofocus
+          />
 
           <div class="flex justify-end gap-3">
             <UButton color="neutral" variant="ghost" :disabled="isDeleting" @click="cancelDelete">
               {{ t('common.cancel') }}
             </UButton>
-            <UButton color="error" :loading="isDeleting" @click="handleDelete">
+            <UButton 
+              color="error" 
+              :loading="isDeleting" 
+              :disabled="!currentProject || deleteConfirmationInput !== currentProject.name"
+              @click="handleDelete"
+            >
               {{ t('common.delete') }}
             </UButton>
           </div>

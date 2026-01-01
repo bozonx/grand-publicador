@@ -54,12 +54,12 @@ export class ChannelsService {
    * @param userId - The ID of the user requesting the channels.
    * @returns A list of channels with post counts.
    */
-  public async findAllForProject(projectId: string, userId: string) {
-    await this.projectsService.findOne(projectId, userId); // Validates membership
+  public async findAllForProject(projectId: string, userId: string, allowArchived = false) {
+    await this.projectsService.findOne(projectId, userId, true); // Validates membership, allow archived project
     const channels = await this.prisma.channel.findMany({
       where: {
         projectId,
-        archivedAt: null,
+        ...(allowArchived ? {} : { archivedAt: null }),
         project: { archivedAt: null },
       },
       include: {
@@ -92,14 +92,15 @@ export class ChannelsService {
    *
    * @param id - The ID of the channel.
    * @param userId - The ID of the user.
+   * @param allowArchived - Whether to allow finding archived channels.
    * @returns The channel details.
    * @throws NotFoundException if the channel does not exist.
    */
-  public async findOne(id: string, userId: string) {
+  public async findOne(id: string, userId: string, allowArchived = false) {
     const channel = await this.prisma.channel.findUnique({
       where: {
         id,
-        archivedAt: null,
+        ...(allowArchived ? {} : { archivedAt: null }),
         project: { archivedAt: null },
       },
       include: {
@@ -172,6 +173,54 @@ export class ChannelsService {
 
     return this.prisma.channel.delete({
       where: { id },
+    });
+  }
+
+  /**
+   * Archive a channel.
+   * Requires OWNER, ADMIN, or EDITOR role.
+   *
+   * @param id - The ID of the channel.
+   * @param userId - The ID of the user.
+   */
+  public async archive(id: string, userId: string) {
+    const channel = await this.findOne(id, userId);
+    await this.permissions.checkProjectPermission(channel.projectId, userId, [
+      ProjectRole.OWNER,
+      ProjectRole.ADMIN,
+      ProjectRole.EDITOR,
+    ]);
+
+    return this.prisma.channel.update({
+      where: { id },
+      data: {
+        archivedAt: new Date(),
+        archivedBy: userId,
+      },
+    });
+  }
+
+  /**
+   * Unarchive a channel.
+   * Requires OWNER, ADMIN, or EDITOR role.
+   *
+   * @param id - The ID of the channel.
+   * @param userId - The ID of the user.
+   */
+  public async unarchive(id: string, userId: string) {
+    const channel = await this.findOne(id, userId, true);
+    await this.permissions.checkProjectPermission(channel.projectId, userId, [
+      ProjectRole.OWNER,
+      ProjectRole.ADMIN,
+      ProjectRole.EDITOR,
+    ]);
+
+    return this.prisma.channel.update({
+      where: { id },
+      data: {
+        archivedAt: null,
+        archivedBy: null,
+      },
     });
   }
 }

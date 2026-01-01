@@ -158,6 +158,69 @@ export type Database = {
           },
         ]
       }
+      publications: {
+        Row: {
+          id: string
+          project_id: string
+          author_id: string | null
+          title: string | null
+          content: string
+          media_files: string
+          tags: string | null
+          status: Database['public']['Enums']['post_status_enum'] | null
+          meta: string
+          created_at: string
+          updated_at: string
+          archived_at: string | null
+          archived_by: string | null
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          author_id?: string | null
+          title?: string | null
+          content: string
+          media_files?: string
+          tags?: string | null
+          status?: Database['public']['Enums']['post_status_enum'] | null
+          meta?: string
+          created_at?: string
+          updated_at?: string
+          archived_at?: string | null
+          archived_by?: string | null
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          author_id?: string | null
+          title?: string | null
+          content?: string
+          media_files?: string
+          tags?: string | null
+          status?: Database['public']['Enums']['post_status_enum'] | null
+          meta?: string
+          created_at?: string
+          updated_at?: string
+          archived_at?: string | null
+          archived_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'publications_project_id_fkey'
+            columns: ['project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'publications_author_id_fkey'
+            columns: ['author_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       posts: {
         Row: {
           id: string

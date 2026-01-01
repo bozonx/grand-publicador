@@ -137,6 +137,60 @@ export function useProjects() {
         }
     }
 
+    async function archiveProject(projectId: string): Promise<Project | null> {
+        store.setLoading(true)
+        store.setError(null)
+
+        try {
+            const updatedProject = await api.post<Project>(`/projects/${projectId}/archive`)
+            toast.add({
+                title: t('common.success'),
+                description: t('project.archiveSuccess', 'Project archived successfully'),
+                color: 'success',
+            })
+            store.updateProject(projectId, updatedProject as ProjectWithRole)
+            return updatedProject
+        } catch (err: any) {
+            const message = err.message || 'Failed to archive project'
+            store.setError(message)
+            toast.add({
+                title: t('common.error'),
+                description: message,
+                color: 'error',
+            })
+            return null
+        } finally {
+            store.setLoading(false)
+        }
+    }
+
+    async function unarchiveProject(projectId: string): Promise<Project | null> {
+        store.setLoading(true)
+        store.setError(null)
+
+        try {
+            const updatedProject = await api.post<Project>(`/projects/${projectId}/unarchive`)
+            toast.add({
+                title: t('common.success'),
+                description: t('project.unarchiveSuccess', 'Project unarchived successfully'),
+                color: 'success',
+            })
+            store.updateProject(projectId, updatedProject as ProjectWithRole)
+            return updatedProject
+        } catch (err: any) {
+            const message = err.message || 'Failed to unarchive project'
+            store.setError(message)
+            toast.add({
+                title: t('common.error'),
+                description: message,
+                color: 'error',
+            })
+            return null
+        } finally {
+            store.setLoading(false)
+        }
+    }
+
     async function fetchMembers(projectId: string): Promise<ProjectMemberWithUser[]> {
         store.setLoading(true)
         try {
@@ -265,6 +319,8 @@ export function useProjects() {
         removeMember,
         canEdit,
         canDelete,
+        archiveProject,
+        unarchiveProject,
         canManageMembers,
         getRoleDisplayName,
     }

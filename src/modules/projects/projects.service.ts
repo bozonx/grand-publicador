@@ -62,16 +62,20 @@ export class ProjectsService {
    * Filters projects where the user is a member (including owner).
    *
    * @param userId - The ID of the user.
-   * @param options - Pagination options (limit, offset).
+   * @param options - Pagination and filtering options.
    * @returns A list of projects including member count and channel count.
    */
-  public async findAllForUser(userId: string, options?: { limit?: number; offset?: number }) {
+  public async findAllForUser(
+    userId: string,
+    options?: { limit?: number; offset?: number; includeArchived?: boolean },
+  ) {
     const take = options?.limit ?? 50;
     const skip = options?.offset ?? 0;
+    const includeArchived = options?.includeArchived ?? false;
 
     const projects = await this.prisma.project.findMany({
       where: {
-        archivedAt: null,
+        ...(includeArchived ? {} : { archivedAt: null }),
         members: {
           some: {
             userId: userId,
@@ -146,11 +150,12 @@ export class ProjectsService {
    *
    * @param projectId - The ID of the project.
    * @param userId - The ID of the user.
+   * @param allowArchived - Whether to allow finding archived projects.
    * @returns The project details including channels, members, and the user's role.
    * @throws ForbiddenException if the user is not a member.
    * @throws NotFoundException if the project does not exist.
    */
-  public async findOne(projectId: string, userId: string): Promise<any> {
+  public async findOne(projectId: string, userId: string, allowArchived = false): Promise<any> {
     const role = await this.permissions.getUserProjectRole(projectId, userId);
 
     if (!role) {
@@ -158,7 +163,7 @@ export class ProjectsService {
     }
 
     const project = await this.prisma.project.findUnique({
-      where: { id: projectId, archivedAt: null },
+      where: { id: projectId, ...(allowArchived ? {} : { archivedAt: null }) },
       include: {
         _count: {
           select: {
@@ -251,6 +256,50 @@ export class ProjectsService {
 
     return this.prisma.project.delete({
       where: { id: projectId },
+    });
+  }
+
+  /**
+   * Archive a project.
+   * Requires OWNER or ADMIN role.
+   *
+   * @param projectId - The ID of the project.
+   * @param userId - The ID of the user.
+   */
+  public async archive(projectId: string, userId: string) {
+    await this.permissions.checkProjectPermission(projectId, userId, [
+      ProjectRole.OWNER,
+      ProjectRole.ADMIN,
+    ]);
+
+    return this.prisma.project.update({
+      where: { id: projectId },
+      data: {
+        archivedAt: new Date(),
+        archivedBy: userId,
+      },
+    });
+  }
+
+  /**
+   * Unarchive a project.
+   * Requires OWNER or ADMIN role.
+   *
+   * @param projectId - The ID of the project.
+   * @param userId - The ID of the user.
+   */
+  public async unarchive(projectId: string, userId: string) {
+    await this.permissions.checkProjectPermission(projectId, userId, [
+      ProjectRole.OWNER,
+      ProjectRole.ADMIN,
+    ]);
+
+    return this.prisma.project.update({
+      where: { id: projectId },
+      data: {
+        archivedAt: null,
+        archivedBy: null,
+      },
     });
   }
 }

@@ -8,6 +8,7 @@ export interface Project {
   name: string
   description: string | null
   ownerId: string
+  archivedAt?: string | null
   createdAt: string
   updatedAt: string
 }
