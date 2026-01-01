@@ -55,4 +55,8 @@ export class CreatePostDto {
   @IsEnum(PostStatus)
   @IsOptional()
   public status?: PostStatus;
+
+  @IsString()
+  @IsOptional()
+  public language?: string;
 }

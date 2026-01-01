@@ -300,7 +300,7 @@ function formatDate(date: string | null | undefined): string {
                         </span>
                     </div>
 
-                    <div v-if="channel.language" class="flex items-center gap-1.5" :title="t('channel.language')">
+                    <div class="flex items-center gap-1.5" :title="t('channel.language')">
                         <UIcon name="i-heroicons-language" class="w-4 h-4" />
                         <span>
                            {{ channel.language }}
@@ -393,7 +393,7 @@ function formatDate(date: string | null | undefined): string {
                             </span>
                         </div>
 
-                        <div v-if="channel.language" class="flex items-center gap-1.5" :title="t('channel.language')">
+                        <div class="flex items-center gap-1.5" :title="t('channel.language')">
                             <UIcon name="i-heroicons-language" class="w-4 h-4" />
                             <span>
                                {{ channel.language }}

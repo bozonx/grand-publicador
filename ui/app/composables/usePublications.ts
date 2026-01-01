@@ -14,6 +14,8 @@ export interface Publication {
     tags: string | null
     status: PublicationStatus
     meta: string
+    language: string
+    translationGroupId?: string | null
     createdAt: string
     updatedAt: string
     archivedAt?: string | null

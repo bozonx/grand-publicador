@@ -35,9 +35,14 @@ function handleClick() {
         <h3 class="font-semibold text-gray-900 dark:text-white truncate text-lg">
           {{ publication.title || t('post.untitled') }}
         </h3>
-        <UBadge :color="getStatusColor(publication.status)" size="sm" variant="subtle">
-          {{ getStatusDisplayName(publication.status) }}
-        </UBadge>
+        <div class="flex items-center gap-2">
+            <span class="text-[10px] px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded font-mono uppercase">
+                {{ publication.language }}
+            </span>
+            <UBadge :color="getStatusColor(publication.status)" size="sm" variant="subtle">
+                {{ getStatusDisplayName(publication.status) }}
+            </UBadge>
+        </div>
       </div>
 
       <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-4 grow">
@@ -63,7 +68,7 @@ function handleClick() {
             <UTooltip
               v-for="post in publication.posts.slice(0, 5)"
               :key="post.id"
-              :text="post.channel?.name || post.socialMedia"
+              :text="`${post.channel?.name || post.socialMedia} (${post.channel?.language || post.socialMedia})`"
             >
               <div class="h-7 w-7 rounded-full ring-2 ring-white dark:ring-gray-800 bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
                 <UIcon 

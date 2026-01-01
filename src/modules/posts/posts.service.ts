@@ -37,6 +37,7 @@ export class PostsService {
       postDate?: Date;
       scheduledAt?: Date;
       status?: PostStatus;
+      language?: string;
     },
   ) {
     const channel = await this.channelsService.findOne(channelId, userId);
@@ -61,6 +62,7 @@ export class PostsService {
         postDate: data.postDate,
         scheduledAt: data.scheduledAt,
         status: data.status ?? PostStatus.DRAFT,
+        language: data.language ?? channel.language,
       },
     });
   }

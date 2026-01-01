@@ -36,4 +36,12 @@ export class CreatePublicationDto {
   @IsString()
   @IsOptional()
   public authorId?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  public language!: string;
+
+  @IsString()
+  @IsOptional()
+  public translationGroupId?: string;
 }

@@ -58,6 +58,9 @@ function handleDelete(e: Event) {
           <UBadge color="neutral" size="xs" variant="outline">
             {{ getTypeDisplayName(post.postType) }}
           </UBadge>
+          <span v-if="post.language !== post.channel?.language" class="text-[10px] px-1.5 py-0.5 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 rounded font-mono uppercase">
+            {{ post.language }}
+          </span>
         </div>
         <p class="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 mb-3">
           {{ truncateContent(post.content) }}
@@ -77,6 +80,9 @@ function handleDelete(e: Event) {
           <span v-if="showChannelInfo && post.channel" class="flex items-center gap-1">
             <UIcon name="i-heroicons-hashtag" class="w-3.5 h-3.5" />
             {{ post.channel.name }}
+            <span class="ml-1 text-[10px] px-1 bg-gray-100 dark:bg-gray-700 rounded uppercase font-mono">
+                {{ post.channel.language }}
+            </span>
           </span>
         </div>
       </div>

@@ -47,6 +47,7 @@ const formData = reactive({
   postDate: props.post?.postDate || '',
   status: (props.post?.status || 'DRAFT') as PostStatus,
   scheduledAt: props.post?.scheduledAt || '',
+  language: props.post?.language || '',
 })
 
 const isEditMode = computed(() => !!props.post?.id)
@@ -80,6 +81,24 @@ const channelOptions = computed(() => {
 // Status options for select (only draft and scheduled for creation/editing)
 const availableStatusOptions = computed(() => {
   return statusOptions.value.filter((opt) => ['DRAFT', 'SCHEDULED'].includes(opt.value as string))
+})
+
+// Language options
+const languageOptions = [
+  { value: 'ru-RU', label: 'Русский (RU)', icon: 'i-heroicons-language' },
+  { value: 'en-US', label: 'English (US)', icon: 'i-heroicons-language' },
+  { value: 'uz-UZ', label: 'Oʻzbekча (UZ)', icon: 'i-heroicons-language' },
+  { value: 'es-ES', label: 'Español (ES)', icon: 'i-heroicons-language' },
+]
+
+// Watch for channel selection to set default language
+watch(() => formData.channelId, (newChannelId) => {
+  if (!isEditMode.value && newChannelId) {
+    const selectedChannel = channels.value.find(c => c.id === newChannelId)
+    if (selectedChannel && !formData.language) {
+      formData.language = selectedChannel.language
+    }
+  }
 })
 
 /**
@@ -129,6 +148,7 @@ async function handleSubmit() {
       status: formData.status,
       scheduledAt:
         formData.status === 'SCHEDULED' ? formData.scheduledAt || undefined : undefined,
+      language: formData.language || undefined,
     }
 
     const result = await createPost(createData)
@@ -182,6 +202,7 @@ const isFormValid = computed(() => {
   if (!isEditMode.value && !formData.channelId) return false
   if (!isContentValid.value) return false
   if (formData.status === 'SCHEDULED' && !formData.scheduledAt) return false
+  if (!formData.language) return false
   return true
 })
 </script>
@@ -265,6 +286,26 @@ const isFormValid = computed(() => {
           />
         </UFormField>
       </div>
+
+      <!-- Language selection -->
+      <UFormField :label="t('common.language')" required>
+        <USelectMenu
+          v-model="formData.language"
+          :items="languageOptions"
+          value-key="value"
+          label-key="label"
+          :placeholder="t('post.selectLanguage', 'Select language')"
+          class="w-full"
+          :disabled="isEditMode"
+        >
+          <template #leading-icon>
+            <UIcon name="i-heroicons-language" class="w-4 h-4" />
+          </template>
+        </USelectMenu>
+        <template v-if="isEditMode" #help>
+          <span class="text-xs text-gray-400">{{ t('post.languageCannotBeChanged', 'Language cannot be changed after post creation') }}</span>
+        </template>
+      </UFormField>
 
       <!-- Scheduling -->
       <UFormField v-if="formData.status === 'SCHEDULED'" :label="t('post.scheduledAt')" required>

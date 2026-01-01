@@ -22,8 +22,14 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>()
 
 const { t } = useI18n()
-const { createPublication, updatePublication, createPostsFromPublication, isLoading, getStatusDisplayName } = usePublications()
-const { channels, fetchChannels, isLoading: isChannelsLoading } = useChannels()
+const { createPublication, updatePublication, createPostsFromPublication, isLoading, getStatusDisplayName, fetchPublicationsByProject, publications } = usePublications()
+const { 
+  channels, 
+  fetchChannels, 
+  isLoading: isChannelsLoading,
+  getSocialMediaIcon,
+  getSocialMediaColor
+} = useChannels()
 const router = useRouter()
 
 // Form state
@@ -33,24 +39,60 @@ const formData = reactive({
   tags: props.publication?.tags || '',
   status: (props.publication?.status || 'DRAFT') as 'DRAFT' | 'SCHEDULED',
   scheduledAt: '',
+  language: props.publication?.language || 'en-US',
   channelIds: props.publication?.posts?.map((p: any) => p.channelId) || [] as string[],
+  translationGroupId: props.publication?.translationGroupId || undefined as string | undefined,
 })
+
+const linkedPublicationId = ref<string | undefined>(undefined)
 
 const isEditMode = computed(() => !!props.publication?.id)
 const showAdvancedFields = ref(false)
 
-// Fetch channels on mount
-onMounted(() => {
+// Fetch channels and publications on mount
+onMounted(async () => {
   if (props.projectId) {
     fetchChannels(props.projectId)
+    // Fetch recent publications to allow linking (limit 50 for now)
+    await fetchPublicationsByProject(props.projectId, { limit: 50 })
   }
 })
+
+// Publications available for linking (exclude current)
+const availablePublications = computed(() => {
+    return publications.value
+        .filter(p => p.id !== props.publication?.id)
+        .map(p => ({
+            value: p.id,
+            label: p.title ? `${p.title} (${p.language})` : `Untitled (${p.language}) - ${new Date(p.createdAt).toLocaleDateString()}`,
+            translationGroupId: p.translationGroupId,
+            language: p.language
+        }))
+})
+
+// Handle translation group selection
+function handleTranslationLink(publicationId: string) {
+    const target = publications.value.find(p => p.id === publicationId)
+    if (!target) return
+
+    if (target.translationGroupId) {
+        formData.translationGroupId = target.translationGroupId
+        linkedPublicationId.value = undefined // No need to update the target, it already has a group
+    } else {
+        // Target has no group, we will generate one and assign to both
+        const newGroupId = globalThis.crypto.randomUUID()
+        formData.translationGroupId = newGroupId
+        linkedPublicationId.value = target.id // We need to update target with this group ID
+    }
+}
 
 // Channel options for select
 const channelOptions = computed(() => {
   return channels.value.map((channel: ChannelWithProject) => ({
     value: channel.id,
-    label: `${channel.name} (${channel.socialMedia})`,
+    label: channel.name,
+    socialMedia: channel.socialMedia,
+    language: channel.language,
   }))
 })
 
@@ -60,10 +102,25 @@ const statusOptions = [
   { value: 'SCHEDULED', label: t('postStatus.scheduled') },
 ]
 
+const { languageOptions } = useLanguages()
+
 /**
  * Handle form submission
  */
 async function handleSubmit() {
+  if (linkedPublicationId.value && formData.translationGroupId) {
+      // We need to update the linked publication with the new group ID first
+      try {
+          await updatePublication(linkedPublicationId.value, { 
+              translationGroupId: formData.translationGroupId 
+          })
+      } catch (e) {
+          console.error("Failed to link publication", e)
+          // Ensure we don't block saving current pub just because linking failed, 
+          // or maybe we should? For now, we proceed but log error.
+      }
+  }
+
   if (isEditMode.value && props.publication) {
     // Update existing publication
     const updateData: any = {
@@ -71,6 +128,8 @@ async function handleSubmit() {
         content: formData.content,
         tags: formData.tags || undefined,
         status: formData.status,
+        language: formData.language,
+        translationGroupId: formData.translationGroupId,
     }
     
     // Update the publication itself
@@ -98,6 +157,8 @@ async function handleSubmit() {
       content: formData.content,
       tags: formData.tags || undefined,
       status: formData.status === 'SCHEDULED' && formData.channelIds.length > 0 ? 'SCHEDULED' : 'DRAFT', // Master status
+      language: formData.language,
+      translationGroupId: formData.translationGroupId,
     }
 
     const publication = await createPublication(createData)
@@ -171,15 +232,33 @@ function toggleChannel(channelId: string) {
                 <div 
                     v-for="channel in channelOptions" 
                     :key="channel.value" 
-                    class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors"
+                    class="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors"
                     @click="toggleChannel(channel.value)"
                 >
-                    <UCheckbox 
-                        :model-value="formData.channelIds.includes(channel.value)"
-                        @update:model-value="toggleChannel(channel.value)"
-                        :label="channel.label"
-                        class="pointer-events-none" 
-                    />
+                    <div class="flex items-center gap-2">
+                        <UCheckbox 
+                            :model-value="formData.channelIds.includes(channel.value)"
+                            @update:model-value="toggleChannel(channel.value)"
+                            class="pointer-events-none" 
+                        />
+                        <span class="text-sm font-medium text-gray-900 dark:text-white truncate max-w-[120px]">
+                            {{ channel.label }}
+                        </span>
+                    </div>
+                    
+                    <div class="flex items-center gap-1.5 shrink-0 ml-2">
+                        <span class="text-[10px] px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded flex items-center gap-1 font-mono uppercase">
+                            <UIcon name="i-heroicons-language" class="w-3 h-3" />
+                            {{ channel.language }}
+                        </span>
+                        <UTooltip :text="channel.socialMedia">
+                            <UIcon 
+                                :name="getSocialMediaIcon(channel.socialMedia)" 
+                                class="w-4 h-4"
+                                :style="{ color: getSocialMediaColor(channel.socialMedia) }"
+                            />
+                        </UTooltip>
+                    </div>
                 </div>
             </div>
             <div v-else class="text-sm text-gray-500 dark:text-gray-400 italic">
@@ -204,6 +283,43 @@ function toggleChannel(channelId: string) {
         <UFormField v-if="formData.status === 'SCHEDULED'" :label="t('post.scheduledAt')" required>
             <UInput v-model="formData.scheduledAt" type="datetime-local" class="w-full" icon="i-heroicons-clock" />
         </UFormField>
+
+        <!-- Language -->
+        <UFormField :label="t('common.language', 'Language')" required>
+            <USelectMenu
+                v-model="formData.language"
+                :items="languageOptions"
+                value-key="value"
+                label-key="label"
+                class="w-full"
+            >
+                <template #leading-icon>
+                    <UIcon name="i-heroicons-language" class="w-4 h-4" />
+                </template>
+            </USelectMenu>
+        </UFormField>
+
+         <!-- Translation Group (Link to another publication) -->
+         <UFormField :label="t('publication.linkTranslation', 'Link as Translation of')" :help="t('publication.linkTranslationHelp', 'Select a publication to link this one as a translation version.')">
+            <USelectMenu
+                :model-value="linkedPublicationId"
+                :items="availablePublications"
+                value-key="value"
+                label-key="label"
+                searchable
+                :placeholder="formData.translationGroupId ? t('publication.linked', 'Linked to a group') : t('publication.selectToLink', 'Select to link...')"
+                class="w-full"
+                @update:model-value="handleTranslationLink"
+            >
+                 <template #label>
+                    <span v-if="formData.translationGroupId" class="text-primary-500 font-medium">
+                        {{ t('publication.linked', 'Linked') }}
+                        <span v-if="linkedPublicationId" class="text-xs text-gray-400"> (Pending Update)</span>
+                    </span>
+                    <span v-else class="text-gray-400">{{ t('publication.selectToLink', 'Select to link...') }}</span>
+                </template>
+            </USelectMenu>
+         </UFormField>
       </div>
 
       <!-- Title (optional) -->

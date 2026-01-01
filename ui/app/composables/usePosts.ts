@@ -22,6 +22,7 @@ export interface Post {
     createdAt: string
     updatedAt: string
     archivedAt: string | null
+    language: string
     meta: string
 }
 
@@ -31,6 +32,7 @@ export interface PostWithRelations extends Post {
         name: string
         projectId: string
         socialMedia: string
+        language: string
     } | null
     author?: {
         id: string

@@ -38,16 +38,18 @@ const {
   isLoading,
   getSocialMediaIcon,
   getSocialMediaColor,
-  languageOptions,
 } = useChannels()
 
+const { languageOptions } = useLanguages()
+
 const isEditMode = computed(() => !!props.channel?.id)
+
 
 const state = reactive({
   name: props.channel?.name || '',
   socialMedia: (props.channel?.socialMedia || 'TELEGRAM') as SocialMedia,
   channelIdentifier: props.channel?.channelIdentifier || '',
-  language: props.channel?.language || '',
+  language: props.channel?.language || 'en-US',
   isActive: props.channel?.isActive ?? true,
 })
 
@@ -55,14 +57,14 @@ const state = reactive({
  * Form submission handler
  */
 async function handleSubmit() {
-  if (!state.name || !state.channelIdentifier) return
+  if (!state.name || !state.channelIdentifier || !state.language) return
 
   if (isEditMode.value && props.channel) {
     // Update existing channel
     const updateData: ChannelUpdateInput = {
       name: state.name,
       channelIdentifier: state.channelIdentifier,
-      language: state.language || undefined,
+      language: state.language,
     }
 
     const result = await updateChannel(props.channel.id, updateData)
@@ -76,7 +78,7 @@ async function handleSubmit() {
       name: state.name,
       socialMedia: state.socialMedia,
       channelIdentifier: state.channelIdentifier,
-      language: state.language || undefined,
+      language: state.language,
       isActive: state.isActive,
     })
 
@@ -229,19 +231,24 @@ const currentSocialMedia = computed(() => (isEditMode.value ? props.channel?.soc
       <!-- Channel language -->
       <UFormField
         :label="t('channel.language')"
+        required
         :help="t('channel.languageHelp')"
       >
-        <UInput
+        <USelectMenu
           v-model="state.language"
-          :placeholder="t('channel.languagePlaceholder')"
-          list="language-suggestions"
+          :items="languageOptions"
+          value-key="value"
+          label-key="label"
           class="w-full"
-        />
-        <datalist id="language-suggestions">
-          <option v-for="lang in languageOptions" :key="lang.value" :value="lang.value">
-            {{ lang.label }}
-          </option>
-        </datalist>
+        >
+          <template #label>
+             <span v-if="state.language" class="flex items-center gap-2">
+                 <UIcon name="i-heroicons-language" class="w-4 h-4" />
+                 {{ languageOptions.find(o => o.value === state.language)?.label }}
+             </span>
+             <span v-else>Select language</span>
+          </template>
+        </USelectMenu>
       </UFormField>
 
 
@@ -263,7 +270,7 @@ const currentSocialMedia = computed(() => (isEditMode.value ? props.channel?.soc
           type="submit"
           color="primary"
           :loading="isLoading"
-          :disabled="!state.name || !state.channelIdentifier"
+          :disabled="!state.name || !state.channelIdentifier || !state.language"
         >
           {{ isEditMode ? t('common.save') : t('common.create') }}
         </UButton>

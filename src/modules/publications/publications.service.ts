@@ -38,6 +38,8 @@ export class PublicationsService {
         mediaFiles: JSON.stringify(data.mediaFiles ?? []),
         tags: data.tags,
         status: data.status ?? PostStatus.DRAFT,
+        language: data.language,
+        translationGroupId: data.translationGroupId,
         meta: JSON.stringify(data.meta ?? {}),
       },
     });
@@ -228,7 +230,7 @@ export class PublicationsService {
       ]);
     }
 
-    return this.prisma.publication.update({
+    const updated = await this.prisma.publication.update({
       where: { id },
       data: {
         title: data.title,
@@ -236,9 +238,22 @@ export class PublicationsService {
         mediaFiles: data.mediaFiles ? JSON.stringify(data.mediaFiles) : undefined,
         tags: data.tags,
         status: data.status,
+        language: data.language,
+        translationGroupId: data.translationGroupId,
         meta: data.meta ? JSON.stringify(data.meta) : undefined,
       },
     });
+
+    // Cascade update language to associated posts if changed
+    if (data.language && data.language !== publication.language) {
+      await this.prisma.post.updateMany({
+        where: { publicationId: id },
+        data: { language: data.language },
+      });
+      this.logger.log(`Cascade updated language to ${data.language} for posts of publication ${id}`);
+    }
+
+    return updated;
   }
 
   /**
@@ -330,6 +345,7 @@ export class PublicationsService {
             mediaFiles: publication.mediaFiles,
             status: scheduledAt ? PostStatus.SCHEDULED : PostStatus.DRAFT,
             scheduledAt,
+            language: publication.language,
             meta: publication.meta,
           },
         }),

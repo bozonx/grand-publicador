@@ -28,4 +28,12 @@ export class UpdatePublicationDto {
   @IsObject()
   @IsOptional()
   public meta?: Record<string, any>;
+
+  @IsString()
+  @IsOptional()
+  public language?: string;
+
+  @IsString()
+  @IsOptional()
+  public translationGroupId?: string;
 }

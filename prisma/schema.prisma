@@ -107,7 +107,7 @@ model Channel {
   // Platform-specific channel identifier (e.g., @channel_name, channel_id)
   channelIdentifier String      @map("channel_identifier")
   // Channel language in format like ru-RU, en-US, etc.
-  language          String?
+  language          String
   // Encrypted credentials for channel access stored as JSON string
   credentials       String      @default("{}") // Store as JSON string in SQLite
   // Whether channel is active for posting
@@ -138,6 +138,10 @@ model Publication {
   tags       String?
   // Publication status (DRAFT, SCHEDULED, PUBLISHED, etc.)
   status     PostStatus @default(DRAFT)
+  // Language of the publication (ru-RU, en-US, etc.)
+  language   String    @default("ru-RU")
+  // ID for linking translations of the same content
+  translationGroupId String? @map("translation_group_id")
   // Additional metadata stored as JSON string
   meta       String     @default("{}")
   createdAt  DateTime   @default(now()) @map("created_at")
@@ -151,6 +155,7 @@ model Publication {
   author  User?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
   posts   Post[]
 
+  @@index([translationGroupId])
   @@index([projectId, status])
   @@index([projectId, createdAt])
   @@map("publications")
@@ -185,6 +190,8 @@ model Post {
   scheduledAt   DateTime?    @map("scheduled_at")
   // Actual timestamp when post was published to platform
   publishedAt   DateTime?    @map("published_at")
+  // Language of the post (inherited from publication)
+  language      String       @default("ru-RU")
   // Additional metadata stored as JSON string
   meta          String       @default("{}")
   createdAt     DateTime     @default(now()) @map("created_at")

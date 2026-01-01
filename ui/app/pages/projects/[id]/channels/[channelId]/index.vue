@@ -270,7 +270,7 @@ function getStatusBadgeColor(isActive: boolean): 'success' | 'neutral' {
                                     {{ t('project.lastPost', 'Last post') }}:
                                     {{ formatDateTime(channel.lastPostAt) }}
                                 </span>
-                                <span v-if="channel.language" class="flex items-center gap-1">
+                                <span class="flex items-center gap-1">
                                     <UIcon name="i-heroicons-language" class="w-4 h-4" />
                                     {{ t('channel.language') }}: {{ channel.language }}
                                 </span>
