@@ -108,7 +108,7 @@ const sortedArchivedProjects = computed(() => archivedProjects.value)
 <template>
   <div class="max-w-4xl mx-auto">
     <!-- Page header -->
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
           {{ t('project.titlePlural') }}
@@ -117,12 +117,37 @@ const sortedArchivedProjects = computed(() => archivedProjects.value)
           {{ t('project.myProjects') }}
         </p>
       </div>
-      <div class="flex items-center gap-4">
-        <UButton icon="i-heroicons-plus" @click="goToCreateProject">
+      
+      <div class="flex items-center gap-2">
+        <template v-if="projects.length > 0">
+          <USelectMenu
+            v-model="sortBy"
+            :items="sortOptions"
+            value-key="id"
+            label-key="label"
+            class="w-56"
+            :searchable="false"
+            :loading="sortOptions.length === 0"
+          >
+            <template #leading>
+              <UIcon v-if="currentSortOption" :name="currentSortOption.icon" class="w-4 h-4" />
+            </template>
+          </USelectMenu>
+          <UButton
+            :icon="sortOrder === 'asc' ? 'i-heroicons-bars-arrow-up' : 'i-heroicons-bars-arrow-down'"
+            color="neutral"
+            variant="ghost"
+            @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+            :title="sortOrder === 'asc' ? t('common.sortOrder.asc') : t('common.sortOrder.desc')"
+          />
+        </template>
+
+        <UButton icon="i-heroicons-plus" @click="goToCreateProject" color="primary">
             {{ t('project.createProject') }}
         </UButton>
       </div>
     </div>
+
 
     <!-- Error state -->
     <div
@@ -151,29 +176,7 @@ const sortedArchivedProjects = computed(() => archivedProjects.value)
 
     <!-- Projects list -->
     <div v-else-if="projects.length > 0" class="space-y-4">
-      <!-- Sorting toolbar -->
-      <div class="flex items-center justify-end gap-2 mb-4">
-        <USelectMenu
-          v-model="sortBy"
-          :items="sortOptions"
-          value-key="id"
-          label-key="label"
-          class="w-56"
-          :searchable="false"
-          :loading="sortOptions.length === 0"
-        >
-          <template #leading>
-            <UIcon v-if="currentSortOption" :name="currentSortOption.icon" class="w-4 h-4" />
-          </template>
-        </USelectMenu>
-        <UButton
-          :icon="sortOrder === 'asc' ? 'i-heroicons-bars-arrow-up' : 'i-heroicons-bars-arrow-down'"
-          variant="ghost"
-          color="neutral"
-          @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
-          :title="sortOrder === 'asc' ? t('common.sortOrder.asc') : t('common.sortOrder.desc')"
-        />
-      </div>
+
 
       <ProjectsProjectListItem
         v-for="project in sortedProjects"
