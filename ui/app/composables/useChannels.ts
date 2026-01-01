@@ -244,14 +244,24 @@ export function useChannels() {
 
     async function toggleChannelActive(channelId: string): Promise<boolean> {
         const channel = channels.value.find(c => c.id === channelId)
-        if (!channel) return false
+        const isCurrent = currentChannel.value?.id === channelId
 
-        const newValue = !channel.isActive
+        if (!channel && !isCurrent) return false
+
+        const currentIsActive = isCurrent ? currentChannel.value?.isActive : channel?.isActive
+        const newValue = !currentIsActive
+
         const result = await updateChannel(channelId, { isActive: newValue })
 
         if (result) {
-            // Optimistic update
-            channel.isActive = newValue
+            // Update in list
+            if (channel) {
+                channel.isActive = newValue
+            }
+            // Update current channel reference
+            if (isCurrent && currentChannel.value) {
+                currentChannel.value = { ...currentChannel.value, isActive: newValue }
+            }
             return true
         }
         return false

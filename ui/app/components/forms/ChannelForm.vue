@@ -60,7 +60,6 @@ async function handleSubmit() {
     const updateData: ChannelUpdateInput = {
       name: state.name,
       channelIdentifier: state.channelIdentifier,
-      isActive: state.isActive,
     }
 
     const result = await updateChannel(props.channel.id, updateData)
@@ -223,13 +222,6 @@ const currentSocialMedia = computed(() => (isEditMode.value ? props.channel?.soc
         />
       </UFormField>
 
-      <!-- Active status -->
-      <div class="flex items-start gap-3">
-        <UCheckbox v-model="state.isActive" :label="t('channel.isActive')" />
-      </div>
-      <p class="ml-7 text-xs text-gray-500 dark:text-gray-400">
-        {{ t('channel.isActiveHelp') }}
-      </p>
 
       <div
         class="flex items-center justify-end gap-3 pt-6"

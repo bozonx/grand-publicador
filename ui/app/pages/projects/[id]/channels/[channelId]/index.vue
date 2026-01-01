@@ -20,6 +20,7 @@ const {
   getSocialMediaIcon,
   getSocialMediaColor,
   getSocialMediaDisplayName,
+  toggleChannelActive,
 } = useChannels()
 
 const {
@@ -57,6 +58,7 @@ const searchQuery = ref('')
 const showDeletePostModal = ref(false)
 const postToDelete = ref<PostWithRelations | null>(null)
 const isDeletingPost = ref(false)
+const isTogglingActive = ref(false)
 
 // Initialization
 onMounted(async () => {
@@ -137,6 +139,18 @@ const typeFilterOptions = computed(() => [
   { value: null, label: t('common.all') },
   ...typeOptions.value,
 ])
+/**
+ * Handle channel activation/deactivation from banner
+ */
+async function handleToggleActive() {
+    if (!channel.value) return
+    isTogglingActive.value = true
+    try {
+        await toggleChannelActive(channel.value.id)
+    } finally {
+        isTogglingActive.value = false
+    }
+}
 
 // Formatters
 function formatDate(date: string | null): string {
@@ -254,6 +268,37 @@ function getStatusBadgeColor(isActive: boolean): 'success' | 'neutral' {
                             />
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Deactivated Status Banner -->
+            <div 
+                v-if="!channel.isActive" 
+                class="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg p-4"
+            >
+                <div class="flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-full">
+                            <UIcon name="i-heroicons-pause-circle" class="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-amber-900 dark:text-amber-100">
+                                {{ t('channel.deactivated_notice', 'Channel is deactivated') }}
+                            </p>
+                            <p class="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+                                {{ t('channel.deactivate_warning', 'Deactivating the channel will stop all scheduled posts.') }}
+                            </p>
+                        </div>
+                    </div>
+                    <UButton 
+                        size="sm" 
+                        color="warning" 
+                        variant="solid" 
+                        :loading="isTogglingActive"
+                        @click="handleToggleActive"
+                    >
+                        {{ t('channel.activate') }}
+                    </UButton>
                 </div>
             </div>
 

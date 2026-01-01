@@ -162,6 +162,41 @@ async function handleDelete() {
             hide-header
           />
         </UCard>
+ 
+        <!-- Channel Control -->
+        <UCard>
+          <template #header>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+              {{ t('channel.control', 'Channel Control') }}
+            </h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              {{ t('channel.control_desc', 'Activate or deactivate this channel for posting') }}
+            </p>
+          </template>
+          
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-medium text-gray-900 dark:text-white">
+                {{ channel.isActive ? t('channel.deactivate', 'Deactivate') : t('channel.activate', 'Activate') }}
+              </h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                {{ channel.isActive 
+                  ? t('channel.deactivate_warning', 'Deactivating the channel will stop all scheduled posts.') 
+                  : t('channel.activate_info', 'Activating the channel will resume posting for scheduled posts.') 
+                }}
+              </p>
+            </div>
+            <UButton
+              :color="channel.isActive ? 'warning' : 'success'"
+              variant="solid"
+              :icon="channel.isActive ? 'i-heroicons-pause' : 'i-heroicons-play'"
+              :loading="isTogglingActive"
+              @click="handleToggleActive"
+            >
+              {{ channel.isActive ? t('channel.deactivate', 'Deactivate') : t('channel.activate', 'Activate') }}
+            </UButton>
+          </div>
+        </UCard>
 
         <!-- Archive Channel -->
         <UCard>
