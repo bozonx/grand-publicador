@@ -27,8 +27,8 @@ const mainNavItems = computed<NavItem[]>(() => [
     icon: 'i-heroicons-hashtag',
   },
   {
-    label: t('navigation.posts'),
-    to: '/posts',
+    label: t('navigation.publications', 'Публикации'),
+    to: '/publications',
     icon: 'i-heroicons-document-text',
   },
 ])

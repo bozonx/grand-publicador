@@ -52,13 +52,22 @@ export class PublicationsController {
   @Get()
   public async findAll(
     @Request() req: UnifiedAuthRequest,
-    @Query('projectId') projectId: string,
+    @Query('projectId') projectId?: string,
     @Query('status') status?: PostStatus,
     @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit?: number,
     @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset?: number,
     @Query('includeArchived') includeArchived?: string,
   ) {
-    return this.publicationsService.findAll(projectId, req.user.userId, {
+    if (projectId) {
+      return this.publicationsService.findAll(projectId, req.user.userId, {
+        status,
+        limit,
+        offset,
+        includeArchived: includeArchived === 'true',
+      });
+    }
+
+    return this.publicationsService.findAllForUser(req.user.userId, {
       status,
       limit,
       offset,

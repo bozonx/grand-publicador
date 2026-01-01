@@ -9,20 +9,21 @@ definePageMeta({
 
 const { t } = useI18n()
 const { displayName } = useAuth()
+const router = useRouter()
 
 const { projects, fetchProjects, isLoading: projectsLoading } = useProjects()
-const { posts, fetchUserPosts, totalCount: postsCount, isLoading: postsLoading } = usePosts()
+const { publications, fetchUserPublications, totalCount: publicationsCount, isLoading: publicationsLoading } = usePublications()
 
 // Computed
-const recentPosts = computed(() => posts.value.slice(0, 5))
-const isLoading = computed(() => projectsLoading.value || postsLoading.value)
+const recentPublications = computed(() => publications.value.slice(0, 5))
+const isLoading = computed(() => projectsLoading.value || publicationsLoading.value)
 
 // Fetch data on mount
 onMounted(async () => {
   try {
     await Promise.all([
       fetchProjects(),
-      fetchUserPosts({ limit: 50 })
+      fetchUserPublications({ limit: 50 })
     ])
   } catch (err) {
     console.error('Dashboard initialization error:', err)
@@ -154,65 +155,46 @@ const projectsByRole = computed(() => {
           </div>
         </div>
 
-        <!-- Recent Posts -->
+        <!-- Recent Publications -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
           <div
             class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between"
           >
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ t('dashboard.recentPosts') }} ({{ posts.length }})
+              {{ t('publication.titlePlural') }} ({{ publicationsCount }})
             </h2>
-            <UButton variant="ghost" color="primary" size="sm" to="/posts">
+            <UButton variant="ghost" color="primary" size="sm" to="/publications">
               {{ t('common.viewAll') }}
             </UButton>
           </div>
           <div class="p-6">
             <!-- Loading -->
             <div
-              v-if="isLoading && recentPosts.length === 0"
+              v-if="isLoading && recentPublications.length === 0"
               class="flex items-center justify-center py-8"
             >
               <UIcon name="i-heroicons-arrow-path" class="w-6 h-6 text-gray-400 animate-spin" />
             </div>
 
             <!-- Empty state -->
-            <div v-else-if="recentPosts.length === 0" class="text-center py-8">
+            <div v-else-if="recentPublications.length === 0" class="text-center py-8">
               <UIcon
                 name="i-heroicons-document-text"
                 class="w-10 h-10 mx-auto text-gray-400 dark:text-gray-500 mb-3"
               />
               <p class="text-gray-500 dark:text-gray-400">
-                {{ t('post.noPostsDescription') }}
+                {{ t('publication.noPublicationsDescription', 'У вас еще нет созданных публикаций.') }}
               </p>
             </div>
 
-            <!-- Posts list -->
-            <div v-else class="space-y-3">
-              <NuxtLink
-                v-for="post in recentPosts"
-                :key="post.id"
-                :to="`/projects/${post.channel?.projectId}/posts/${post.id}`"
-                class="block p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div class="flex items-start justify-between gap-3">
-                  <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-2 mb-1">
-                      <h3 class="font-medium text-gray-900 dark:text-white truncate">
-                        {{ post.title || t('post.untitled') }}
-                      </h3>
-                      <UBadge :color="getStatusColor(post.status)" size="xs" variant="subtle">
-                        {{ t(`postStatus.${(post.status || 'draft').toLowerCase()}`) }}
-                      </UBadge>
-                    </div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
-                      {{ truncateContent(post.content) }}
-                    </p>
-                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                      {{ post.channel?.name }} · {{ formatDate(post.createdAt) }}
-                    </p>
-                  </div>
-                </div>
-              </NuxtLink>
+            <!-- Publications list -->
+            <div v-else class="space-y-4">
+               <PublicationsPublicationListItem
+                  v-for="pub in recentPublications"
+                  :key="pub.id"
+                  :publication="pub"
+                  @click="router.push(`/projects/${pub.projectId}/publications/${pub.id}`)"
+                />
             </div>
           </div>
         </div>

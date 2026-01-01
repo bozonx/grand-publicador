@@ -2,7 +2,7 @@ import { ref, computed } from 'vue'
 import { useApi } from './useApi'
 import { useAuth } from './useAuth'
 import { ArchiveEntityType } from '~/types/archive.types'
-export type PublicationStatus = 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'FAILED'
+export type PublicationStatus = 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'FAILED' | 'CANCELLED' | 'EXPIRED'
 
 export interface Publication {
     id: string
@@ -52,6 +52,15 @@ export function usePublications() {
     const error = ref<string | null>(null)
     const totalCount = ref(0) // Note: Backend findAll doesn't seem to return total count yet, just the list
 
+    const statusOptions = computed(() => [
+        { value: 'DRAFT', label: t('postStatus.draft') },
+        { value: 'SCHEDULED', label: t('postStatus.scheduled') },
+        { value: 'PUBLISHED', label: t('postStatus.published') },
+        { value: 'FAILED', label: t('postStatus.failed') },
+        { value: 'CANCELLED', label: t('postStatus.cancelled') },
+        { value: 'EXPIRED', label: t('postStatus.expired') },
+    ])
+
     async function fetchPublicationsByProject(
         projectId: string,
         filters: PublicationsFilter = {}
@@ -71,6 +80,33 @@ export function usePublications() {
             return data
         } catch (err: any) {
             console.error('[usePublications] fetchPublicationsByProject error:', err)
+            error.value = err.message || 'Failed to fetch publications'
+            publications.value = []
+            return []
+        } finally {
+            isLoading.value = false
+        }
+    }
+
+    async function fetchUserPublications(
+        filters: PublicationsFilter = {}
+    ): Promise<PublicationWithRelations[]> {
+        isLoading.value = true
+        error.value = null
+
+        try {
+            const params: Record<string, any> = {}
+            if (filters.status) params.status = filters.status
+            if (filters.limit) params.limit = filters.limit
+            if (filters.offset) params.offset = filters.offset
+            if (filters.includeArchived) params.includeArchived = true
+
+            const data = await api.get<PublicationWithRelations[]>('/publications', { params })
+            publications.value = data
+            totalCount.value = data.length // Crude count
+            return data
+        } catch (err: any) {
+            console.error('[usePublications] fetchUserPublications error:', err)
             error.value = err.message || 'Failed to fetch publications'
             publications.value = []
             return []
@@ -221,7 +257,9 @@ export function usePublications() {
                 const idx = publications.value.findIndex(p => p.id === publicationId)
                 if (idx !== -1) {
                     const pub = publications.value[idx]
-                    await fetchPublicationsByProject(pub.projectId, { includeArchived: true }) // crude refresh
+                    if (pub) {
+                        await fetchPublicationsByProject(pub.projectId, { includeArchived: true })
+                    }
                 }
             }
         } catch (e) {
@@ -237,7 +275,9 @@ export function usePublications() {
         isLoading,
         error,
         totalCount,
+        statusOptions,
         fetchPublicationsByProject,
+        fetchUserPublications,
         fetchPublication,
         createPublication,
         updatePublication,

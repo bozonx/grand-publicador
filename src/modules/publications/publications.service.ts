@@ -109,6 +109,64 @@ export class PublicationsService {
   }
 
   /**
+   * Retrieve all publications for a given user across all projects they are members of.
+   *
+   * @param userId - The ID of the user requesting the publications.
+   * @param filters - Optional filters (status, limit, offset, includeArchived).
+   * @returns A list of publications with author and posts info.
+   */
+  public async findAllForUser(
+    userId: string,
+    filters?: {
+      status?: PostStatus;
+      limit?: number;
+      offset?: number;
+      includeArchived?: boolean;
+    },
+  ) {
+    const where: Prisma.PublicationWhereInput = {
+      project: {
+        members: {
+          some: { userId },
+        },
+        archivedAt: null,
+      },
+      ...(filters?.includeArchived ? {} : { archivedAt: null }),
+    };
+
+    if (filters?.status) {
+      where.status = filters.status;
+    }
+
+    return this.prisma.publication.findMany({
+      where,
+      include: {
+        author: {
+          select: {
+            id: true,
+            fullName: true,
+            telegramUsername: true,
+            avatarUrl: true,
+          },
+        },
+        posts: {
+          include: {
+            channel: true,
+          },
+        },
+        _count: {
+          select: {
+            posts: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: filters?.limit,
+      skip: filters?.offset,
+    });
+  }
+
+  /**
    * Find a single publication by ID.
    * Ensures the user has access to the project containing the publication.
    *
