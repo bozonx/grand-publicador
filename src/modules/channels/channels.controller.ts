@@ -76,17 +76,38 @@ export class ChannelsController {
   @Get('archived')
   public async findArchived(
     @Request() req: UnifiedAuthRequest,
-    @Query('projectId') projectId: string,
+    @Query('projectId') projectId?: string, // Make generic
   ) {
-    // Validate project scope for API token users
-    if (req.user.scopeProjectIds) {
-      ApiTokenGuard.validateProjectScope(projectId, req.user.scopeProjectIds, {
-        userId: req.user.userId,
-        tokenId: req.user.tokenId,
-      });
+    if (projectId) {
+      // Validate project scope for API token users
+      if (req.user.scopeProjectIds) {
+        ApiTokenGuard.validateProjectScope(projectId, req.user.scopeProjectIds, {
+          userId: req.user.userId,
+          tokenId: req.user.tokenId,
+        });
+      }
+
+      return this.channelsService.findArchivedForProject(projectId, req.user.userId);
     }
 
-    return this.channelsService.findArchivedForProject(projectId, req.user.userId);
+    // Filter projects based on token scope
+    // Note: findArchivedForUser does not yet support filtering by projectIds within the service, 
+    // so we might need to filter result or update service.
+    // However, for consistency with findAll, let's update findArchivedForUser signature or do checking here?
+    // ChannelsService.findArchivedForUser doesn't take options yet.
+    // Let's assume standard user access for now, or token scope limited users should probably provide projectId or we filter results.
+    // Ideally findArchivedForUser should accept projectIds. But I just implemented it without arguments.
+
+    // For now, let's just return for user. If API token is used with scope, we should filter.
+    const channels = await this.channelsService.findArchivedForUser(req.user.userId);
+
+    if (req.user.scopeProjectIds && req.user.scopeProjectIds.length > 0) {
+      return channels.filter(c =>
+        (c as any).projectId && req.user.scopeProjectIds!.includes((c as any).projectId)
+      );
+    }
+
+    return channels;
   }
 
   @Get(':id')

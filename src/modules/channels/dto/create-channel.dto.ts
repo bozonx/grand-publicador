@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEnum, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsLocale, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 import { SocialMedia } from '@prisma/client';
 
 /**
@@ -25,6 +25,7 @@ export class CreateChannelDto {
 
   @IsString()
   @IsNotEmpty()
+  @IsLocale()
   public language!: string;
 
   @IsObject()

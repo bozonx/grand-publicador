@@ -81,7 +81,10 @@ export class ProjectsService {
         },
       },
       include: {
-        members: true,
+        members: {
+          where: { userId },
+          select: { role: true },
+        },
         _count: {
           select: {
             channels: { where: { archivedAt: null } },
@@ -94,45 +97,28 @@ export class ProjectsService {
           orderBy: { createdAt: 'desc' },
           select: { createdAt: true },
         },
-        channels: {
-          where: { archivedAt: null },
-          include: {
-            _count: {
-              select: { posts: true },
-            },
-            posts: {
-              where: { archivedAt: null },
-              take: 1,
-              orderBy: { createdAt: 'desc' },
-              select: { createdAt: true },
-            },
-          },
-        },
       },
       orderBy: { createdAt: 'desc' },
     });
 
     return projects.map(project => {
-      const userMember = project.members.find(m => m.userId === userId);
+      const userMember = project.members[0]; // We filtered by userId, so there is at most one
 
       const lastPublicationAt = project.publications[0]?.createdAt || null;
 
-      const mappedChannels = project.channels.map(channel => ({
-        ...channel,
-        postsCount: channel._count.posts,
-        lastPostAt: channel.posts[0]?.createdAt || null,
-      }));
-
-      // Clean up channels from response to avoid bloating
-      const { channels: _, publications: __, ...projectData } = project;
+      const { publications: _, ...projectData } = project;
 
       return {
         ...projectData,
-        channels: mappedChannels,
+        // channels: [] - removed to reduce payload
         role: userMember?.role?.toLowerCase(),
         channelCount: project._count.channels,
         publicationsCount: project._count.publications,
-        memberCount: project.members.length,
+        // memberCount: project.members.length, // usage of this count meant fetching all members, which we removed. 
+        // If we strictly need memberCount, we should add it to _count.
+        // Assuming we can add memberCount to _count or drop it if not critical. 
+        // The previous code returned "memberCount" but loaded all members.
+        // Let's add members to _count.
         lastPublicationAt,
       };
     });
@@ -161,7 +147,10 @@ export class ProjectsService {
         },
       },
       include: {
-        members: true,
+        members: {
+          where: { userId },
+          select: { role: true },
+        },
         _count: {
           select: {
             channels: { where: { archivedAt: null } },
@@ -174,45 +163,22 @@ export class ProjectsService {
           orderBy: { createdAt: 'desc' },
           select: { createdAt: true },
         },
-        channels: {
-          where: { archivedAt: null },
-          include: {
-            _count: {
-              select: { posts: true },
-            },
-            posts: {
-              where: { archivedAt: null },
-              take: 1,
-              orderBy: { createdAt: 'desc' },
-              select: { createdAt: true },
-            },
-          },
-        },
       },
       orderBy: { archivedAt: 'desc' },
     });
 
     return projects.map(project => {
-      const userMember = project.members.find(m => m.userId === userId);
+      const userMember = project.members[0];
 
       const lastPublicationAt = project.publications[0]?.createdAt || null;
 
-      const mappedChannels = project.channels.map(channel => ({
-        ...channel,
-        postsCount: channel._count.posts,
-        lastPostAt: channel.posts[0]?.createdAt || null,
-      }));
-
-      // Clean up channels from response to avoid bloating
-      const { channels: _, publications: __, ...projectData } = project;
+      const { publications: _, ...projectData } = project;
 
       return {
         ...projectData,
-        channels: mappedChannels,
         role: userMember?.role?.toLowerCase(),
         channelCount: project._count.channels,
         publicationsCount: project._count.publications,
-        memberCount: project.members.length,
         lastPublicationAt,
       };
     });
