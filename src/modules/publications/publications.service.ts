@@ -29,6 +29,39 @@ export class PublicationsService {
       await this.permissions.checkProjectAccess(data.projectId, userId);
     }
 
+    let translationGroupId = data.translationGroupId;
+
+    if (data.linkToPublicationId) {
+      // Logic to link to an existing publication
+      // We must verify access to the target publication first
+      // Assuming findOne checks access if userId is provided
+      try {
+        const targetPub = await this.findOne(data.linkToPublicationId, userId || ''); // If no userId, system bypass? findOne requires userId. 
+        // If system call (no userId), we might need a bypass. 
+        // But create says "If userId is provided...". If not provided, skip check.
+        // For simplicity, let's assume if userId provided we assume we can read target.
+        // Actually findOne throws if not found/no access.
+
+        if (targetPub) {
+          if (targetPub.translationGroupId) {
+            translationGroupId = targetPub.translationGroupId;
+          } else {
+            translationGroupId = crypto.randomUUID();
+            // Update target
+            await this.prisma.publication.update({
+              where: { id: targetPub.id },
+              data: { translationGroupId },
+            });
+          }
+        }
+      } catch (e) {
+        // If target not found or no access, ignore linking? or throw?
+        // Let's log and ignore to not break creation, or better throw?
+        // Throwing is safer.
+        throw new NotFoundException(`Target publication for linking not found or inaccessible`);
+      }
+    }
+
     const publication = await this.prisma.publication.create({
       data: {
         projectId: data.projectId,
@@ -39,7 +72,8 @@ export class PublicationsService {
         tags: data.tags,
         status: data.status ?? PostStatus.DRAFT,
         language: data.language,
-        translationGroupId: data.translationGroupId,
+        translationGroupId,
+        postType: data.postType ?? PostType.POST,
         meta: JSON.stringify(data.meta ?? {}),
       },
     });
@@ -230,6 +264,27 @@ export class PublicationsService {
       ]);
     }
 
+    let translationGroupId = data.translationGroupId;
+
+    if (data.linkToPublicationId) {
+      try {
+        const targetPub = await this.findOne(data.linkToPublicationId, userId);
+        if (targetPub) {
+          if (targetPub.translationGroupId) {
+            translationGroupId = targetPub.translationGroupId;
+          } else {
+            translationGroupId = crypto.randomUUID();
+            await this.prisma.publication.update({
+              where: { id: targetPub.id },
+              data: { translationGroupId },
+            });
+          }
+        }
+      } catch (e) {
+        throw new NotFoundException(`Target publication for linking not found or inaccessible`);
+      }
+    }
+
     const updated = await this.prisma.publication.update({
       where: { id },
       data: {
@@ -239,7 +294,8 @@ export class PublicationsService {
         tags: data.tags,
         status: data.status,
         language: data.language,
-        translationGroupId: data.translationGroupId,
+        translationGroupId,
+        postType: data.postType,
         meta: data.meta ? JSON.stringify(data.meta) : undefined,
       },
     });
@@ -339,7 +395,7 @@ export class PublicationsService {
             authorId: userId ?? null,
             content: publication.content,
             socialMedia: channel.socialMedia,
-            postType: PostType.POST,
+            postType: publication.postType, // Use master publication type
             title: publication.title,
             tags: publication.tags,
             mediaFiles: publication.mediaFiles,

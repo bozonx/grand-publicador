@@ -1,5 +1,5 @@
 import { IsArray, IsEnum, IsObject, IsOptional, IsString } from 'class-validator';
-import { PostStatus } from '@prisma/client';
+import { PostStatus, PostType } from '@prisma/client';
 
 /**
  * DTO for updating an existing publication.
@@ -36,4 +36,12 @@ export class UpdatePublicationDto {
   @IsString()
   @IsOptional()
   public translationGroupId?: string;
+
+  @IsEnum(PostType)
+  @IsOptional()
+  public postType?: PostType;
+
+  @IsString()
+  @IsOptional()
+  public linkToPublicationId?: string;
 }

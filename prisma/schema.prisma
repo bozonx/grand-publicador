@@ -138,6 +138,8 @@ model Publication {
   tags       String?
   // Publication status (DRAFT, SCHEDULED, PUBLISHED, etc.)
   status     PostStatus @default(DRAFT)
+  // Type of post (POST, ARTICLE, VIDEO, etc.) - master type for distribution
+  postType   PostType   @default(POST) @map("post_type")
   // Language of the publication (ru-RU, en-US, etc.)
   language   String    @default("ru-RU")
   // ID for linking translations of the same content
