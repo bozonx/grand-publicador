@@ -167,14 +167,9 @@ curl -X POST http://localhost:8080/api/v1/auth/telegram \
 - **Publications**: `/api/v1/publications` - управление публикациями
 - **Posts**: `/api/v1/posts` - управление постами
 
-**Automation API** (для автоматической публикации по расписанию):
-- `GET /api/v1/publications/automation/pending` - получить посты готовые к публикации
-- `POST /api/v1/publications/automation/:id/claim` - забрать пост для публикации
-- `PATCH /api/v1/publications/automation/:id/status` - обновить статус после публикации
-
 **Создание API токенов**: Пользователи создают API токены через Настройки > API Tokens в UI.
 
-Подробнее см. [API Documentation](docs/api-external.md)
+Подробнее см. [API Documentation](docs/api-frontend.md)
 
 ### Archive API (требует JWT auth)
 Для управления архивированным контентом с виртуальным каскадированием:

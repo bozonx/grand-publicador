@@ -48,7 +48,7 @@ describe('ProjectsService (unit)', () => {
     service = moduleRef.get<ProjectsService>(ProjectsService);
 
     // Silence logger for tests
-    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
+    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => { });
   });
 
   afterAll(async () => {
@@ -109,12 +109,19 @@ describe('ProjectsService (unit)', () => {
           name: 'Project 1',
           members: [{ userId, role: 'OWNER' }],
           _count: { channels: 5 },
+          channels: [
+            {
+              _count: { posts: 1 },
+              posts: [{ createdAt: new Date('2024-01-01') }]
+            },
+          ],
         },
         {
           id: 'project-2',
           name: 'Project 2',
           members: [{ userId, role: 'EDITOR' }],
           _count: { channels: 2 },
+          channels: [],
         },
       ];
 
@@ -128,12 +135,16 @@ describe('ProjectsService (unit)', () => {
         role: 'owner',
         channelCount: 5,
         memberCount: 1,
+        postCount: 1,
       });
+      expect(result[0].lastPostAt).toBeInstanceOf(Date);
       expect(result[1]).toMatchObject({
         id: 'project-2',
         role: 'editor',
         channelCount: 2,
         memberCount: 1,
+        postCount: 0,
+        lastPostAt: null,
       });
     });
   });
@@ -160,6 +171,8 @@ describe('ProjectsService (unit)', () => {
         role: 'editor',
         channelCount: 0,
         memberCount: 0,
+        postCount: 0,
+        lastPostAt: null,
       });
     });
 

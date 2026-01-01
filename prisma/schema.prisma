@@ -143,6 +143,23 @@ model Post {
   @@map("posts")
 }
 
+model ApiToken {
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  name            String
+  hashedToken     String    @unique @map("hashed_token")
+  encryptedToken  String    @map("encrypted_token")
+  scopeProjectIds String    @default("[]") @map("scope_project_ids")
+  lastUsedAt      DateTime? @map("last_used_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("api_tokens")
+}
+
 enum ProjectRole {
   OWNER
   ADMIN
@@ -177,21 +194,4 @@ enum PostStatus {
   PUBLISHED
   FAILED
   EXPIRED
-}
-
-model ApiToken {
-  id              String    @id @default(uuid())
-  userId          String    @map("user_id")
-  name            String
-  hashedToken     String    @unique @map("hashed_token")
-  encryptedToken  String    @map("encrypted_token")
-  scopeProjectIds String    @default("[]") @map("scope_project_ids")
-  lastUsedAt      DateTime? @map("last_used_at")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@map("api_tokens")
 }

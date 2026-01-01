@@ -19,7 +19,6 @@ import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
 import { ApiTokenGuard } from '../../common/guards/api-token.guard.js';
 import { JwtOrApiTokenGuard } from '../../common/guards/jwt-or-api-token.guard.js';
 import type { UnifiedAuthRequest } from '../../common/types/unified-auth-request.interface.js';
-import { AutomationService } from '../automation/automation.service.js';
 import { CreatePostsDto, CreatePublicationDto, UpdatePublicationDto } from './dto/index.js';
 import { PublicationsService } from './publications.service.js';
 
@@ -29,10 +28,7 @@ import { PublicationsService } from './publications.service.js';
 @Controller('publications')
 @UseGuards(JwtOrApiTokenGuard)
 export class PublicationsController {
-  constructor(
-    private readonly publicationsService: PublicationsService,
-    private readonly automationService: AutomationService,
-  ) { }
+  constructor(private readonly publicationsService: PublicationsService) { }
 
   /**
    * Create a new publication.
@@ -118,48 +114,5 @@ export class PublicationsController {
     );
   }
 
-  /**
-   * Get posts that are ready to be published (Automation API)
-   * GET /api/v1/publications/automation/pending?limit=10
-   * Only returns posts from projects within the token's scope
-   */
-  @Get('automation/pending')
-  public async getPendingPosts(
-    @Request() req: UnifiedAuthRequest,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-    @Query('lookback', new DefaultValuePipe(60), ParseIntPipe) lookback: number,
-  ) {
-    const scopeProjectIds = req.user.scopeProjectIds || [];
-    return this.automationService.getPendingPosts(limit, lookback, req.user.userId, scopeProjectIds);
-  }
 
-  /**
-   * Claim a post for publishing (Automation API - atomic operation)
-   * POST /api/v1/publications/automation/:id/claim
-   */
-  @Post('automation/:id/claim')
-  public async claimPost(@Request() req: UnifiedAuthRequest, @Param('id') id: string) {
-    const scopeProjectIds = req.user.scopeProjectIds || [];
-    return this.automationService.claimPost(id, req.user.userId, scopeProjectIds);
-  }
-
-  /**
-   * Update post status after publishing (Automation API)
-   * PATCH /api/v1/publications/automation/:id/status
-   */
-  @Patch('automation/:id/status')
-  public async updatePostStatus(
-    @Request() req: UnifiedAuthRequest,
-    @Param('id') id: string,
-    @Body() dto: { status: PostStatus; error?: string },
-  ) {
-    const scopeProjectIds = req.user.scopeProjectIds || [];
-    return this.automationService.updatePostStatus(
-      id,
-      dto.status,
-      req.user.userId,
-      scopeProjectIds,
-      dto.error,
-    );
-  }
 }
