@@ -41,14 +41,17 @@
     "sortOrder": {
       "asc": "Ascending",
       "desc": "Descending"
-    }
+    },
+    "language": "Language",
+    "showArchived": "Show Archived",
+    "hideArchived": "Hide Archived"
   },
   "navigation": {
     "home": "Home",
     "dashboard": "Dashboard",
     "projects": "Projects",
     "channels": "Channels",
-    "posts": "Posts",
+    "publications": "Publications",
     "users": "Users",
     "settings": "Settings",
     "admin": "Administration",
@@ -160,7 +163,8 @@
     "sort": {
       "alphabetical": "Alphabetical",
       "activity": "Active first",
-      "socialMedia": "By Social Media"
+      "socialMedia": "By Social Media",
+      "language": "By Language"
     },
     "name": "Channel name",
     "namePlaceholder": "Enter channel name",
@@ -176,6 +180,10 @@
     "identifierHelpX": "Account username, e.g. {'@'}username",
     "identifierHelpFacebook": "Page username, e.g. page_username",
     "identifierHelpSite": "Website URL, e.g. https://example.com",
+    "identifierHelpLinkedin": "Page username, e.g. company-name",
+    "language": "Channel language",
+    "languagePlaceholder": "Select or enter language",
+    "languageHelp": "Content language of the channel (e.g., ru-RU, en-US)",
     "selected": "selected",
     "isActive": "Active",
     "isActiveHelp": "Deactivated channels are not used for publishing",
@@ -206,8 +214,7 @@
     "control": "Channel Control",
     "control_desc": "Activate or deactivate this channel for posting",
     "deactivate_warning": "Deactivating the channel will stop all scheduled posts.",
-    "activate_info": "Activating the channel will resume posting for scheduled posts.",
-    "archiveConfirm": "Are you sure you want to archive this channel? All associated posts will also be hidden."
+    "activate_info": "Activating the channel will resume posting for scheduled posts."
   },
   "socialMedia": {
     "telegram": "Telegram",
@@ -272,7 +279,15 @@
     "editDescription": "Update your publication content",
     "channelsHelp": "Select channels to create posts immediately",
     "deleted": "Publication deleted successfully",
-    "selectChannels": "Select channels"
+    "selectChannels": "Select channels",
+    "languageMismatch": "Language mismatch! Publication language differs from channel language",
+    "noChannels": "No channels available. Create a channel first to publish.",
+    "linkTranslation": "Link as Translation of",
+    "linkTranslationHelp": "Select a publication to link this one as a translation version.",
+    "linked": "Linked to a group",
+    "selectToLink": "Select to link...",
+    "noPublicationsFound": "No publications found",
+    "noPublicationsDescription": "You don't have any publications yet."
   },
   "postType": {
     "post": "Post",
@@ -302,7 +317,25 @@
     "lightTheme": "Light",
     "darkTheme": "Dark",
     "systemTheme": "System",
-    "themeNote": "System theme will automatically adapt to your device settings."
+    "themeNote": "System theme will automatically adapt to your device settings.",
+    "syncName": "Sync name from Telegram",
+    "noNameFound": "Could not determine name from Telegram",
+    "syncedSuccess": "Profile synced with Telegram",
+    "syncError": "Failed to sync name",
+    "apiTokensDescription": "Manage API tokens for external integrations",
+    "createToken": "Create token",
+    "editToken": "Edit token",
+    "tokenName": "Token name",
+    "limitToProjects": "Limit to specific projects",
+    "selectProjects": "Select projects",
+    "allProjects": "All projects",
+    "selectedProjects": "Selected projects",
+    "scope": "Access scope",
+    "created": "Created",
+    "lastUsed": "Last used",
+    "neverUsed": "Never used",
+    "noTokens": "You don't have any API tokens yet",
+    "confirmDeleteToken": "Are you sure you want to delete this token?"
   },
   "validation": {
     "required": "This field is required",
