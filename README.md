@@ -11,7 +11,7 @@
 - [Запуск в режиме разработки](#-запуск-в-режиме-разработки)
 - [Продакшн развертывание](#-продакшн-развертывание)
 - [Конфигурация](#-конфигурация)
-- [Архитектура проекта](#-архитектура-проекта)
+- [Структура проекта](#-структура-проекта)
 - [Принцип работы](#-принцип-работы)
 - [API документация](#-api-документация)
 - [Тестирование](#-тестирование)
@@ -333,75 +333,54 @@ logging:
 | `VITE_DEV_MODE` | Нет | Режим разработки без Telegram | `true`, `false` |
 | `VITE_DEV_TELEGRAM_ID` | Нет | Mock Telegram ID для dev | `123456789` |
 
-## 🏗 Архитектура проекта
+## 🏗 Структура проекта
 
 ```
 grand-publicador/
 ├── src/                          # Backend (NestJS)
 │   ├── common/                   # Общие утилиты, guards, decorators
-│   │   ├── constants/            # Константы приложения
-│   │   ├── decorators/           # Кастомные декораторы
-│   │   ├── guards/               # Guards для аутентификации
-│   │   ├── pipes/                # Validation pipes
-│   │   └── types/                # Общие типы
 │   ├── config/                   # Конфигурация приложения
-│   ├── modules/                  # Модули приложения
+│   ├── modules/                  # Бизнес-модули
 │   │   ├── api-tokens/           # Управление API токенами
 │   │   ├── archive/              # Система архивирования
 │   │   ├── auth/                 # Аутентификация
 │   │   ├── automation/           # Автоматизация публикаций
 │   │   ├── channels/             # Управление каналами
-│   │   ├── health/               # Health check
 │   │   ├── posts/                # Управление постами
-│   │   ├── prisma/               # Prisma сервис
 │   │   ├── projects/             # Управление проектами
 │   │   ├── publications/         # Управление публикациями
-│   │   ├── system-config/        # Системная конфигурация
 │   │   └── users/                # Управление пользователями
-│   ├── app.module.ts             # Главный модуль приложения
-│   └── main.ts                   # Точка входа приложения
+│   ├── app.module.ts             # Главный модуль
+│   └── main.ts                   # Точка входа
 │
 ├── ui/                           # Frontend (Nuxt 4)
-│   ├── app/                      # Исходный код приложения
+│   ├── app/
 │   │   ├── components/           # Vue компоненты
-│   │   │   ├── channels/         # Компоненты каналов
-│   │   │   ├── posts/            # Компоненты постов
-│   │   │   ├── projects/         # Компоненты проектов
-│   │   │   └── ui/               # UI компоненты
-│   │   ├── composables/          # Composables (useAuth, useProjects, и т.д.)
-│   │   ├── layouts/              # Layouts приложения
+│   │   ├── composables/          # Переиспользуемая логика
 │   │   ├── pages/                # Страницы (роутинг)
 │   │   ├── stores/               # Pinia stores
-│   │   ├── types/                # TypeScript типы
 │   │   └── utils/                # Утилиты
-│   ├── public/                   # Статические файлы
-│   ├── i18n/                     # Файлы локализации
-│   └── nuxt.config.ts            # Конфигурация Nuxt
+│   └── nuxt.config.ts
 │
-├── prisma/                       # Prisma схема и миграции
-│   ├── migrations/               # Миграции базы данных
-│   ├── schema.prisma             # Схема базы данных
-│   └── seed.ts                   # Seed данные
+├── prisma/                       # База данных
+│   ├── migrations/               # Миграции
+│   ├── schema.prisma             # Схема БД
+│   └── seed.ts                   # Тестовые данные
 │
 ├── test/                         # Тесты
 │   ├── unit/                     # Unit тесты
 │   └── e2e/                      # E2E тесты
 │
 ├── docker/                       # Docker конфигурация
-│   ├── Dockerfile                # Dockerfile для продакшн
-│   └── docker-compose.yml        # Docker Compose конфигурация
 │
-├── docs/                         # Документация
-│   ├── API.md                    # API документация
-│   ├── CONFIGURATION.md          # Документация конфигурации
-│   └── DEPLOYMENT.md             # Руководство по развертыванию
-│
-├── .env.development.example      # Пример env для разработки
-├── .env.production.example       # Пример env для продакшн
-├── prisma-wrapper.mjs            # Обертка для Prisma CLI
-├── package.json                  # Backend зависимости
-└── README.md                     # Этот файл
+└── docs/                         # Документация
+    ├── API.md                    # API документация
+    ├── ARCHITECTURE.md           # Архитектура проекта
+    ├── CONFIGURATION.md          # Конфигурация
+    └── DEPLOYMENT.md             # Развертывание
 ```
+
+**Подробная архитектура:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ## 🔄 Принцип работы
 
@@ -663,6 +642,7 @@ Ivan K
 
 **Полезные ссылки:**
 - [API документация](docs/API.md)
+- [Архитектура проекта](docs/ARCHITECTURE.md)
 - [Конфигурация](docs/CONFIGURATION.md)
 - [Развертывание](docs/DEPLOYMENT.md)
 - [NestJS документация](https://docs.nestjs.com/)
