@@ -2,9 +2,7 @@
 import type { Database } from '~/types/database.types'
 import type { PostWithRelations, PostCreateInput, PostUpdateInput } from '~/composables/usePosts'
 import type { ChannelWithProject } from '~/composables/useChannels'
-
-type PostStatusEnum = Database['public']['Enums']['post_status_enum']
-type PostTypeEnum = Database['public']['Enums']['post_type_enum']
+import type { PostStatus, PostType } from '~/types/posts'
 
 interface Props {
   /** Project ID for fetching channels */

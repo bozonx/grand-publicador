@@ -1,5 +1,4 @@
-
-export type SocialMedia = 'TELEGRAM' | 'INSTAGRAM' | 'VK' | 'YOUTUBE' | 'TIKTOK' | 'X' | 'FACEBOOK' | 'LINKEDIN' | 'SITE'
+import type { SocialMedia } from '~/types/socialMedia'
 
 export const SOCIAL_MEDIA_COLORS: Record<string, string> = {
     TELEGRAM: '#0088cc',
@@ -47,4 +46,18 @@ export function getSocialMediaIcon(socialMedia: SocialMedia | string): string {
 
 export function getSocialMediaDisplayName(socialMedia: SocialMedia | string, t: (key: string) => string): string {
     return t(`socialMedia.${socialMedia.toLowerCase()}`)
+}
+
+export function getSocialMediaOptions(t: (key: string) => string) {
+    return [
+        { value: 'TELEGRAM', label: t('socialMedia.telegram') },
+        { value: 'INSTAGRAM', label: t('socialMedia.instagram') },
+        { value: 'VK', label: t('socialMedia.vk') },
+        { value: 'YOUTUBE', label: t('socialMedia.youtube') },
+        { value: 'TIKTOK', label: t('socialMedia.tiktok') },
+        { value: 'X', label: t('socialMedia.x') },
+        { value: 'FACEBOOK', label: t('socialMedia.facebook') },
+        { value: 'LINKEDIN', label: t('socialMedia.linkedin') },
+        { value: 'SITE', label: t('socialMedia.site') },
+    ]
 }

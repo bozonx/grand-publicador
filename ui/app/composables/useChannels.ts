@@ -1,55 +1,11 @@
 import { ref, computed } from 'vue'
 import { ArchiveEntityType } from '~/types/archive.types'
-import { getSocialMediaColor as getColorBase, getSocialMediaIcon as getIconBase } from '~/utils/socialMedia'
+import { getSocialMediaColor as getColorBase, getSocialMediaIcon as getIconBase, getSocialMediaOptions } from '~/utils/socialMedia'
+import type { SocialMedia } from '~/types/socialMedia'
+import type { Channel, ChannelWithProject, ChannelCreateInput, ChannelUpdateInput, ChannelsFilter } from '~/types/channels'
 
-export type SocialMedia = 'TELEGRAM' | 'INSTAGRAM' | 'VK' | 'YOUTUBE' | 'TIKTOK' | 'X' | 'FACEBOOK' | 'LINKEDIN' | 'SITE'
-
-export interface Channel {
-    id: string
-    projectId: string
-    socialMedia: SocialMedia
-    name: string
-    channelIdentifier: string
-    language: string
-    isActive: boolean
-    archivedAt?: string | null
-    createdAt: string
-    updatedAt: string
-}
-
-export interface ChannelWithProject extends Channel {
-    project?: {
-        id: string
-        name: string
-    } | null
-    postsCount?: number
-    lastPostAt?: string
-}
-
-export interface ChannelCreateInput {
-    projectId: string
-    name: string
-    socialMedia: SocialMedia
-    channelIdentifier: string
-    language: string
-    isActive?: boolean
-    credentials?: Record<string, any>
-}
-
-export interface ChannelUpdateInput {
-    name?: string
-    channelIdentifier?: string
-    language?: string
-    isActive?: boolean
-}
-
-export interface ChannelsFilter {
-    projectId?: string
-    socialMedia?: SocialMedia | null
-    isActive?: boolean | null
-    search?: string
-    includeArchived?: boolean
-}
+export type { SocialMedia }
+export type { Channel, ChannelWithProject, ChannelCreateInput, ChannelUpdateInput, ChannelsFilter }
 
 export function useChannels() {
     const api = useApi()
@@ -63,22 +19,7 @@ export function useChannels() {
     const error = ref<string | null>(null)
     const filter = ref<ChannelsFilter>({})
 
-    const socialMediaOptions = computed(() => {
-        const options: { value: SocialMedia; label: string }[] = [
-            { value: 'TELEGRAM', label: t('socialMedia.telegram') },
-            { value: 'INSTAGRAM', label: t('socialMedia.instagram') },
-            { value: 'VK', label: t('socialMedia.vk') },
-            { value: 'YOUTUBE', label: t('socialMedia.youtube') },
-            { value: 'TIKTOK', label: t('socialMedia.tiktok') },
-            { value: 'X', label: t('socialMedia.x') },
-            { value: 'FACEBOOK', label: t('socialMedia.facebook') },
-            { value: 'LINKEDIN', label: t('socialMedia.linkedin') },
-            { value: 'SITE', label: t('socialMedia.site') },
-        ]
-        return options
-    })
-
-
+    const socialMediaOptions = computed(() => getSocialMediaOptions(t))
 
     async function fetchChannels(projectId?: string): Promise<ChannelWithProject[]> {
         isLoading.value = true

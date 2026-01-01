@@ -4,6 +4,8 @@ import type { ChannelWithProject } from '~/composables/useChannels'
 import { usePublications } from '~/composables/usePublications'
 import { usePosts } from '~/composables/usePosts'
 
+import type { PostStatus, PostType } from '~/types/posts'
+
 interface Props {
   /** Project ID for fetching channels */
   projectId: string
@@ -31,7 +33,7 @@ const {
   getSocialMediaIcon,
   getSocialMediaColor
 } = useChannels()
-const { typeOptions } = usePosts()
+const { typeOptions, statusOptions: allStatusOptions } = usePosts()
 const router = useRouter()
 
 // Form state
@@ -39,8 +41,8 @@ const formData = reactive({
   title: props.publication?.title || '',
   content: props.publication?.content || '',
   tags: props.publication?.tags || '',
-  postType: props.publication?.postType || 'POST',
-  status: (props.publication?.status || 'DRAFT') as 'DRAFT' | 'SCHEDULED',
+  postType: (props.publication?.postType || 'POST') as PostType,
+  status: (props.publication?.status || 'DRAFT') as PostStatus,
   scheduledAt: '',
   language: props.publication?.language || 'en-US',
   channelIds: props.publication?.posts?.map((p: any) => p.channelId) || [] as string[],
@@ -91,10 +93,9 @@ const channelOptions = computed(() => {
 })
 
 // Status options
-const statusOptions = [
-  { value: 'DRAFT', label: t('postStatus.draft') },
-  { value: 'SCHEDULED', label: t('postStatus.scheduled') },
-]
+const statusOptions = computed(() => {
+  return allStatusOptions.value.filter((opt) => ['DRAFT', 'SCHEDULED'].includes(opt.value as string))
+})
 
 const { languageOptions } = useLanguages()
 

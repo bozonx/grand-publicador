@@ -1,8 +1,15 @@
 import { ref, computed } from 'vue'
 import { ArchiveEntityType } from '~/types/archive.types'
+import type { PostStatus, PostType } from '~/types/posts'
+import {
+    getPostStatusOptions,
+    getPostTypeOptions,
+    getPostStatusDisplayName,
+    getPostTypeDisplayName,
+    getPostStatusColor
+} from '~/utils/posts'
 
-export type PostStatus = 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'FAILED'
-export type PostType = 'POST' | 'ARTICLE' | 'NEWS' | 'VIDEO' | 'SHORT'
+export type { PostStatus, PostType } from '~/types/posts'
 
 export interface Post {
     id: string
@@ -286,42 +293,8 @@ export function usePosts() {
     }
 
     // Constants
-    const statusOptions = computed(() => [
-        { value: 'DRAFT', label: t('postStatus.draft') },
-        { value: 'SCHEDULED', label: t('postStatus.scheduled') },
-        { value: 'PUBLISHED', label: t('postStatus.published') },
-        { value: 'FAILED', label: t('postStatus.failed') },
-    ])
-
-    const typeOptions = computed(() => [
-        { value: 'POST', label: t('postType.post') },
-        { value: 'ARTICLE', label: t('postType.article') },
-        { value: 'NEWS', label: t('postType.news') },
-        { value: 'VIDEO', label: t('postType.video') },
-        { value: 'SHORT', label: t('postType.short') },
-    ])
-
-    // Helpers
-    function getStatusDisplayName(status: string): string {
-        if (!status) return '-'
-        return t(`postStatus.${status.toLowerCase()}`)
-    }
-
-    function getTypeDisplayName(type: string): string {
-        if (!type) return '-'
-        return t(`postType.${type.toLowerCase()}`)
-    }
-
-    function getStatusColor(status: string): 'neutral' | 'warning' | 'success' | 'error' {
-        if (!status) return 'neutral'
-        const colors: Record<string, 'neutral' | 'warning' | 'success' | 'error'> = {
-            draft: 'neutral',
-            scheduled: 'warning',
-            published: 'success',
-            failed: 'error',
-        }
-        return colors[status.toLowerCase()] || 'neutral'
-    }
+    const statusOptions = computed(() => getPostStatusOptions(t))
+    const typeOptions = computed(() => getPostTypeOptions(t))
 
     function canDelete(post: PostWithRelations): boolean {
         if (!user.value) return false
@@ -359,9 +332,9 @@ export function usePosts() {
         setFilter,
         clearFilter,
         setPage,
-        getStatusDisplayName,
-        getTypeDisplayName,
-        getStatusColor,
+        getStatusDisplayName: (status: string) => getPostStatusDisplayName(status, t),
+        getTypeDisplayName: (type: string) => getPostTypeDisplayName(type, t),
+        getStatusColor: getPostStatusColor,
         canDelete,
         canEdit,
         async toggleArchive(postId: string) {
