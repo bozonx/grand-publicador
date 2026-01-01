@@ -42,7 +42,7 @@ const isWarningActive = computed(() => {
 <template>
   <NuxtLink
     :to="`/projects/${project.id}`"
-    class="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100 dark:border-gray-700"
+    class="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all cursor-pointer border border-gray-100 dark:border-gray-700"
     :class="{ 'opacity-75 grayscale-[0.5]': project.archivedAt }"
   >
     <div class="p-3 sm:p-3.5">
