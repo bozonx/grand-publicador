@@ -1,30 +1,36 @@
 <script setup lang="ts">
+import type { ProjectWithRole } from '~/stores/projects'
+
 definePageMeta({
   middleware: 'auth',
 })
 
 const { t } = useI18n()
 const router = useRouter()
-const { projects, isLoading, error, fetchProjects, canEdit, canDelete } =
+const { projects, isLoading, error, fetchProjects, fetchArchivedProjects, canEdit, canDelete } =
   useProjects()
-// const { archiveEntity, restoreEntity, deletePermanently } = useArchive() // No longer used in list view
-// const { ArchiveEntityType } = await import('~/types/archive.types')
 
-// Delete confirmation modal state - REMOVED as actions are only in settings now
-// const showDeleteModal = ref(false)
-// const targetProjectId = ref<string | null>(null)
-// const deleteMode = ref<'archive' | 'delete'>('archive') 
-// const isDeleting = ref(false)
+const archivedProjects = ref<ProjectWithRole[]>([])
 const showArchived = ref(false)
+const isLoadingArchived = ref(false)
 
-// Fetch projects on mount
+// Fetch active projects on mount
 onMounted(() => {
-  fetchProjects(showArchived.value)
+  fetchProjects(false)
 })
 
-watch(showArchived, (newVal) => {
-    fetchProjects(newVal)
-})
+/**
+ * Toggle archived projects visibility
+ */
+async function toggleArchivedProjects() {
+  showArchived.value = !showArchived.value
+  
+  if (showArchived.value && archivedProjects.value.length === 0) {
+    isLoadingArchived.value = true
+    archivedProjects.value = await fetchArchivedProjects()
+    isLoadingArchived.value = false
+  }
+}
 
 /**
  * Navigate to create project page
@@ -56,19 +62,11 @@ function goToEditProject(projectId: string) {
         </p>
       </div>
       <div class="flex items-center gap-4">
-        <USwitch 
-          v-model="showArchived" 
-          label="Показать архивные"
-          color="primary"
-        />
-
         <UButton icon="i-heroicons-plus" @click="goToCreateProject">
             {{ t('project.createProject') }}
         </UButton>
       </div>
     </div>
-
-
 
     <!-- Error state -->
     <div
@@ -103,6 +101,34 @@ function goToEditProject(projectId: string) {
         :project="project"
         :show-description="true"
       />
+      
+      <!-- Show/Hide Archived Button -->
+      <div class="flex justify-center pt-4">
+        <UButton
+          :icon="showArchived ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'"
+          variant="ghost"
+          color="neutral"
+          @click="toggleArchivedProjects"
+          :loading="isLoadingArchived"
+        >
+          {{ showArchived ? 'Скрыть архивные' : 'Показать архивные' }}
+        </UButton>
+      </div>
+
+      <!-- Archived Projects Section -->
+      <div v-if="showArchived" class="space-y-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div v-if="archivedProjects.length > 0">
+          <ProjectsProjectListItem
+            v-for="project in archivedProjects"
+            :key="project.id"
+            :project="project"
+            :show-description="true"
+          />
+        </div>
+        <div v-else class="text-center py-8">
+          <p class="text-gray-500 dark:text-gray-400">Нет архивных проектов</p>
+        </div>
+      </div>
     </div>
 
     <!-- Empty state -->

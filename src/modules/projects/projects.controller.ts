@@ -68,6 +68,25 @@ export class ProjectsController {
     return projects;
   }
 
+  @Get('archived')
+  public async findArchived(
+    @Request() req: UnifiedAuthRequest,
+    @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit?: number,
+    @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset?: number,
+  ) {
+    const projects = await this.projectsService.findArchivedForUser(req.user.userId, {
+      limit,
+      offset,
+    });
+
+    // Filter projects based on token scope
+    if (req.user.scopeProjectIds && req.user.scopeProjectIds.length > 0) {
+      return projects.filter(p => req.user.scopeProjectIds!.includes(p.id));
+    }
+
+    return projects;
+  }
+
   @Get(':id')
   public async findOne(@Request() req: UnifiedAuthRequest, @Param('id') id: string) {
     // Validate project scope for API token users
@@ -97,6 +116,7 @@ export class ProjectsController {
 
     return this.projectsService.update(id, req.user.userId, updateProjectDto);
   }
+
   @Delete(':id')
   public async remove(@Request() req: UnifiedAuthRequest, @Param('id') id: string) {
     // Validate project scope for API token users

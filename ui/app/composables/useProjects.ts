@@ -37,6 +37,28 @@ export function useProjects() {
         }
     }
 
+    async function fetchArchivedProjects(): Promise<ProjectWithRole[]> {
+        store.setLoading(true)
+        store.setError(null)
+
+        try {
+            const data = await api.get<ProjectWithRole[]>('/projects/archived')
+            return data
+        } catch (err: any) {
+            const message = err.message || 'Failed to fetch archived projects'
+            store.setError(message)
+            toast.add({
+                title: t('common.error'),
+                description: message,
+                color: 'error',
+            })
+            return []
+        } finally {
+            store.setLoading(false)
+        }
+    }
+
+
     async function fetchProject(projectId: string): Promise<ProjectWithRole | null> {
         store.setLoading(true)
         store.setError(null)
@@ -297,6 +319,7 @@ export function useProjects() {
         isLoading,
         error,
         fetchProjects,
+        fetchArchivedProjects,
         fetchProject,
         createProject,
         updateProject,
@@ -313,4 +336,5 @@ export function useProjects() {
         canManageMembers,
         getRoleDisplayName,
     }
+
 }

@@ -143,6 +143,92 @@ export class ProjectsService {
   }
 
   /**
+   * Returns all archived projects for the user.
+   * Filters projects where the user is a member and the project is archived.
+   * Sorted by archival date (newest first).
+   *
+   * @param userId - The ID of the user.
+   * @param options - Pagination options.
+   * @returns A list of archived projects.
+   */
+  public async findArchivedForUser(
+    userId: string,
+    options?: { limit?: number; offset?: number },
+  ) {
+    const take = options?.limit ?? 50;
+    const skip = options?.offset ?? 0;
+
+    const projects = await this.prisma.project.findMany({
+      where: {
+        archivedAt: { not: null },
+        members: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+      include: {
+        members: true,
+        _count: {
+          select: {
+            channels: { where: { archivedAt: null } },
+            publications: { where: { archivedAt: null } },
+          },
+        },
+        publications: {
+          where: { archivedAt: null },
+          take: 1,
+          orderBy: { createdAt: 'desc' },
+          select: { createdAt: true },
+        },
+        channels: {
+          where: { archivedAt: null },
+          include: {
+            _count: {
+              select: { posts: true },
+            },
+            posts: {
+              where: { archivedAt: null },
+              take: 1,
+              orderBy: { createdAt: 'desc' },
+              select: { createdAt: true },
+            },
+          },
+        },
+      },
+      take,
+      skip,
+      orderBy: { archivedAt: 'desc' },
+    });
+
+    return projects.map(project => {
+      const userMember = project.members.find(m => m.userId === userId);
+
+      const lastPublicationAt = project.publications[0]?.createdAt || null;
+
+      const mappedChannels = project.channels.map(channel => ({
+        ...channel,
+        postsCount: channel._count.posts,
+        lastPostAt: channel.posts[0]?.createdAt || null,
+      }));
+
+      // Clean up channels from response to avoid bloating
+      const { channels: _, publications: __, ...projectData } = project;
+
+      return {
+        ...projectData,
+        channels: mappedChannels,
+        role: userMember?.role?.toLowerCase(),
+        channelCount: project._count.channels,
+        publicationsCount: project._count.publications,
+        memberCount: project.members.length,
+        lastPublicationAt,
+      };
+    });
+  }
+
+
+  /**
    * Find one project by ID with security check.
    * Verifies that the user is a member of the project before returning it.
    *
