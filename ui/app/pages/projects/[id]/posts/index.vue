@@ -38,6 +38,7 @@ const selectedStatus = ref<PostStatus | null>(null)
 const selectedType = ref<PostType | null>(null)
 const selectedChannel = ref<string | null>(null)
 const searchQuery = ref('')
+const showArchived = ref(false)
 
 // Delete modal state
 const showDeleteModal = ref(false)
@@ -47,17 +48,18 @@ const isDeleting = ref(false)
 // Fetch data on mount
 onMounted(async () => {
   if (projectId.value) {
-    await Promise.all([fetchChannels(projectId.value), fetchPostsByProject(projectId.value)])
+    await Promise.all([fetchChannels(projectId.value), fetchPostsByProject(projectId.value, { includeArchived: showArchived.value })])
   }
 })
 
 // Watch for filter changes
-watch([selectedStatus, selectedType, selectedChannel, searchQuery], () => {
+watch([selectedStatus, selectedType, selectedChannel, searchQuery, showArchived], () => {
   setFilter({
     status: selectedStatus.value || null,
     postType: selectedType.value || null,
     channelId: selectedChannel.value || null,
     search: searchQuery.value || undefined,
+    includeArchived: showArchived.value
   })
   fetchPostsByProject(projectId.value)
 })
@@ -284,6 +286,20 @@ const hasActiveFilters = computed(() => {
         </UButton>
       </div>
     </div>
+    
+    <!-- Archived Toggle -->
+    <div class="flex items-center justify-end mb-4 px-1">
+        <UToggle 
+            v-model="showArchived" 
+            color="primary"
+        >
+             <template #label>
+                 <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('common.showArchived', 'Show Archived') }}</span>
+             </template>
+        </UToggle>
+    </div>
+    
+
 
     <!-- Error state -->
     <div
@@ -340,6 +356,7 @@ const hasActiveFilters = computed(() => {
         v-for="post in posts"
         :key="post.id"
         class="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
+        :class="{ 'opacity-75 grayscale-[0.5]': post.archivedAt }"
         @click="goToPost(post.id)"
       >
         <div class="p-4 sm:p-6">

@@ -32,6 +32,7 @@ function formatDate(date: string | null | undefined): string {
   <NuxtLink
     :to="`/projects/${project.id}`"
     class="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100 dark:border-gray-700"
+    :class="{ 'opacity-75 grayscale-[0.5]': project.archivedAt }"
   >
     <div class="p-4 sm:p-5">
       <div class="flex items-start justify-between gap-4">
@@ -86,6 +87,8 @@ function formatDate(date: string | null | undefined): string {
                 {{ t('project.lastPublication', 'Last publication') }}: {{ formatDate(project.lastPublicationAt) }}
              </span>
           </div>
+
+
         </div>
 
         <!-- Owner Avatar (optional visual cue) -->

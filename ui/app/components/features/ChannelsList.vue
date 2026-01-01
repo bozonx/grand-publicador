@@ -17,7 +17,7 @@ const {
   socialMediaOptions,
   getSocialMediaDisplayName,
   getSocialMediaIcon,
-  getSocialMediaColor,
+  getSocialMediaColor
 } = useChannels()
 
 // Local filter state
@@ -130,7 +130,9 @@ function formatDate(date: string | null | undefined): string {
       </h3>
       <p class="text-gray-500 dark:text-gray-400 mb-6">
         {{
-          statusFilter !== 'all'
+          showArchived && channels.length === 0
+            ? t('channel.noArchivedChannels', 'No archived channels found')
+            : statusFilter !== 'all'
             ? t('channel.noChannelsFiltered')
             : t('channel.noChannelsDescription')
         }}
@@ -151,6 +153,7 @@ function formatDate(date: string | null | undefined): string {
         :key="channel.id"
         :to="`/projects/${projectId}/channels/${channel.id}`"
         class="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100 dark:border-gray-700 p-4 sm:p-5"
+        :class="{ 'opacity-75 grayscale-[0.5]': channel.archivedAt }"
       >
         <div class="flex items-start justify-between gap-4">
             <div class="flex-1 min-w-0">
@@ -212,9 +215,11 @@ function formatDate(date: string | null | undefined): string {
                     </div>
                 </div>
             </div>
+            <!-- Actions removed as per request -->
         </div>
       </NuxtLink>
     </div>
+
 
   </div>
 </template>

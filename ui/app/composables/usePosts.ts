@@ -79,6 +79,9 @@ export interface PostsFilter {
     authorId?: string | null
     channelId?: string | null
     search?: string
+    limit?: number
+    page?: number
+    includeArchived?: boolean
 }
 
 export function usePosts() {
@@ -95,12 +98,20 @@ export function usePosts() {
     const filter = ref<PostsFilter>({})
     const totalCount = ref(0)
 
-    async function fetchPostsByProject(projectId: string): Promise<PostWithRelations[]> {
+    async function fetchPostsByProject(projectId: string, options?: Partial<PostsFilter>): Promise<PostWithRelations[]> {
         isLoading.value = true
         error.value = null
 
         try {
             const params: Record<string, any> = {}
+
+            // Merge explicit options into filter-derived params (or updating filter before?)
+            // A pattern used elsewhere: options are merged into params.
+            if (options?.includeArchived) {
+                params.includeArchived = true
+            }
+            if (options?.limit) params.limit = options.limit
+            if (options?.page) params.page = options.page
 
             // Apply filters
             if (filter.value.channelId) {
@@ -113,6 +124,18 @@ export function usePosts() {
             if (filter.value.postType) params.postType = filter.value.postType
             if (filter.value.search) params.search = filter.value.search
             if (filter.value.authorId) params.authorId = filter.value.authorId
+            if (filter.value.includeArchived) params.includeArchived = true
+
+            // Apply explicit options override if any (though fetchPostsByProject currently doesn't take 2nd arg)
+            // But we need to support it if the UI relies on it.
+            // Let's modify the signature to accept options? 
+            // The previous edit tried to pass { includeArchived: true } as 2nd arg.
+
+            // Re-signature:
+            // fetchPostsByProject(projectId: string, options?: Partial<PostsFilter>)
+
+            // Wait, this tool is replacement, not rewrite. I should verify if I can change signature easily.
+            // Yes, I can.
 
             const data = await api.get<PostWithRelations[]>('/posts', { params })
             posts.value = data

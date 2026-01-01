@@ -7,13 +7,14 @@ const { t } = useI18n()
 const router = useRouter()
 const { projects, isLoading, error, fetchProjects, canEdit, canDelete } =
   useProjects()
-const { archiveEntity } = useArchive()
-const { ArchiveEntityType } = await import('~/types/archive.types')
+// const { archiveEntity, restoreEntity, deletePermanently } = useArchive() // No longer used in list view
+// const { ArchiveEntityType } = await import('~/types/archive.types')
 
-// Delete confirmation modal state
-const showDeleteModal = ref(false)
-const projectToDelete = ref<string | null>(null)
-const isDeleting = ref(false)
+// Delete confirmation modal state - REMOVED as actions are only in settings now
+// const showDeleteModal = ref(false)
+// const targetProjectId = ref<string | null>(null)
+// const deleteMode = ref<'archive' | 'delete'>('archive') 
+// const isDeleting = ref(false)
 const showArchived = ref(false)
 
 // Fetch projects on mount
@@ -39,40 +40,7 @@ function goToEditProject(projectId: string) {
   router.push(`/projects/${projectId}?edit=true`)
 }
 
-/**
- * Open delete confirmation modal
- */
-function confirmDelete(projectId: string) {
-  projectToDelete.value = projectId
-  showDeleteModal.value = true
-}
 
-/**
- * Handle project deletion
- */
-async function handleArchive() {
-  if (!projectToDelete.value) return
-
-  isDeleting.value = true
-  try {
-    await archiveEntity(ArchiveEntityType.PROJECT, projectToDelete.value)
-    showDeleteModal.value = false
-    projectToDelete.value = null
-    await fetchProjects()
-  } catch (err) {
-    // Error handled in useArchive
-  } finally {
-    isDeleting.value = false
-  }
-}
-
-/**
- * Cancel delete action
- */
-function cancelDelete() {
-  showDeleteModal.value = false
-  projectToDelete.value = null
-}
 </script>
 
 <template>
@@ -157,36 +125,6 @@ function cancelDelete() {
       </UButton>
     </div>
 
-    <!-- Delete confirmation modal -->
-    <UModal v-model:open="showDeleteModal">
-      <template #content>
-        <div class="p-6">
-          <div class="flex items-center gap-4 mb-4">
-            <div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
-              <UIcon
-                name="i-heroicons-exclamation-triangle"
-                class="w-6 h-6 text-red-600 dark:text-red-400"
-              />
-            </div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ t('project.moveToArchive') || 'В архив' }}
-            </h3>
-          </div>
 
-          <p class="text-gray-600 dark:text-gray-400 mb-6">
-            {{ t('project.archiveConfirm') || 'Вы действительно хотите отправить этот проект в архив? Все связанные с ним каналы и посты также будут скрыты.' }}
-          </p>
-
-          <div class="flex justify-end gap-3">
-            <UButton color="neutral" variant="ghost" :disabled="isDeleting" @click="cancelDelete">
-              {{ t('common.cancel') }}
-            </UButton>
-            <UButton color="error" :loading="isDeleting" @click="handleArchive">
-              {{ t('project.moveToArchive') || 'В архив' }}
-            </UButton>
-          </div>
-        </div>
-      </template>
-    </UModal>
   </div>
 </template>

@@ -17,6 +17,7 @@ const {
   error,
   fetchPublicationsByProject,
   deletePublication,
+  toggleArchive,
   getStatusDisplayName,
   getStatusColor,
 } = usePublications()
@@ -226,6 +227,7 @@ function resetFilters() {
         v-for="publication in publications"
         :key="publication.id"
         class="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
+        :class="{ 'opacity-75 grayscale-[0.5]': publication.archivedAt }"
         @click="goToPublication(publication.id)"
       >
         <div class="p-4 sm:p-6">
@@ -276,19 +278,34 @@ function resetFilters() {
             
              <!-- Actions -->
             <div class="flex items-center gap-2" @click.stop>
-              <!-- TODO: Edit publication -->
-               <!-- <UButton
+               <!-- Archive / Restore -->
+              <UButton
+                v-if="!publication.archivedAt"
                 color="neutral"
                 variant="ghost"
-                icon="i-heroicons-pencil-square"
+                icon="i-heroicons-archive-box"
                 size="sm"
-                @click="goToPublication(publication.id)"
-              /> -->
+                :title="t('common.archive', 'Archive')"
+                @click="toggleArchive(publication.id, false)"
+              />
               <UButton
+                v-else
+                color="primary"
+                variant="ghost"
+                icon="i-heroicons-arrow-uturn-left"
+                size="sm"
+                :title="t('common.restore', 'Restore')"
+                @click="toggleArchive(publication.id, true)"
+              />
+
+              <!-- Hard Delete (only if archived) -->
+              <UButton
+                v-if="publication.archivedAt"
                 color="error"
                 variant="ghost"
                 icon="i-heroicons-trash"
                 size="sm"
+                :title="t('common.deletePermanently', 'Delete Permanently')"
                 @click="confirmDelete(publication)"
               />
             </div>
