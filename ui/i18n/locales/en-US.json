@@ -157,6 +157,11 @@
   "channel": {
     "title": "Channel",
     "titlePlural": "Channels",
+    "sort": {
+      "alphabetical": "Alphabetical",
+      "activity": "Active first",
+      "socialMedia": "By Social Media"
+    },
     "name": "Channel name",
     "namePlaceholder": "Enter channel name",
     "socialMedia": "Social media",

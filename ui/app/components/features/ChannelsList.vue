@@ -21,6 +21,64 @@ const {
   getSocialMediaColor
 } = useChannels()
 
+// Sorting
+interface SortOption {
+  id: string
+  label: string
+  icon: string
+}
+
+const sortOptions = computed<SortOption[]>(() => [
+  { id: 'alphabetical', label: t('channel.sort.alphabetical'), icon: 'i-heroicons-bars-3-bottom-left' },
+  { id: 'activity', label: t('channel.sort.activity'), icon: 'i-heroicons-bolt' },
+  { id: 'socialMedia', label: t('channel.sort.socialMedia'), icon: 'i-heroicons-share' }
+])
+
+const sortBy = ref(localStorage.getItem('channels-sort-by') || 'alphabetical')
+const sortOrder = ref<'asc' | 'desc'>((localStorage.getItem('channels-sort-order') as 'asc' | 'desc') || 'asc')
+
+watch(sortBy, (val) => localStorage.setItem('channels-sort-by', val))
+watch(sortOrder, (val) => localStorage.setItem('channels-sort-order', val))
+
+const socialMediaWeights: Record<string, number> = {
+  FACEBOOK: 1,
+  VK: 1,
+  YOUTUBE: 2,
+  TIKTOK: 2,
+  INSTAGRAM: 2,
+  TELEGRAM: 3,
+  X: 4,
+  LINKEDIN: 4,
+  SITE: 4
+}
+
+function sortChannels(list: ChannelWithProject[]) {
+  return [...list].sort((a, b) => {
+    let result = 0
+    if (sortBy.value === 'alphabetical') {
+      result = a.name.localeCompare(b.name)
+    } else if (sortBy.value === 'activity') {
+      // Active first (isActive: true)
+      const valA = a.isActive ? 1 : 0
+      const valB = b.isActive ? 1 : 0
+      result = valB - valA
+      // Sub-sort by name
+      if (result === 0) result = a.name.localeCompare(b.name)
+    } else if (sortBy.value === 'socialMedia') {
+      const weightA = socialMediaWeights[a.socialMedia] || 99
+      const weightB = socialMediaWeights[b.socialMedia] || 99
+      result = weightA - weightB
+      // Sub-sort by name
+      if (result === 0) result = a.name.localeCompare(b.name)
+    }
+
+    return sortOrder.value === 'asc' ? result : -result
+  })
+}
+
+const currentSortOption = computed(() => sortOptions.value.find(opt => opt.id === sortBy.value))
+const sortedChannels = computed(() => sortChannels(channels.value))
+
 // Local filter state
 const statusFilter = ref<'all' | 'active' | 'inactive'>('all')
 const archivedChannels = ref<ChannelWithProject[]>([])
@@ -96,16 +154,27 @@ function formatDate(date: string | null | undefined): string {
         </p>
       </div>
       
-      <div class="flex items-center gap-4">
-         <!-- Radio Group Switcher -->
-         <URadioGroup
-            v-model="statusFilter"
-            :options="statusOptions"
-            :ui="{ 
-                wrapper: 'relative flex items-center gap-4',
-                fieldset: 'flex items-center gap-4' 
-            }"
-         />
+      <div class="flex items-center gap-2">
+        <USelectMenu
+          v-model="sortBy"
+          :items="sortOptions"
+          value-key="id"
+          label-key="label"
+          class="w-56"
+          :searchable="false"
+        >
+          <template #leading>
+            <UIcon v-if="currentSortOption" :name="currentSortOption.icon" class="w-4 h-4" />
+          </template>
+        </USelectMenu>
+
+        <UButton
+          :icon="sortOrder === 'asc' ? 'i-heroicons-bars-arrow-up' : 'i-heroicons-bars-arrow-down'"
+          color="neutral"
+          variant="ghost"
+          @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+          :title="sortOrder === 'asc' ? t('common.sortOrder.asc') : t('common.sortOrder.desc')"
+        />
 
         <UButton 
             icon="i-heroicons-plus" 
@@ -159,7 +228,7 @@ function formatDate(date: string | null | undefined): string {
     <!-- Channels List -->
     <div v-else class="space-y-4">
       <NuxtLink
-        v-for="channel in channels"
+        v-for="channel in sortedChannels"
         :key="channel.id"
         :to="`/projects/${projectId}/channels/${channel.id}`"
         class="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100 dark:border-gray-700 p-4 sm:p-5"

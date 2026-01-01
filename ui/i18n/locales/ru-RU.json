@@ -158,6 +158,11 @@
   "channel": {
     "title": "Канал",
     "titlePlural": "Каналы",
+    "sort": {
+      "alphabetical": "По алфавиту",
+      "activity": "Активные сначала",
+      "socialMedia": "По соцсетям"
+    },
     "name": "Название канала",
     "namePlaceholder": "Введите название канала",
     "socialMedia": "Социальная сеть",
