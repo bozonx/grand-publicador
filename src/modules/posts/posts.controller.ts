@@ -79,7 +79,9 @@ export class PostsController {
     if (channelId) {
       return this.postsService.findAllForChannel(channelId, req.user.userId, filters);
     }
-    return [];
+
+    // Global fetch for user
+    return this.postsService.findAllForUser(req.user.userId, filters);
   }
 
   @Get(':id')

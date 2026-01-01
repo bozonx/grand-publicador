@@ -45,34 +45,58 @@ const isWarningActive = computed(() => {
     class="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all cursor-pointer border border-gray-100 dark:border-gray-700"
     :class="{ 'opacity-75 grayscale-[0.5]': project.archivedAt }"
   >
-    <div class="p-3 sm:p-3.5">
-      <div class="flex items-start justify-between gap-6">
+    <div class="p-4 sm:p-5">
+      <div class="flex items-start justify-between gap-4">
         <div class="flex-1 min-w-0">
-          <!-- Project Title -->
-          <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white truncate leading-6">
-            {{ project.name }}
-          </h3>
+          <!-- Header: Name + Role -->
+          <div class="flex items-center gap-2 mb-1 flex-wrap">
+            <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white truncate max-w-full">
+              {{ project.name }}
+            </h3>
+            <UBadge 
+              v-if="project.role" 
+              :color="getRoleBadgeColor(project.role)" 
+              variant="subtle" 
+              size="xs"
+              class="capitalize"
+            >
+              {{ t(`roles.${project.role}`) }}
+            </UBadge>
+          </div>
 
-          <!-- Warning: 3+ days without posts -->
-          <div v-if="isWarningActive" class="mt-2 flex items-center gap-1.5 text-[11px] leading-none text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-900/20 px-2 py-1.5 rounded-md w-fit border border-amber-100/50 dark:border-amber-800/30">
-             <UIcon name="i-heroicons-exclamation-triangle" class="w-3.5 h-3.5 shrink-0" />
-             <span class="truncate">
-                {{ t('project.noRecentPostsWarning') }}
+          <!-- Description (optional) -->
+          <p 
+            v-if="showDescription && project.description" 
+            class="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2"
+          >
+            {{ project.description }}
+          </p>
+          <!-- Metrics / Stats -->
+          <div class="flex items-center gap-3 text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-2 flex-wrap">
+            <div class="flex items-center gap-1.5" :title="t('channel.titlePlural')">
+              <UIcon name="i-heroicons-signal" class="w-4 h-4 shrink-0" />
+              <span>
+                {{ project.channelCount || 0 }} {{ t('channel.titlePlural').toLowerCase() }}
+              </span>
+            </div>
+            
+            <div class="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+
+            <div class="flex items-center gap-1.5" :title="t('publication.titlePlural')">
+              <UIcon name="i-heroicons-document-text" class="w-4 h-4 shrink-0" />
+              <span>
+                {{ project.publicationsCount || 0 }} {{ t('publication.titlePlural').toLowerCase() }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Last Publication Date -->
+          <div v-if="project.lastPublicationAt" class="mt-2 flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
+             <UIcon name="i-heroicons-clock" class="w-3.5 h-3.5 shrink-0" />
+             <span>
+                {{ t('project.lastPublication') }}: {{ formatDate(project.lastPublicationAt) }}
              </span>
           </div>
-        </div>
-
-        <!-- Right Side: Publications Count -->
-        <div class="shrink-0 pt-0.5">
-          <UBadge 
-            color="neutral" 
-            variant="soft" 
-            size="sm"
-            class="flex items-center gap-1.5 px-2 py-1 rounded-lg border border-gray-100 dark:border-gray-700/50 shadow-sm"
-          >
-            <UIcon name="i-heroicons-document-text" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
-            <span class="font-bold text-xs text-gray-700 dark:text-gray-200">{{ project.publicationsCount || 0 }}</span>
-          </UBadge>
         </div>
       </div>
     </div>

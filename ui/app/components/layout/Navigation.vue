@@ -26,6 +26,11 @@ const mainNavItems = computed<NavItem[]>(() => [
     to: '/channels',
     icon: 'i-heroicons-hashtag',
   },
+  {
+    label: t('navigation.posts'),
+    to: '/posts',
+    icon: 'i-heroicons-document-text',
+  },
 ])
 
 // Static functional items (Settings) - Admin is handled separately

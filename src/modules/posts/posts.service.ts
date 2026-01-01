@@ -131,6 +131,67 @@ export class PostsService {
   }
 
   /**
+   * Retrieve all posts for a given user across all projects they are members of.
+   *
+   * @param userId - The ID of the user requesting the posts.
+   * @param filters - Optional filters (status, search, includeArchived).
+   * @returns A list of posts with channel and author info.
+   */
+  public async findAllForUser(
+    userId: string,
+    filters?: { status?: PostStatus; postType?: PostType; search?: string; includeArchived?: boolean },
+  ) {
+    const where: any = {
+      channel: {
+        project: {
+          members: {
+            some: { userId },
+          },
+          archivedAt: null,
+        },
+        ...(filters?.includeArchived ? {} : { archivedAt: null }),
+      },
+      ...(filters?.includeArchived ? {} : { archivedAt: null }),
+    };
+
+    if (filters?.status && typeof filters.status === 'string') {
+      where.status = filters.status.toUpperCase() as PostStatus;
+    }
+    if (filters?.postType && typeof filters.postType === 'string') {
+      where.postType = filters.postType.toUpperCase() as PostType;
+    }
+    if (filters?.search) {
+      where.OR = [
+        { title: { contains: filters.search, mode: 'insensitive' } },
+        { content: { contains: filters.search, mode: 'insensitive' } },
+      ];
+    }
+
+    return this.prisma.post.findMany({
+      where,
+      include: {
+        channel: {
+          select: {
+            id: true,
+            name: true,
+            projectId: true,
+            socialMedia: true,
+          },
+        },
+        author: {
+          select: {
+            id: true,
+            fullName: true,
+            telegramUsername: true,
+            avatarUrl: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
    * Retrieve all posts for a specific channel.
    * Validates that the user has access to the channel.
    *

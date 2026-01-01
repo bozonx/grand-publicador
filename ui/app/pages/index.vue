@@ -11,42 +11,19 @@ const { t } = useI18n()
 const { displayName } = useAuth()
 
 const { projects, fetchProjects, isLoading: projectsLoading } = useProjects()
-const { fetchPostsByProject, isLoading: postsLoading } = usePosts()
+const { posts, fetchUserPosts, totalCount: postsCount, isLoading: postsLoading } = usePosts()
 
-// State
-const recentPosts = ref<PostWithRelations[]>([])
+// Computed
+const recentPosts = computed(() => posts.value.slice(0, 5))
 const isLoading = computed(() => projectsLoading.value || postsLoading.value)
 
 // Fetch data on mount
 onMounted(async () => {
   try {
-    const data = await fetchProjects()
-    if (!data || data.length === 0) return
-
-    // Fetch posts from all user's projects
-    const allPosts: PostWithRelations[] = []
-    // Limit to first 3 projects to avoid too many requests
-    const topProjects = projects.value.slice(0, 3)
-    
-    for (const project of topProjects) {
-      try {
-        const projectPosts = await fetchPostsByProject(project.id)
-        if (projectPosts && Array.isArray(projectPosts)) {
-          allPosts.push(...projectPosts.slice(0, 5))
-        }
-      } catch (e) {
-        console.error(`Failed to fetch posts for project ${project.id}:`, e)
-      }
-    }
-
-    // Sort by creation date and take top 5
-    recentPosts.value = allPosts
-      .sort((a, b) => {
-        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
-        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
-        return dateB - dateA
-      })
-      .slice(0, 5)
+    await Promise.all([
+      fetchProjects(),
+      fetchUserPosts({ limit: 50 })
+    ])
   } catch (err) {
     console.error('Dashboard initialization error:', err)
   }
@@ -165,7 +142,7 @@ const projectsByRole = computed(() => {
                   {{ t(`dashboard.group_${group.role}`) }}
                 </h3>
                 <div class="grid grid-cols-1 gap-2">
-                  <ProjectsProjectListItem
+                  <ProjectsDashboardProjectListItem
                     v-for="project in group.projects"
                     :key="project.id"
                     :project="project"
@@ -179,10 +156,15 @@ const projectsByRole = computed(() => {
 
         <!-- Recent Posts -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
-          <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div
+            class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between"
+          >
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ t('dashboard.recentPosts') }}
+              {{ t('dashboard.recentPosts') }} ({{ posts.length }})
             </h2>
+            <UButton variant="ghost" color="primary" size="sm" to="/posts">
+              {{ t('common.viewAll') }}
+            </UButton>
           </div>
           <div class="p-6">
             <!-- Loading -->
