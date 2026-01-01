@@ -45,6 +45,7 @@ const formData = reactive({
   language: props.publication?.language || 'en-US',
   channelIds: props.publication?.posts?.map((p: any) => p.channelId) || [] as string[],
   translationGroupId: props.publication?.translationGroupId || undefined as string | undefined,
+  meta: props.publication?.meta ? JSON.parse(props.publication.meta) : {},
 })
 
 const linkedPublicationId = ref<string | undefined>(undefined)
@@ -76,6 +77,7 @@ const availablePublications = computed(() => {
 // Handle translation group selection
 function handleTranslationLink(publicationId: string) {
     linkedPublicationId.value = publicationId
+    formData.translationGroupId = undefined
 }
 
 // Channel options for select
@@ -108,9 +110,9 @@ async function handleSubmit() {
         tags: formData.tags || undefined,
         status: formData.status,
         language: formData.language,
+        linkToPublicationId: linkedPublicationId.value || undefined, // Send linkToPublicationId
         postType: formData.postType,
-        translationGroupId: formData.translationGroupId,
-        linkToPublicationId: linkedPublicationId.value,
+        meta: formData.meta,
     }
     
     // Update the publication itself
@@ -139,9 +141,9 @@ async function handleSubmit() {
       tags: formData.tags || undefined,
       status: formData.status === 'SCHEDULED' && formData.channelIds.length > 0 ? 'SCHEDULED' : 'DRAFT', // Master status
       language: formData.language,
+      linkToPublicationId: linkedPublicationId.value || undefined,
       postType: formData.postType,
-      translationGroupId: formData.translationGroupId,
-      linkToPublicationId: linkedPublicationId.value,
+      meta: formData.meta,
     }
 
     const publication = await createPublication(createData)

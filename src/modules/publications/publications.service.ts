@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PostStatus, PostType, Prisma, ProjectRole } from '@prisma/client';
+import { randomUUID } from 'node:crypto';
 
 import { PermissionsService } from '../../common/services/permissions.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -46,7 +47,7 @@ export class PublicationsService {
           if (targetPub.translationGroupId) {
             translationGroupId = targetPub.translationGroupId;
           } else {
-            translationGroupId = crypto.randomUUID();
+            translationGroupId = randomUUID();
             // Update target
             await this.prisma.publication.update({
               where: { id: targetPub.id },
@@ -273,7 +274,7 @@ export class PublicationsService {
           if (targetPub.translationGroupId) {
             translationGroupId = targetPub.translationGroupId;
           } else {
-            translationGroupId = crypto.randomUUID();
+            translationGroupId = randomUUID();
             await this.prisma.publication.update({
               where: { id: targetPub.id },
               data: { translationGroupId },
