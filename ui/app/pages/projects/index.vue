@@ -46,6 +46,54 @@ function goToEditProject(projectId: string) {
   router.push(`/projects/${projectId}?edit=true`)
 }
 
+// Sorting
+interface SortOption {
+  id: string
+  label: string
+  icon: string
+}
+
+const sortOptions = computed<SortOption[]>(() => [
+  { id: 'alphabetical', label: t('project.sort.alphabetical'), icon: 'i-heroicons-bars-3-bottom-left' },
+  { id: 'role', label: t('project.sort.role'), icon: 'i-heroicons-user-circle' },
+  { id: 'publicationsCount', label: t('project.sort.publicationsCount'), icon: 'i-heroicons-document-text' },
+  { id: 'lastPublication', label: t('project.sort.lastPublication'), icon: 'i-heroicons-calendar' }
+])
+
+const sortBy = ref<SortOption>(sortOptions.value[0]!)
+const sortOrder = ref<'asc' | 'desc'>('asc')
+
+const roleWeights: Record<string, number> = {
+  owner: 4,
+  admin: 3,
+  editor: 2,
+  viewer: 1
+}
+
+function sortProjects(list: ProjectWithRole[]) {
+  return [...list].sort((a, b) => {
+    let result = 0
+    if (sortBy.value.id === 'alphabetical') {
+      result = a.name.localeCompare(b.name)
+    } else if (sortBy.value.id === 'role') {
+      const weightA = roleWeights[a.role || 'viewer'] || 0
+      const weightB = roleWeights[b.role || 'viewer'] || 0
+      result = weightB - weightA
+    } else if (sortBy.value.id === 'publicationsCount') {
+      result = (a.publicationsCount || 0) - (b.publicationsCount || 0)
+    } else if (sortBy.value.id === 'lastPublication') {
+      const dateA = a.lastPublicationAt ? new Date(a.lastPublicationAt).getTime() : 0
+      const dateB = b.lastPublicationAt ? new Date(b.lastPublicationAt).getTime() : 0
+      result = dateA - dateB
+    }
+
+    return sortOrder.value === 'asc' ? result : -result
+  })
+}
+
+const sortedProjects = computed(() => sortProjects(projects.value))
+const sortedArchivedProjects = computed(() => sortProjects(archivedProjects.value))
+
 
 </script>
 
@@ -95,8 +143,28 @@ function goToEditProject(projectId: string) {
 
     <!-- Projects list -->
     <div v-else-if="projects.length > 0" class="space-y-4">
+      <!-- Sorting toolbar -->
+      <div class="flex items-center justify-end gap-2 mb-4">
+        <USelectMenu
+          v-model="sortBy"
+          :options="sortOptions"
+          class="w-56"
+        >
+          <template #leading>
+            <UIcon :name="sortBy.icon" class="w-4 h-4" />
+          </template>
+        </USelectMenu>
+        <UButton
+          :icon="sortOrder === 'asc' ? 'i-heroicons-bars-arrow-up' : 'i-heroicons-bars-arrow-down'"
+          variant="ghost"
+          color="neutral"
+          @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+          :title="sortOrder === 'asc' ? t('common.sortOrder.asc') : t('common.sortOrder.desc')"
+        />
+      </div>
+
       <ProjectsProjectListItem
-        v-for="project in projects"
+        v-for="project in sortedProjects"
         :key="project.id"
         :project="project"
         :show-description="true"
@@ -119,7 +187,7 @@ function goToEditProject(projectId: string) {
       <div v-if="showArchived" class="space-y-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
         <div v-if="archivedProjects.length > 0">
           <ProjectsProjectListItem
-            v-for="project in archivedProjects"
+            v-for="project in sortedArchivedProjects"
             :key="project.id"
             :project="project"
             :show-description="true"

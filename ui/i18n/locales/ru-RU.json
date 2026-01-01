@@ -37,7 +37,11 @@
     "lastPost": "Последний пост",
     "archive": "Архивировать",
     "restore": "Восстановить",
-    "archived": "В архиве"
+    "archived": "В архиве",
+    "sortOrder": {
+      "asc": "По возрастанию",
+      "desc": "По убыванию"
+    }
   },
   "navigation": {
     "home": "Главная",
@@ -123,7 +127,13 @@
     "owner": "Владелец",
     "members": "Участники",
     "lastPublication": "Последняя публикация",
-    "noRecentPostsWarning": "Больше 3-х дней нет новых постов!"
+    "noRecentPostsWarning": "Больше 3-х дней нет новых постов!",
+    "sort": {
+      "alphabetical": "По алфавиту",
+      "role": "По роли",
+      "publicationsCount": "По количеству публикаций",
+      "lastPublication": "По последней публикации"
+    }
   },
   "projectMember": {
     "title": "Участник",

@@ -37,7 +37,11 @@
     "lastPost": "Last post",
     "archive": "Archive",
     "restore": "Restore",
-    "archived": "Archived"
+    "archived": "Archived",
+    "sortOrder": {
+      "asc": "Ascending",
+      "desc": "Descending"
+    }
   },
   "navigation": {
     "home": "Home",
@@ -122,7 +126,13 @@
     "owner": "Owner",
     "members": "Members",
     "lastPublication": "Last publication",
-    "noRecentPostsWarning": "No new posts for more than 3 days!"
+    "noRecentPostsWarning": "No new posts for more than 3 days!",
+    "sort": {
+      "alphabetical": "Alphabetical",
+      "role": "By role",
+      "publicationsCount": "By publications count",
+      "lastPublication": "By last publication"
+    }
   },
   "projectMember": {
     "title": "Member",
