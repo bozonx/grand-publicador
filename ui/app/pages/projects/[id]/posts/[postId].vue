@@ -24,12 +24,18 @@ const {
   getTypeDisplayName,
   canEdit,
   canDelete,
+  toggleArchive,
 } = usePosts()
 
 // UI state
 const isEditMode = computed(() => route.query.edit === 'true')
-const showDeleteModal = ref(false)
-const isDeleting = ref(false)
+
+// Tags handling
+const tagsArray = computed(() => {
+  if (!currentPost.value?.tags) return []
+  if (Array.isArray(currentPost.value.tags)) return currentPost.value.tags
+  return currentPost.value.tags.split(',').map(tag => tag.trim()).filter(Boolean)
+})
 
 // Fetch post on mount
 onMounted(async () => {
@@ -79,24 +85,10 @@ function handleCancel() {
 }
 
 /**
- * Confirm delete
+ * Toggle archive status
  */
-function confirmDelete() {
-  showDeleteModal.value = true
-}
-
-/**
- * Handle delete
- */
-async function handleDelete() {
-  isDeleting.value = true
-  const success = await deletePost(postId.value)
-  isDeleting.value = false
-
-  if (success) {
-    showDeleteModal.value = false
-    router.push(`/projects/${projectId.value}/posts`)
-  }
+async function handleArchive() {
+  await toggleArchive(postId.value)
 }
 
 /**
@@ -191,220 +183,177 @@ function formatDateTime(date: string | null): string {
     </div>
 
     <!-- View mode -->
-    <div v-else>
-      <!-- Post header -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6">
-        <div class="p-6">
-          <div class="flex items-start justify-between gap-4">
-            <div class="flex-1 min-w-0">
-              <!-- Title and badges -->
-              <div class="flex flex-wrap items-center gap-3 mb-3">
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-                  {{ currentPost.title || t('post.untitled', 'Untitled') }}
-                </h1>
-                <UBadge :color="getStatusColor(currentPost.status)" variant="subtle">
-                  {{ getStatusDisplayName(currentPost.status) }}
-                </UBadge>
-                <UBadge color="neutral" variant="outline">
-                  {{ getTypeDisplayName(currentPost.postType) }}
-                </UBadge>
-              </div>
-
-              <!-- Meta info -->
-              <div
-                class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400"
-              >
-                <!-- Channel -->
-                <span v-if="currentPost.channel" class="flex items-center gap-1">
-                  <UIcon name="i-heroicons-signal" class="w-4 h-4" />
-                  {{ currentPost.channel.name }}
-                </span>
-
-                <!-- Author -->
-                <span v-if="currentPost.author" class="flex items-center gap-1">
-                  <UIcon name="i-heroicons-user" class="w-4 h-4" />
-                  {{ currentPost.author.fullName || currentPost.author.username }}
-                </span>
-
-                <!-- Created date -->
-                <span class="flex items-center gap-1">
-                  <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
-                  {{ t('post.createdAt', 'Created') }}: {{ formatDate(currentPost.createdAt) }}
-                </span>
-
-                <!-- Scheduled date -->
-                <span
-                  v-if="currentPost.status === 'SCHEDULED' && currentPost.scheduledAt"
-                  class="flex items-center gap-1 text-amber-600 dark:text-amber-400"
-                >
-                  <UIcon name="i-heroicons-clock" class="w-4 h-4" />
-                  {{ t('post.scheduledAt') }}: {{ formatDateTime(currentPost.scheduledAt) }}
-                </span>
-
-                <!-- Published date -->
-                <span
-                  v-if="currentPost.status === 'PUBLISHED' && currentPost.publishedAt"
-                  class="flex items-center gap-1 text-green-600 dark:text-green-400"
-                >
-                  <UIcon name="i-heroicons-check-circle" class="w-4 h-4" />
-                  {{ t('post.publishedAt') }}: {{ formatDateTime(currentPost.publishedAt) }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="flex items-center gap-2">
-              <UButton
-                v-if="canEdit(currentPost)"
-                color="primary"
-                variant="outline"
-                icon="i-heroicons-pencil-square"
-                @click="toggleEditMode"
-              >
-                {{ t('common.edit') }}
-              </UButton>
-              <UButton
-                v-if="canDelete(currentPost)"
-                color="error"
-                variant="ghost"
-                icon="i-heroicons-trash"
-                @click="confirmDelete"
-              >
-                {{ t('common.delete') }}
-              </UButton>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Post content -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6">
-        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-            {{ t('post.content') }}
-          </h2>
-        </div>
-        <div class="p-6">
-          <div class="prose prose-sm dark:prose-invert max-w-none" v-html="currentPost.content" />
-        </div>
-      </div>
-
-      <!-- Additional info -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-            {{ t('post.details', 'Details') }}
-          </h2>
-        </div>
-        <div class="p-6">
-          <dl class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Description -->
-            <div v-if="currentPost.description">
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                {{ t('post.description') }}
-              </dt>
-              <dd class="text-sm text-gray-900 dark:text-white">
-                {{ currentPost.description }}
-              </dd>
-            </div>
-
-            <!-- Author comment -->
-            <div v-if="currentPost.authorComment">
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                {{ t('post.authorComment') }}
-              </dt>
-              <dd class="text-sm text-gray-900 dark:text-white italic">
-                {{ currentPost.authorComment }}
-              </dd>
-            </div>
-
-            <!-- Tags -->
-            <div v-if="currentPost.tags && currentPost.tags.length > 0">
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                {{ t('post.tags') }}
-              </dt>
-              <dd class="flex flex-wrap gap-2">
-                <UBadge
-                  v-for="tag in currentPost.tags"
-                  :key="tag"
-                  color="neutral"
-                  variant="subtle"
-                  size="sm"
-                >
-                  {{ tag }}
-                </UBadge>
-              </dd>
-            </div>
-
-            <!-- Post date -->
-            <div v-if="currentPost.postDate">
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                {{ t('post.postDate') }}
-              </dt>
-              <dd class="text-sm text-gray-900 dark:text-white">
-                {{ formatDate(currentPost.postDate) }}
-              </dd>
-            </div>
-
-            <!-- Last updated -->
-            <div v-if="currentPost.updatedAt">
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                {{ t('post.updatedAt', 'Last updated') }}
-              </dt>
-              <dd class="text-sm text-gray-900 dark:text-white">
-                {{ formatDateTime(currentPost.updatedAt) }}
-              </dd>
-            </div>
-
-            <!-- Social media type -->
-            <div>
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                {{ t('channel.socialMedia') }}
-              </dt>
-              <dd class="text-sm text-gray-900 dark:text-white capitalize">
-                {{ currentPost.channel?.socialMedia || '-' }}
-              </dd>
-            </div>
-          </dl>
-        </div>
-      </div>
-    </div>
-
-    <!-- Delete confirmation modal -->
-    <UModal v-model:open="showDeleteModal">
-      <template #content>
-        <div class="p-6">
-          <div class="flex items-center gap-4 mb-4">
-            <div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
-              <UIcon
-                name="i-heroicons-exclamation-triangle"
-                class="w-6 h-6 text-red-600 dark:text-red-400"
+    <div v-else class="space-y-6">
+      
+      <!-- Top Banner: Post Info -->
+      <UCard>
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="flex flex-wrap items-center gap-6 text-sm">
+             <!-- Author -->
+            <div v-if="currentPost.author" class="flex items-center gap-2">
+              <UAvatar
+                 :alt="(currentPost.author.fullName || currentPost.author.username) || ''"
+                 size="xs"
               />
+              <span class="font-medium text-gray-900 dark:text-white">
+                {{ currentPost.author.fullName || currentPost.author.username }}
+              </span>
             </div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ t('post.deletePost') }}
-            </h3>
+
+            <!-- Post Type -->
+            <div class="flex items-center gap-2">
+              <span class="text-gray-500 dark:text-gray-400">{{ t('post.type') }}:</span>
+              <UBadge color="neutral" variant="subtle">
+                {{ getTypeDisplayName(currentPost.postType) }}
+              </UBadge>
+            </div>
+
+            <!-- Status -->
+            <div class="flex items-center gap-2">
+              <span class="text-gray-500 dark:text-gray-400">{{ t('post.status') }}:</span>
+              <UBadge :color="getStatusColor(currentPost.status)" variant="subtle">
+                {{ getStatusDisplayName(currentPost.status) }}
+              </UBadge>
+            </div>
+
+            <!-- Published At -->
+            <div v-if="currentPost.publishedAt" class="flex items-center gap-2">
+              <span class="text-gray-500 dark:text-gray-400">{{ t('post.publishedAt') }}:</span>
+              <span class="text-gray-900 dark:text-white font-medium">
+                {{ formatDateTime(currentPost.publishedAt) }}
+              </span>
+            </div>
           </div>
 
-          <p class="text-gray-600 dark:text-gray-400 mb-6">
-            {{ t('post.deleteConfirm') }}
-          </p>
-
-          <div class="flex justify-end gap-3">
+          <!-- Actions (Edit/Archive) -->
+          <div class="flex items-center gap-2">
             <UButton
-              color="neutral"
+              v-if="canEdit(currentPost)"
+              color="primary"
               variant="ghost"
-              :disabled="isDeleting"
-              @click="showDeleteModal = false"
+              icon="i-heroicons-pencil-square"
+              size="sm"
+              @click="toggleEditMode"
             >
-              {{ t('common.cancel') }}
+              {{ t('common.edit') }}
             </UButton>
-            <UButton color="error" :loading="isDeleting" @click="handleDelete">
-              {{ t('common.delete') }}
+            <UButton
+              v-if="canEdit(currentPost)"
+              :color="currentPost.archivedAt ? 'success' : 'neutral'"
+              variant="ghost"
+              :icon="currentPost.archivedAt ? 'i-heroicons-archive-box-arrow-down' : 'i-heroicons-archive-box'"
+              size="sm"
+              :loading="isLoading"
+              @click="handleArchive"
+            >
+              {{ currentPost.archivedAt ? t('common.restore') : t('common.archive') }}
             </UButton>
           </div>
         </div>
-      </template>
-    </UModal>
+      </UCard>
+
+      <!-- Content Block -->
+      <UCard>
+        <div class="space-y-6">
+          <!-- Title -->
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+              {{ currentPost.title || t('post.untitled', 'Untitled') }}
+            </h1>
+          </div>
+
+          <!-- Description -->
+          <div v-if="currentPost.description" class="text-gray-600 dark:text-gray-300">
+            {{ currentPost.description }}
+          </div>
+
+          <!-- Content -->
+           <div class="prose prose-sm dark:prose-invert max-w-none border-t border-b border-gray-100 dark:border-gray-800 py-6" v-html="currentPost.content" />
+
+           <!-- Tags -->
+           <div v-if="tagsArray.length > 0" class="flex flex-wrap gap-2">
+              <UBadge
+                v-for="tag in tagsArray"
+                :key="tag"
+                color="neutral"
+                variant="soft"
+                size="sm"
+              >
+                #{{ tag }}
+              </UBadge>
+           </div>
+
+           <!-- Dates Grid -->
+           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div v-if="currentPost.postDate" class="space-y-1">
+                <span class="text-xs font-medium text-gray-500 uppercase">{{ t('post.postDate') }}</span>
+                <div class="flex items-center gap-2 text-gray-900 dark:text-white">
+                   <UIcon name="i-heroicons-calendar-days" class="w-4 h-4 text-gray-400" />
+                   {{ formatDate(currentPost.postDate) }}
+                </div>
+              </div>
+              
+              <div v-if="currentPost.scheduledAt" class="space-y-1">
+                <span class="text-xs font-medium text-gray-500 uppercase">{{ t('post.scheduledAt') }}</span>
+                 <div class="flex items-center gap-2 text-gray-900 dark:text-white">
+                   <UIcon name="i-heroicons-clock" class="w-4 h-4 text-gray-400" />
+                   {{ formatDateTime(currentPost.scheduledAt) }}
+                </div>
+              </div>
+           </div>
+
+           <!-- Meta Textarea -->
+           <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ t('common.meta') }}</label>
+              <UTextarea
+                :model-value="currentPost.meta"
+                readonly
+                :rows="3"
+                variant="outline"
+                class="font-mono text-sm"
+              />
+           </div>
+        </div>
+      </UCard>
+
+      <!-- Bottom Block: Publication Info -->
+      <UCard v-if="currentPost.publication">
+        <template #header>
+           <div class="flex items-center justify-between">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                {{ t('publication.title') }}
+              </h3>
+              <UBadge color="neutral" variant="soft" size="xs">
+                 {{ currentPost.publication.status }}
+              </UBadge>
+           </div>
+        </template>
+        
+        <div class="space-y-4">
+           <div>
+              <h4 class="text-sm font-medium text-gray-900 dark:text-white">
+                 {{ currentPost.publication.title || t('common.untitled') }}
+              </h4>
+           </div>
+           
+           <div class="text-sm text-gray-500 dark:text-gray-400 line-clamp-3">
+              {{ currentPost.publication.content }}
+           </div>
+
+           <div class="pt-2">
+             <UButton
+                :to="`/projects/${projectId}/publications/`" 
+                variant="link"
+                color="primary"
+                class="p-0"
+              >
+                {{ t('publication.viewAll') }}
+              </UButton>
+              <!-- Ideally link to specific publication if such page exists -->
+           </div>
+        </div>
+      </UCard>
+
+    </div>
   </div>
 </template>

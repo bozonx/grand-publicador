@@ -28,8 +28,12 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>()
 
 const { t } = useI18n()
-const { createPost, updatePost, isLoading, statusOptions, typeOptions } = usePosts()
+const { createPost, updatePost, deletePost, isLoading, statusOptions, typeOptions } = usePosts()
 const { channels, fetchChannels, isLoading: isChannelsLoading } = useChannels()
+const router = useRouter()
+
+const showDeleteModal = ref(false)
+const isDeleting = ref(false)
 
 // Form state
 const formData = reactive({
@@ -136,6 +140,23 @@ async function handleSubmit() {
 
 function handleCancel() {
   emit('cancel')
+}
+
+/**
+ * Handle delete
+ */
+async function handleDelete() {
+  if (!props.post?.id) return
+  isDeleting.value = true
+  const success = await deletePost(props.post.id)
+  isDeleting.value = false
+
+  if (success) {
+    showDeleteModal.value = false
+    // Emit cancel to close edit mode, then router will handle the redirect if needed
+    // Actually, deletePost already shows a toast.
+    router.push(`/projects/${props.projectId}/posts`)
+  }
 }
 
 /**
@@ -340,7 +361,6 @@ const isFormValid = computed(() => {
         </div>
       </Transition>
 
-      <!-- Form actions -->
       <div
         class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700"
       >
@@ -359,11 +379,68 @@ const isFormValid = computed(() => {
           :loading="isLoading"
           :disabled="!isFormValid"
         >
-          <template #default>
-            {{ isEditMode ? t('common.save') : t('common.create') }}
-          </template>
+          {{ isEditMode ? t('common.save') : t('common.create') }}
         </UButton>
       </div>
     </form>
+
+    <!-- Danger Zone (only in edit mode) -->
+    <div
+      v-if="isEditMode"
+      class="p-6 bg-red-50/50 dark:bg-red-900/10 border-t border-red-100 dark:border-red-900/30 rounded-b-lg"
+    >
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <h3 class="text-sm font-semibold text-red-700 dark:text-red-400">
+            {{ t('project.deletePost', 'Delete Post') }}
+          </h3>
+          <p class="text-xs text-red-600/70 dark:text-red-400/60 mt-0.5">
+            {{ t('post.deleteConfirm', 'Are you sure you want to delete this post? This action cannot be undone.') }}
+          </p>
+        </div>
+        <UButton
+          color="error"
+          variant="soft"
+          icon="i-heroicons-trash"
+          @click="showDeleteModal = true"
+        >
+          {{ t('common.delete') }}
+        </UButton>
+      </div>
+    </div>
+
+    <!-- Delete confirmation modal -->
+    <UModal v-model:open="showDeleteModal">
+      <template #content>
+        <div class="p-6 text-center">
+          <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 text-red-600 dark:text-red-400" />
+          </div>
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
+            {{ t('post.deletePost') }}
+          </h3>
+          <p class="text-gray-500 dark:text-gray-400 mb-6">
+            {{ t('post.deleteConfirm') }}
+          </p>
+          <div class="flex items-center justify-center gap-3">
+            <UButton
+              color="neutral"
+              variant="outline"
+              :disabled="isDeleting"
+              @click="showDeleteModal = false"
+            >
+              {{ t('common.cancel') }}
+            </UButton>
+            <UButton
+              color="error"
+              :loading="isDeleting"
+              @click="handleDelete"
+            >
+              {{ t('common.delete') }}
+            </UButton>
+          </div>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>

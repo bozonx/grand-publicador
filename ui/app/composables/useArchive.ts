@@ -1,7 +1,7 @@
 import type { ArchiveEntityType, ArchiveStats, ArchivedEntity, MoveEntityDto } from '../types/archive.types';
 
 export const useArchive = () => {
-    const { $api } = useNuxtApp();
+    const api = useApi();
     const toast = useToast();
     const { t } = useI18n();
 
@@ -10,8 +10,8 @@ export const useArchive = () => {
 
     const fetchStats = async () => {
         try {
-            const response = await $api.get<ArchiveStats>('/archive/stats');
-            stats.value = response.data;
+            const response = await api.get<ArchiveStats>('/archive/stats');
+            stats.value = response;
         } catch (error) {
             console.error('Failed to fetch archive stats:', error);
         }
@@ -20,8 +20,8 @@ export const useArchive = () => {
     const fetchArchivedEntities = async (type: ArchiveEntityType) => {
         loading.value = true;
         try {
-            const response = await $api.get<ArchivedEntity[]>(`/archive/${type}`);
-            return response.data;
+            const response = await api.get<ArchivedEntity[]>(`/archive/${type}`);
+            return response;
         } catch (error) {
             console.error(`Failed to fetch archived ${type}:`, error);
             return [];
@@ -32,7 +32,7 @@ export const useArchive = () => {
 
     const archiveEntity = async (type: ArchiveEntityType, id: string) => {
         try {
-            await $api.post(`/archive/${type}/${id}`);
+            await api.post(`/archive/${type}/${id}`);
             toast.add({
                 title: t('archive.success_archived'),
                 color: 'success',
@@ -49,7 +49,7 @@ export const useArchive = () => {
 
     const restoreEntity = async (type: ArchiveEntityType, id: string) => {
         try {
-            await $api.post(`/archive/${type}/${id}/restore`);
+            await api.post(`/archive/${type}/${id}/restore`);
             toast.add({
                 title: t('archive.success_restored'),
                 color: 'success',
@@ -66,7 +66,7 @@ export const useArchive = () => {
 
     const deletePermanently = async (type: ArchiveEntityType, id: string) => {
         try {
-            await $api.delete(`/archive/${type}/${id}`);
+            await api.delete(`/archive/${type}/${id}`);
             toast.add({
                 title: t('archive.success_deleted'),
                 color: 'success',
@@ -83,7 +83,7 @@ export const useArchive = () => {
 
     const moveEntity = async (type: ArchiveEntityType, id: string, targetParentId: string) => {
         try {
-            await $api.post(`/archive/${type}/${id}/move`, { targetParentId } as MoveEntityDto);
+            await api.post(`/archive/${type}/${id}/move`, { targetParentId } as MoveEntityDto);
             toast.add({
                 title: t('archive.success_moved'),
                 color: 'success',

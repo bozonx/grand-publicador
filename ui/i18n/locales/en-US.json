@@ -33,7 +33,10 @@
     "back_to_channel": "Back to Channel",
     "settings": "Settings",
     "danger_zone": "Danger Zone",
-    "lastPost": "Last post"
+    "lastPost": "Last post",
+    "archive": "Archive",
+    "restore": "Restore",
+    "archived": "Archived"
   },
   "navigation": {
     "home": "Home",

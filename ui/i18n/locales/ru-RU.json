@@ -33,7 +33,10 @@
     "back_to_channel": "Назад к каналу",
     "settings": "Настройки",
     "danger_zone": "Опасная зона",
-    "lastPost": "Последний пост"
+    "lastPost": "Последний пост",
+    "archive": "Архивировать",
+    "restore": "Восстановить",
+    "archived": "В архиве"
   },
   "navigation": {
     "home": "Главная",

@@ -11,7 +11,7 @@ export class PostsService {
     private prisma: PrismaService,
     private channelsService: ChannelsService,
     private permissions: PermissionsService,
-  ) {}
+  ) { }
 
   /**
    * Create a new post in a specific channel.
@@ -227,6 +227,7 @@ export class PostsService {
             avatarUrl: true,
           },
         },
+        publication: true,
       },
     });
 

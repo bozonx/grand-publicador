@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { ArchiveEntityType } from '~/types/archive.types'
 
 export type PostStatus = 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'FAILED'
 export type PostType = 'POST' | 'ARTICLE' | 'NEWS' | 'VIDEO' | 'SHORT'
@@ -20,6 +21,8 @@ export interface Post {
     publishedAt: string | null
     createdAt: string
     updatedAt: string
+    archivedAt: string | null
+    meta: string
 }
 
 export interface PostWithRelations extends Post {
@@ -34,6 +37,12 @@ export interface PostWithRelations extends Post {
         fullName: string | null
         username: string | null
         avatarUrl: string | null
+    } | null
+    publication?: {
+        id: string
+        title: string | null
+        content: string
+        status: string
     } | null
 }
 
@@ -77,6 +86,7 @@ export function usePosts() {
     const { user } = useAuth()
     const { t } = useI18n()
     const toast = useToast()
+    const { archiveEntity, restoreEntity } = useArchive()
 
     const posts = ref<PostWithRelations[]>([])
     const currentPost = ref<PostWithRelations | null>(null)
@@ -320,6 +330,24 @@ export function usePosts() {
         getStatusColor,
         canDelete,
         canEdit,
+        async toggleArchive(postId: string) {
+            if (!currentPost.value) return
+
+            isLoading.value = true
+            try {
+                if (currentPost.value.archivedAt) {
+                    await restoreEntity(ArchiveEntityType.POST, postId)
+                } else {
+                    await archiveEntity(ArchiveEntityType.POST, postId)
+                }
+                // Refresh post data
+                await fetchPost(postId)
+            } catch (err) {
+                // Error handled by useArchive's toast
+            } finally {
+                isLoading.value = false
+            }
+        },
         clearCurrentPost,
     }
 }
