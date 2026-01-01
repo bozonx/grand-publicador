@@ -20,9 +20,6 @@ const {
   getSocialMediaColor,
 } = useChannels()
 
-// Modal states (Create only)
-const isCreateModalOpen = ref(false)
-
 // Local filter state
 const statusFilter = ref<'all' | 'active' | 'inactive'>('all')
 
@@ -52,13 +49,6 @@ watch(statusFilter, (val) => {
   fetchChannels(props.projectId)
 })
 
-/**
- * Handle channel creation success
- */
-function handleCreateSuccess() {
-  isCreateModalOpen.value = false
-  fetchChannels(props.projectId)
-}
 
 /**
  * Format date for display
@@ -93,7 +83,11 @@ function formatDate(date: string | null | undefined): string {
             }"
          />
 
-        <UButton icon="i-heroicons-plus" color="primary" @click="isCreateModalOpen = true">
+        <UButton 
+            icon="i-heroicons-plus" 
+            color="primary" 
+            :to="`/projects/${projectId}/channels/new`"
+        >
             {{ t('channel.createChannel') }}
         </UButton>
       </div>
@@ -132,7 +126,7 @@ function formatDate(date: string | null | undefined): string {
       <UButton
         v-if="statusFilter === 'all'"
         icon="i-heroicons-plus"
-        @click="isCreateModalOpen = true"
+        :to="`/projects/${projectId}/channels/new`"
       >
         {{ t('channel.createChannel') }}
       </UButton>
@@ -210,17 +204,5 @@ function formatDate(date: string | null | undefined): string {
       </NuxtLink>
     </div>
 
-    <!-- Create Channel Modal -->
-    <UModal v-model:open="isCreateModalOpen">
-      <template #content>
-        <div class="p-6">
-          <FormsChannelForm
-            :project-id="projectId"
-            @success="handleCreateSuccess"
-            @cancel="isCreateModalOpen = false"
-          />
-        </div>
-      </template>
-    </UModal>
   </div>
 </template>

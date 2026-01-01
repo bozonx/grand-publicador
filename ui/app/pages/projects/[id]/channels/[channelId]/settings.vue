@@ -48,7 +48,7 @@ function goBack() {
 /**
  * Handle channel update success
  */
-function handleUpdateSuccess() {
+function handleUpdateSuccess(channel: any) {
   fetchChannel(channelId.value)
 }
 

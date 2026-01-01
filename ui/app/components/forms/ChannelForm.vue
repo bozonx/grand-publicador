@@ -18,7 +18,8 @@ interface Props {
 }
 
 interface Emits {
-  (e: 'success' | 'cancel'): void
+  (e: 'success', channel: any): void
+  (e: 'cancel'): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -64,7 +65,7 @@ async function handleSubmit() {
 
     const result = await updateChannel(props.channel.id, updateData)
     if (result) {
-      emit('success')
+      emit('success', result)
     }
   } else {
     // Create new channel
@@ -77,7 +78,7 @@ async function handleSubmit() {
     })
 
     if (result) {
-      emit('success')
+      emit('success', result)
     }
   }
 }
