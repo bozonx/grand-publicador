@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ChannelWithProject } from '~/composables/useChannels'
-import { getSocialMediaColor, getSocialMediaIcon, getSocialMediaDisplayName } from '~/utils/socialMedia'
+import { getSocialMediaDisplayName } from '~/utils/socialMedia'
+import SocialIcon from '~/components/common/SocialIcon.vue'
 
 const props = defineProps<{
   channel: ChannelWithProject
@@ -18,23 +19,17 @@ function formatDate(date: string | null | undefined): string {
 <template>
   <NuxtLink
     :to="`/projects/${channel.projectId}/channels/${channel.id}`"
-    class="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100 dark:border-gray-700 p-4 sm:p-5"
-    :class="{ 'opacity-75 grayscale-[0.5]': isArchived }"
+    class="block app-card app-card-hover p-4 sm:p-5"
+    :class="{ 'opacity-60 grayscale': isArchived }"
   >
     <div class="flex items-start justify-between gap-4">
       <div class="flex-1 min-w-0">
         <!-- Header: Name + Social Media + Status -->
         <div class="flex items-center gap-3 mb-2 flex-wrap">
-          <div 
-            class="shrink-0 p-1.5 rounded-md"
-            :style="{ backgroundColor: getSocialMediaColor(channel.socialMedia) + '20' }"
-          >
-            <UIcon 
-              :name="getSocialMediaIcon(channel.socialMedia)" 
-              class="w-5 h-5"
-              :style="{ color: getSocialMediaColor(channel.socialMedia) }"
-            />
-          </div>
+          <SocialIcon 
+            :platform="channel.socialMedia" 
+            show-background 
+          />
           <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
             {{ channel.name }}
           </h3>

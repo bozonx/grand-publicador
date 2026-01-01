@@ -29,8 +29,8 @@ const isWarningActive = computed(() => {
 <template>
   <NuxtLink
     :to="`/projects/${project.id}`"
-    class="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all cursor-pointer border border-gray-100 dark:border-gray-700"
-    :class="{ 'opacity-75 grayscale-[0.5]': project.archivedAt }"
+    class="block app-card app-card-hover transition-all cursor-pointer"
+    :class="{ 'opacity-75 grayscale': project.archivedAt }"
   >
     <div class="p-3 sm:p-3.5">
       <div class="flex items-start justify-between gap-6">
@@ -41,7 +41,7 @@ const isWarningActive = computed(() => {
           </h3>
 
           <!-- Warning: 3+ days without posts -->
-          <div v-if="isWarningActive" class="mt-2 flex items-center gap-1.5 text-[11px] leading-none text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-900/20 px-2 py-1.5 rounded-md w-fit border border-amber-100/50 dark:border-amber-800/30">
+          <div v-if="isWarningActive" class="mt-2 flex items-center gap-1.5 text-xs leading-none text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-900/20 px-2 py-1.5 rounded-md w-fit border border-amber-100/50 dark:border-amber-800/30">
              <UIcon name="i-heroicons-exclamation-triangle" class="w-3.5 h-3.5 shrink-0" />
              <span class="truncate">
                 {{ t('project.noRecentPostsWarning') }}

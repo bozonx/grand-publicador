@@ -3,6 +3,7 @@ import type { PublicationWithRelations } from '~/composables/usePublications'
 import type { ChannelWithProject } from '~/composables/useChannels'
 import { usePublications } from '~/composables/usePublications'
 import { usePosts } from '~/composables/usePosts'
+import SocialIcon from '~/components/common/SocialIcon.vue'
 
 import type { PostStatus, PostType } from '~/types/posts'
 
@@ -29,9 +30,7 @@ const { createPublication, updatePublication, createPostsFromPublication, isLoad
 const { 
   channels, 
   fetchChannels, 
-  isLoading: isChannelsLoading,
-  getSocialMediaIcon,
-  getSocialMediaColor
+  isLoading: isChannelsLoading
 } = useChannels()
 const { typeOptions, statusOptions: allStatusOptions } = usePosts()
 const router = useRouter()
@@ -194,7 +193,7 @@ function toggleChannel(channelId: string) {
 </script>
 
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+  <div class="app-card">
     <!-- Header -->
     <div class="p-6 border-b border-gray-200 dark:border-gray-700">
       <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
@@ -227,13 +226,13 @@ function toggleChannel(channelId: string) {
                             @update:model-value="toggleChannel(channel.value)"
                             class="pointer-events-none" 
                         />
-                        <span class="text-sm font-medium text-gray-900 dark:text-white truncate max-w-[120px]">
+                        <span class="text-sm font-medium text-gray-900 dark:text-white truncate max-w-32">
                             {{ channel.label }}
                         </span>
                     </div>
                     
                     <div class="flex items-center gap-1.5 shrink-0 ml-2">
-                        <span class="text-[10px] px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded flex items-center gap-1 font-mono uppercase">
+                        <span class="text-xxs px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded flex items-center gap-1 font-mono uppercase">
                             <UIcon name="i-heroicons-language" class="w-3 h-3" />
                             {{ channel.language }}
                         </span>
@@ -241,11 +240,7 @@ function toggleChannel(channelId: string) {
                             <UIcon name="i-heroicons-exclamation-triangle" class="w-4 h-4 text-amber-500" />
                         </UTooltip>
                         <UTooltip :text="channel.socialMedia">
-                            <UIcon 
-                                :name="getSocialMediaIcon(channel.socialMedia)" 
-                                class="w-4 h-4"
-                                :style="{ color: getSocialMediaColor(channel.socialMedia) }"
-                            />
+                            <SocialIcon :platform="channel.socialMedia" size="sm" />
                         </UTooltip>
                     </div>
                 </div>
