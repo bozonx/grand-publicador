@@ -92,6 +92,51 @@ export class ChannelsService {
   }
 
   /**
+   * Retrieves all archived channels for a given project.
+   * Sorted by archival date (newest first).
+   *
+   * @param projectId - The ID of the project.
+   * @param userId - The ID of the user requesting the channels.
+   * @returns A list of archived channels with post counts.
+   */
+  public async findArchivedForProject(
+    projectId: string,
+    userId: string,
+  ) {
+    await this.projectsService.findOne(projectId, userId, true); // Validates membership, allow archived project
+
+    const channels = await this.prisma.channel.findMany({
+      where: {
+        projectId,
+        archivedAt: { not: null },
+        project: { archivedAt: null },
+      },
+      include: {
+        _count: {
+          select: { posts: true },
+        },
+        posts: {
+          where: { archivedAt: null },
+          take: 1,
+          orderBy: { createdAt: 'desc' },
+          select: { createdAt: true },
+        },
+      },
+      orderBy: { archivedAt: 'desc' },
+    });
+
+    return channels.map(channel => {
+      const { posts, _count, ...channelData } = channel;
+      return {
+        ...channelData,
+        postsCount: _count.posts,
+        lastPostAt: posts[0]?.createdAt || null,
+      };
+    });
+  }
+
+
+  /**
    * Find a single channel by ID.
    * Ensures the user has access to the project containing the channel.
    *

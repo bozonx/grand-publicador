@@ -64,7 +64,24 @@ export class ChannelsController {
     });
   }
 
+  @Get('archived')
+  public async findArchived(
+    @Request() req: UnifiedAuthRequest,
+    @Query('projectId') projectId: string,
+  ) {
+    // Validate project scope for API token users
+    if (req.user.scopeProjectIds) {
+      ApiTokenGuard.validateProjectScope(projectId, req.user.scopeProjectIds, {
+        userId: req.user.userId,
+        tokenId: req.user.tokenId,
+      });
+    }
+
+    return this.channelsService.findArchivedForProject(projectId, req.user.userId);
+  }
+
   @Get(':id')
+
   public async findOne(@Request() req: UnifiedAuthRequest, @Param('id') id: string) {
     const channel = await this.channelsService.findOne(id, req.user.userId, true);
 

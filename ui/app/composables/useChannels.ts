@@ -109,6 +109,25 @@ export function useChannels() {
         }
     }
 
+    async function fetchArchivedChannels(projectId: string): Promise<ChannelWithProject[]> {
+        isLoading.value = true
+        error.value = null
+
+        try {
+            const params: any = { projectId }
+            const data = await api.get<ChannelWithProject[]>('/channels/archived', { params })
+            return data
+        } catch (err: any) {
+            const message = err.message || 'Failed to fetch archived channels'
+            error.value = message
+            console.error('Error fetching archived channels:', err)
+            return []
+        } finally {
+            isLoading.value = false
+        }
+    }
+
+
     async function fetchChannel(channelId: string): Promise<ChannelWithProject | null> {
         isLoading.value = true
         error.value = null
@@ -313,6 +332,7 @@ export function useChannels() {
         filter,
         socialMediaOptions,
         fetchChannels,
+        fetchArchivedChannels,
         fetchChannel,
         createChannel,
         updateChannel,
@@ -326,4 +346,5 @@ export function useChannels() {
         getSocialMediaIcon,
         getSocialMediaColor,
     }
+
 }

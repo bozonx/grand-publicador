@@ -13,6 +13,7 @@ const {
   channels,
   isLoading,
   fetchChannels,
+  fetchArchivedChannels,
   setFilter,
   socialMediaOptions,
   getSocialMediaDisplayName,
@@ -22,7 +23,9 @@ const {
 
 // Local filter state
 const statusFilter = ref<'all' | 'active' | 'inactive'>('all')
+const archivedChannels = ref<ChannelWithProject[]>([])
 const showArchived = ref(false)
+const isLoadingArchived = ref(false)
 
 const statusOptions = computed(() => [
   { value: 'all', label: t('common.all') },
@@ -30,20 +33,20 @@ const statusOptions = computed(() => [
   { value: 'inactive', label: t('channel.inactive') }
 ])
 
-// Fetch channels on mount
+// Fetch active channels on mount
 onMounted(() => {
   if (props.projectId) {
     // Initialize filter with default values
     setFilter({
       isActive: null,
-      includeArchived: showArchived.value
+      includeArchived: false
     })
     fetchChannels(props.projectId)
   }
 })
 
-// Watch for filter changes
-watch([statusFilter, showArchived], ([statusVal, archivedVal]) => {
+// Watch for status filter changes
+watch(statusFilter, (statusVal) => {
   const map: Record<string, boolean | null> = {
     all: null,
     active: true,
@@ -51,13 +54,25 @@ watch([statusFilter, showArchived], ([statusVal, archivedVal]) => {
   }
   setFilter({
     isActive: map[statusVal],
-    includeArchived: archivedVal
+    includeArchived: false
   })
   if (props.projectId) {
     fetchChannels(props.projectId)
   }
 })
 
+/**
+ * Toggle archived channels visibility
+ */
+async function toggleArchivedChannels() {
+  showArchived.value = !showArchived.value
+  
+  if (showArchived.value && archivedChannels.value.length === 0) {
+    isLoadingArchived.value = true
+    archivedChannels.value = await fetchArchivedChannels(props.projectId)
+    isLoadingArchived.value = false
+  }
+}
 
 /**
  * Format date for display
@@ -91,12 +106,6 @@ function formatDate(date: string | null | undefined): string {
                 fieldset: 'flex items-center gap-4' 
             }"
          />
-
-        <USwitch 
-          v-model="showArchived" 
-          label="Показать архивные"
-          color="primary"
-        />
 
         <UButton 
             icon="i-heroicons-plus" 
@@ -133,9 +142,7 @@ function formatDate(date: string | null | undefined): string {
       </h3>
       <p class="text-gray-500 dark:text-gray-400 mb-6">
         {{
-          showArchived && channels.length === 0
-            ? t('channel.noArchivedChannels', 'No archived channels found')
-            : statusFilter !== 'all'
+          statusFilter !== 'all'
             ? t('channel.noChannelsFiltered')
             : t('channel.noChannelsDescription')
         }}
@@ -150,13 +157,12 @@ function formatDate(date: string | null | undefined): string {
     </div>
 
     <!-- Channels List -->
-    <div v-else class="grid grid-cols-1 gap-4">
+    <div v-else class="space-y-4">
       <NuxtLink
         v-for="channel in channels"
         :key="channel.id"
         :to="`/projects/${projectId}/channels/${channel.id}`"
         class="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100 dark:border-gray-700 p-4 sm:p-5"
-        :class="{ 'opacity-75 grayscale-[0.5]': channel.archivedAt }"
       >
         <div class="flex items-start justify-between gap-4">
             <div class="flex-1 min-w-0">
@@ -221,6 +227,96 @@ function formatDate(date: string | null | undefined): string {
             <!-- Actions removed as per request -->
         </div>
       </NuxtLink>
+
+      <!-- Show/Hide Archived Button -->
+      <div class="flex justify-center pt-4">
+        <UButton
+          :icon="showArchived ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'"
+          variant="ghost"
+          color="neutral"
+          @click="toggleArchivedChannels"
+          :loading="isLoadingArchived"
+        >
+          {{ showArchived ? 'Скрыть архивные' : 'Показать архивные' }}
+        </UButton>
+      </div>
+
+      <!-- Archived Channels Section -->
+      <div v-if="showArchived" class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div v-if="archivedChannels.length > 0">
+          <NuxtLink
+            v-for="channel in archivedChannels"
+            :key="channel.id"
+            :to="`/projects/${projectId}/channels/${channel.id}`"
+            class="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-100 dark:border-gray-700 p-4 sm:p-5 opacity-75 grayscale-[0.5]"
+          >
+            <div class="flex items-start justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                     <!-- Header: Name + Social Media + Status -->
+                     <div class="flex items-center gap-3 mb-2 flex-wrap">
+                        <div 
+                            class="shrink-0 p-1.5 rounded-md"
+                            :style="{ backgroundColor: getSocialMediaColor(channel.socialMedia) + '20' }"
+                        >
+                            <UIcon 
+                                :name="getSocialMediaIcon(channel.socialMedia)" 
+                                class="w-5 h-5"
+                                :style="{ color: getSocialMediaColor(channel.socialMedia) }"
+                            />
+                        </div>
+                        <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
+                            {{ channel.name }}
+                        </h3>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">
+                             {{ getSocialMediaDisplayName(channel.socialMedia) }}
+                        </span>
+                        <UBadge 
+                            v-if="!channel.isActive" 
+                            color="neutral" 
+                            variant="subtle" 
+                            size="xs"
+                        >
+                            {{ t('channel.inactive') }}
+                        </UBadge>
+                        <UBadge 
+                            v-else 
+                            color="success" 
+                            variant="subtle" 
+                            size="xs"
+                        >
+                            {{ t('channel.active') }}
+                        </UBadge>
+                     </div>
+
+                     <!-- ID -->
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 font-mono">
+                        ID: {{ channel.channelIdentifier }}
+                    </p>
+
+                     <!-- Metrics -->
+                    <div class="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
+                        <div class="flex items-center gap-1.5" :title="t('post.titlePlural')">
+                            <UIcon name="i-heroicons-document-text" class="w-4 h-4" />
+                            <span>
+                               {{ channel.postsCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
+                            </span>
+                        </div>
+
+                        <div class="flex items-center gap-1.5" :title="t('common.lastPost')">
+                            <UIcon name="i-heroicons-clock" class="w-4 h-4" />
+                            <span>
+                               {{ t('common.lastPost') }}: {{ formatDate(channel.lastPostAt) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </NuxtLink>
+        </div>
+        <div v-else class="text-center py-8">
+          <p class="text-gray-500 dark:text-gray-400">Нет архивных каналов</p>
+        </div>
+      </div>
     </div>
 
 
