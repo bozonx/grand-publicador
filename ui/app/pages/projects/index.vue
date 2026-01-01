@@ -61,8 +61,11 @@ interface SortOption {
 
 const sortOptions = ref<SortOption[]>([])
 
-const sortBy = ref('alphabetical')
-const sortOrder = ref<'asc' | 'desc'>('asc')
+const sortBy = ref(localStorage.getItem('projects-sort-by') || 'alphabetical')
+const sortOrder = ref<'asc' | 'desc'>((localStorage.getItem('projects-sort-order') as 'asc' | 'desc') || 'asc')
+
+watch(sortBy, (val) => localStorage.setItem('projects-sort-by', val))
+watch(sortOrder, (val) => localStorage.setItem('projects-sort-order', val))
 
 const roleWeights: Record<string, number> = {
   owner: 4,
