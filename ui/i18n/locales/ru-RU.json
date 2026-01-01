@@ -3,6 +3,7 @@
     "appName": "Grand Publicador",
     "loading": "Загрузка...",
     "save": "Сохранить",
+    "select": "Выбрать",
     "cancel": "Отмена",
     "delete": "Удалить",
     "edit": "Редактировать",
@@ -158,6 +159,7 @@
     "identifierHelpX": "Username аккаунта, например {'@'}username",
     "identifierHelpFacebook": "Username страницы, например page_username",
     "identifierHelpSite": "URL сайта, например https://example.com",
+    "selected": "выбрано",
     "isActive": "Активен",
     "isActiveHelp": "Деактивированные каналы не используются для публикации",
     "active": "Активен",
@@ -243,6 +245,15 @@
     "createSuccess": "Публикация успешно создана",
     "updateSuccess": "Публикация успешно обновлена",
     "deleteSuccess": "Публикация успешно удалена"
+  },
+  "publication": {
+    "create": "Создать публикацию",
+    "edit": "Редактировать публикацию",
+    "createDescription": "Создайте контент для распространения по каналам",
+    "editDescription": "Обновите контент публикации",
+    "channelsHelp": "Выберите каналы для немедленного создания постов",
+    "deleted": "Публикация успешно удалена",
+    "selectChannels": "Выберите каналы"
   },
   "postType": {
     "post": "Пост",

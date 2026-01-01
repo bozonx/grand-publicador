@@ -3,6 +3,7 @@
     "appName": "Grand Publicador",
     "loading": "Loading...",
     "save": "Save",
+    "select": "Select",
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
@@ -158,6 +159,7 @@
     "identifierHelpX": "Account username, e.g. {'@'}username",
     "identifierHelpFacebook": "Page username, e.g. page_username",
     "identifierHelpSite": "Website URL, e.g. https://example.com",
+    "selected": "selected",
     "isActive": "Active",
     "isActiveHelp": "Deactivated channels are not used for publishing",
     "active": "Active",
@@ -244,6 +246,15 @@
     "createSuccess": "Post created successfully",
     "updateSuccess": "Post updated successfully",
     "deleteSuccess": "Post deleted successfully"
+  },
+  "publication": {
+    "create": "Create Publication",
+    "edit": "Edit Publication",
+    "createDescription": "Create content to distribute across channels",
+    "editDescription": "Update your publication content",
+    "channelsHelp": "Select channels to create posts immediately",
+    "deleted": "Publication deleted successfully",
+    "selectChannels": "Select channels"
   },
   "postType": {
     "post": "Post",

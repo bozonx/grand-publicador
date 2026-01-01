@@ -109,6 +109,95 @@ export function usePublications() {
         return colors[status.toLowerCase()] || 'neutral'
     }
 
+    async function createPublication(data: any): Promise<PublicationWithRelations> {
+        isLoading.value = true
+        error.value = null
+
+        try {
+            const result = await api.post<PublicationWithRelations>('/publications', data)
+            publications.value.unshift(result)
+            return result
+        } catch (err: any) {
+            console.error('[usePublications] createPublication error:', err)
+            error.value = err.message || 'Failed to create publication'
+            throw err
+        } finally {
+            isLoading.value = false
+        }
+    }
+
+    async function updatePublication(id: string, data: any): Promise<PublicationWithRelations> {
+        isLoading.value = true
+        error.value = null
+
+        try {
+            const result = await api.patch<PublicationWithRelations>(`/publications/${id}`, data)
+            const index = publications.value.findIndex(p => p.id === id)
+            if (index !== -1) {
+                publications.value[index] = result
+            }
+            if (currentPublication.value?.id === id) {
+                currentPublication.value = result
+            }
+            return result
+        } catch (err: any) {
+            console.error('[usePublications] updatePublication error:', err)
+            error.value = err.message || 'Failed to update publication'
+            throw err
+        } finally {
+            isLoading.value = false
+        }
+    }
+
+    async function deletePublication(id: string): Promise<boolean> {
+        isLoading.value = true
+        error.value = null
+
+        try {
+            await api.delete(`/publications/${id}`)
+            publications.value = publications.value.filter(p => p.id !== id)
+            if (currentPublication.value?.id === id) {
+                currentPublication.value = null
+            }
+            toast.add({
+                title: t('common.success'),
+                description: t('publication.deleted', 'Publication deleted successfully'),
+                color: 'success'
+            })
+            return true
+        } catch (err: any) {
+            console.error('[usePublications] deletePublication error:', err)
+            error.value = err.message || 'Failed to delete publication'
+            toast.add({
+                title: t('common.error'),
+                description: error.value || 'Failed to delete publication',
+                color: 'error'
+            })
+            return false
+        } finally {
+            isLoading.value = false
+        }
+    }
+
+    async function createPostsFromPublication(id: string, channelIds: string[], scheduledAt?: string): Promise<any> {
+        isLoading.value = true
+        error.value = null
+
+        try {
+            const result = await api.post(`/publications/${id}/posts`, {
+                channelIds,
+                scheduledAt
+            })
+            return result
+        } catch (err: any) {
+            console.error('[usePublications] createPostsFromPublication error:', err)
+            error.value = err.message || 'Failed to create posts'
+            throw err
+        } finally {
+            isLoading.value = false
+        }
+    }
+
     return {
         publications,
         currentPublication,
@@ -117,7 +206,12 @@ export function usePublications() {
         totalCount,
         fetchPublicationsByProject,
         fetchPublication,
+        createPublication,
+        updatePublication,
+        deletePublication,
+        createPostsFromPublication,
         getStatusDisplayName,
         getStatusColor,
     }
 }
+

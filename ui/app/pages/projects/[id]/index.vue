@@ -213,9 +213,9 @@ async function handleUnarchive() {
               <UButton
                 color="primary"
                 icon="i-heroicons-plus"
-                :to="`/projects/${currentProject.id}/posts/new`"
+                :to="`/projects/${currentProject.id}/publications/new`"
               >
-                {{ t('post.createPost', 'Create Post') }}
+                {{ t('publication.create', 'Create Publication') }}
               </UButton>
 
               <UButton
