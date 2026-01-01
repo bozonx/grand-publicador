@@ -46,24 +46,17 @@ const isWarningActive = computed(() => {
     :class="{ 'opacity-75 grayscale-[0.5]': project.archivedAt }"
   >
     <div class="p-4 sm:p-5">
-      <div class="flex items-center justify-between gap-6">
+    <div class="p-4 sm:p-5">
+      <div class="flex items-start justify-between gap-6">
         <div class="flex-1 min-w-0">
           <!-- Project Title -->
-          <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white truncate">
+          <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white truncate leading-6">
             {{ project.name }}
           </h3>
 
-          <!-- Description (optional) -->
-          <p 
-            v-if="showDescription && project.description" 
-            class="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2"
-          >
-            {{ project.description }}
-          </p>
-
           <!-- Warning: 3+ days without posts -->
-          <div v-if="isWarningActive" class="mt-2 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 rounded-md w-fit border border-amber-100/50 dark:border-amber-800/30">
-             <UIcon name="i-heroicons-exclamation-triangle" class="w-4 h-4 shrink-0" />
+          <div v-if="isWarningActive" class="mt-2 flex items-center gap-1.5 text-[11px] leading-none text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-900/20 px-2 py-1.5 rounded-md w-fit border border-amber-100/50 dark:border-amber-800/30">
+             <UIcon name="i-heroicons-exclamation-triangle" class="w-3.5 h-3.5 shrink-0" />
              <span class="truncate">
                 {{ t('project.noRecentPostsWarning') }}
              </span>
@@ -71,18 +64,19 @@ const isWarningActive = computed(() => {
         </div>
 
         <!-- Right Side: Publications Count -->
-        <div class="shrink-0">
+        <div class="shrink-0 pt-0.5">
           <UBadge 
             color="neutral" 
             variant="soft" 
-            size="lg"
-            class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-gray-100 dark:border-gray-700/50 shadow-sm"
+            size="sm"
+            class="flex items-center gap-1.5 px-2 py-1 rounded-lg border border-gray-100 dark:border-gray-700/50 shadow-sm"
           >
-            <UIcon name="i-heroicons-document-text" class="w-5 h-5 text-gray-400 dark:text-gray-500" />
-            <span class="font-black text-base text-gray-700 dark:text-gray-200">{{ project.publicationsCount || 0 }}</span>
+            <UIcon name="i-heroicons-document-text" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
+            <span class="font-bold text-xs text-gray-700 dark:text-gray-200">{{ project.publicationsCount || 0 }}</span>
           </UBadge>
         </div>
       </div>
+    </div>
     </div>
   </NuxtLink>
 </template>
