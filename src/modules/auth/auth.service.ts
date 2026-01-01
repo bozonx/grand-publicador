@@ -36,11 +36,11 @@ export class AuthService {
     private configService: ConfigService,
     private usersService: UsersService,
   ) {
-    this.botToken = this.configService.get<string>('app.telegramBotToken')!;
-
-    if (!this.botToken) {
+    const token = this.configService.get<string>('app.telegramBotToken');
+    if (!token) {
       throw new Error('Telegram Bot Token is not defined in config (app.telegramBotToken)');
     }
+    this.botToken = token;
   }
 
   /**
@@ -64,7 +64,14 @@ export class AuthService {
       throw new UnauthorizedException('User data missing in Telegram init data');
     }
 
-    const tgUser = JSON.parse(userStr) as TelegramUser;
+    let tgUser: TelegramUser;
+    try {
+      tgUser = JSON.parse(userStr) as TelegramUser;
+    } catch (error) {
+      this.logger.error('Failed to parse Telegram user data', error);
+      throw new UnauthorizedException('Invalid user data format');
+    }
+
     const user = await this.usersService.findOrCreateTelegramUser({
       telegramId: BigInt(tgUser.id),
       username: tgUser.username,

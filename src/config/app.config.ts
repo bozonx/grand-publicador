@@ -75,7 +75,8 @@ export class AppConfig {
    */
   @IsString()
   @MinLength(32, {
-    message: 'JWT_SECRET must be at least 32 characters long for security reasons (AES-256 requirement)',
+    message:
+      'JWT_SECRET must be at least 32 characters long for security reasons (AES-256 requirement)',
   })
   public jwtSecret!: string;
 }

@@ -10,9 +10,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 
-import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
 import { ApiTokenGuard } from '../../common/guards/api-token.guard.js';
 import { JwtOrApiTokenGuard } from '../../common/guards/jwt-or-api-token.guard.js';
 import type { UnifiedAuthRequest } from '../../common/types/unified-auth-request.interface.js';
@@ -29,7 +27,7 @@ export class PostsController {
   constructor(
     private readonly postsService: PostsService,
     private readonly channelsService: ChannelsService,
-  ) { }
+  ) {}
 
   @Post()
   public async create(@Request() req: UnifiedAuthRequest, @Body() createPostDto: CreatePostDto) {

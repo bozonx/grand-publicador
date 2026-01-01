@@ -20,7 +20,7 @@ export class ApiTokenGuard implements CanActivate {
   private readonly logger = new Logger(ApiTokenGuard.name);
   private static readonly scopeLogger = new Logger('ApiTokenScope');
 
-  constructor(private apiTokensService: ApiTokensService) { }
+  constructor(private apiTokensService: ApiTokensService) {}
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<FastifyRequest>();

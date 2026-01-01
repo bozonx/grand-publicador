@@ -12,7 +12,7 @@ export class ChannelsService {
     private prisma: PrismaService,
     private projectsService: ProjectsService,
     private permissions: PermissionsService,
-  ) { }
+  ) {}
 
   /**
    * Creates a new channel within a project.

@@ -12,10 +12,8 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { PostStatus } from '@prisma/client';
 
-import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
 import { ApiTokenGuard } from '../../common/guards/api-token.guard.js';
 import { JwtOrApiTokenGuard } from '../../common/guards/jwt-or-api-token.guard.js';
 import type { UnifiedAuthRequest } from '../../common/types/unified-auth-request.interface.js';
@@ -28,7 +26,7 @@ import { PublicationsService } from './publications.service.js';
 @Controller('publications')
 @UseGuards(JwtOrApiTokenGuard)
 export class PublicationsController {
-  constructor(private readonly publicationsService: PublicationsService) { }
+  constructor(private readonly publicationsService: PublicationsService) {}
 
   /**
    * Create a new publication.
@@ -119,6 +117,4 @@ export class PublicationsController {
       createPostsDto.scheduledAt,
     );
   }
-
-
 }

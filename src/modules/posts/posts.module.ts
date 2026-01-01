@@ -12,4 +12,4 @@ import { PostsService } from './posts.service.js';
   providers: [PostsService],
   exports: [PostsService],
 })
-export class PostsModule { }
+export class PostsModule {}

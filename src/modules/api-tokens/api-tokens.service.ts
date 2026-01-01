@@ -107,7 +107,9 @@ export class ApiTokensService {
         this.logger.warn(
           `User ${userId} attempted to create API token with unauthorized projects: ${missingIds.join(', ')}`,
         );
-        throw new ForbiddenException(`Insufficient permissions for projects: ${missingIds.join(', ')}`);
+        throw new ForbiddenException(
+          `Insufficient permissions for projects: ${missingIds.join(', ')}`,
+        );
       }
     }
 
@@ -194,7 +196,9 @@ export class ApiTokensService {
           this.logger.warn(
             `User ${userId} attempted to update API token ${id} with unauthorized projects: ${missingIds.join(', ')}`,
           );
-          throw new ForbiddenException(`Insufficient permissions for projects: ${missingIds.join(', ')}`);
+          throw new ForbiddenException(
+            `Insufficient permissions for projects: ${missingIds.join(', ')}`,
+          );
         }
       }
       updateData.scopeProjectIds = JSON.stringify(dto.scopeProjectIds);

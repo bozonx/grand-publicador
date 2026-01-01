@@ -48,7 +48,7 @@ describe('ProjectsService (unit)', () => {
     service = moduleRef.get<ProjectsService>(ProjectsService);
 
     // Silence logger for tests
-    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => { });
+    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
   });
 
   afterAll(async () => {
@@ -90,7 +90,7 @@ describe('ProjectsService (unit)', () => {
             }),
           },
         };
-        return callback(tx);
+        return await callback(tx);
       });
 
       const result = await service.create(userId, createData);
@@ -112,7 +112,7 @@ describe('ProjectsService (unit)', () => {
           channels: [
             {
               _count: { posts: 1 },
-              posts: [{ createdAt: new Date('2024-01-01') }]
+              posts: [{ createdAt: new Date('2024-01-01') }],
             },
           ],
         },

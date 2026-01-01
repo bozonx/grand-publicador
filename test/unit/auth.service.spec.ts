@@ -10,8 +10,6 @@ import { jest } from '@jest/globals';
 describe('AuthService (unit)', () => {
   let service: AuthService;
   let moduleRef: TestingModule;
-  let usersService: UsersService;
-  let jwtService: JwtService;
 
   const mockBotToken = '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11';
 
@@ -48,8 +46,6 @@ describe('AuthService (unit)', () => {
     }).compile();
 
     service = moduleRef.get<AuthService>(AuthService);
-    usersService = moduleRef.get<UsersService>(UsersService);
-    jwtService = moduleRef.get<JwtService>(JwtService);
   });
 
   afterAll(async () => {
@@ -132,7 +128,7 @@ describe('AuthService (unit)', () => {
 
     it('should throw UnauthorizedException if user data is missing', async () => {
       // Generate hash for data without user field
-      const params = { auth_date: '1234567890' };
+      const _params = { auth_date: '1234567890' };
       const dataCheckString = 'auth_date=1234567890';
       const secretKey = createHmac('sha256', 'WebAppData').update(mockBotToken).digest();
       const hash = createHmac('sha256', secretKey).update(dataCheckString).digest('hex');

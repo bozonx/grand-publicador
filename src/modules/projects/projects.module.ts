@@ -12,4 +12,4 @@ import { ProjectsService } from './projects.service.js';
   providers: [ProjectsService],
   exports: [ProjectsService],
 })
-export class ProjectsModule { }
+export class ProjectsModule {}

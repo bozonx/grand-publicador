@@ -14,9 +14,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 
-import { JWT_STRATEGY } from '../../common/constants/auth.constants.js';
 import { ApiTokenGuard } from '../../common/guards/api-token.guard.js';
 import { JwtOrApiTokenGuard } from '../../common/guards/jwt-or-api-token.guard.js';
 import type { UnifiedAuthRequest } from '../../common/types/unified-auth-request.interface.js';
@@ -32,13 +30,18 @@ import { ProjectsService } from './projects.service.js';
 export class ProjectsController {
   private readonly logger = new Logger(ProjectsController.name);
 
-  constructor(private readonly projectsService: ProjectsService) { }
+  constructor(private readonly projectsService: ProjectsService) {}
 
   @Post()
-  public async create(@Request() req: UnifiedAuthRequest, @Body() createProjectDto: CreateProjectDto) {
+  public async create(
+    @Request() req: UnifiedAuthRequest,
+    @Body() createProjectDto: CreateProjectDto,
+  ) {
     // API tokens with limited scope cannot create new projects
     if (req.user.scopeProjectIds && req.user.scopeProjectIds.length > 0) {
-      this.logger.warn(`Project creation attempt blocked for limited scope API token! User: ${req.user.userId}, TokenUID: ${req.user.tokenId}`);
+      this.logger.warn(
+        `Project creation attempt blocked for limited scope API token! User: ${req.user.userId}, TokenUID: ${req.user.tokenId}`,
+      );
       throw new ForbiddenException('API tokens with limited scope cannot create projects');
     }
     return this.projectsService.create(req.user.userId, createProjectDto);

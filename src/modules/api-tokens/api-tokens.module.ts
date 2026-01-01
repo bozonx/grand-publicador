@@ -11,4 +11,4 @@ import { ApiTokensService } from './api-tokens.service.js';
   providers: [ApiTokensService, ApiTokenGuard],
   exports: [ApiTokensService, ApiTokenGuard],
 })
-export class ApiTokensModule { }
+export class ApiTokensModule {}

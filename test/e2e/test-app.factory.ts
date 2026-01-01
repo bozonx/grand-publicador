@@ -1,3 +1,10 @@
+// Set environment variables BEFORE any imports to ensure they are available during config loading
+process.env.DATA_DIR = process.env.DATA_DIR ?? './test-data';
+process.env.JWT_SECRET = process.env.JWT_SECRET ?? 'test-secret-key-for-e2e-tests-minimum-32-chars';
+process.env.TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN ?? 'test-token';
+process.env.TELEGRAM_ADMIN_ID = process.env.TELEGRAM_ADMIN_ID ?? '123456789';
+process.env.NODE_ENV = 'test';
+
 import { Test } from '@nestjs/testing';
 import { ValidationPipe } from '@nestjs/common';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -6,12 +13,6 @@ import { AppModule } from '../../src/app.module.js';
 import { PrismaService } from '../../src/modules/prisma/prisma.service.js';
 
 export async function createTestApp(): Promise<NestFastifyApplication> {
-  // Ensure critical env vars are set before module compilation
-  process.env.DATA_DIR = process.env.DATA_DIR || './test-data';
-  process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret';
-  process.env.TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || 'test-token';
-  process.env.TELEGRAM_ADMIN_ID = process.env.TELEGRAM_ADMIN_ID || '123456789';
-
   const moduleRef = await Test.createTestingModule({
     imports: [AppModule],
   })
@@ -38,7 +39,7 @@ export async function createTestApp(): Promise<NestFastifyApplication> {
             nodeEnv: 'test',
             logLevel: 'silent',
             apiKey: 'test-api-key',
-            jwtSecret: 'test-secret-key',
+            jwtSecret: 'test-secret-key-for-e2e-tests-minimum-32-chars',
             telegramBotToken: 'test-bot-token',
             adminTelegramId: '123456789',
           },

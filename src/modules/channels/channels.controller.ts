@@ -10,7 +10,6 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 
 import { ApiTokenGuard } from '../../common/guards/api-token.guard.js';
 import { JwtOrApiTokenGuard } from '../../common/guards/jwt-or-api-token.guard.js';
@@ -24,10 +23,13 @@ import { CreateChannelDto, UpdateChannelDto } from './dto/index.js';
 @Controller('channels')
 @UseGuards(JwtOrApiTokenGuard)
 export class ChannelsController {
-  constructor(private readonly channelsService: ChannelsService) { }
+  constructor(private readonly channelsService: ChannelsService) {}
 
   @Post()
-  public async create(@Request() req: UnifiedAuthRequest, @Body() createChannelDto: CreateChannelDto) {
+  public async create(
+    @Request() req: UnifiedAuthRequest,
+    @Body() createChannelDto: CreateChannelDto,
+  ) {
     const { projectId, ...data } = createChannelDto;
 
     // Validate project scope for API token users

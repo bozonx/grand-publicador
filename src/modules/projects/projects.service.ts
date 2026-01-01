@@ -13,7 +13,7 @@ export class ProjectsService {
   constructor(
     private prisma: PrismaService,
     private permissions: PermissionsService,
-  ) { }
+  ) {}
 
   /**
    * Creates a new project and assigns the creator as the owner.
@@ -114,7 +114,7 @@ export class ProjectsService {
       const lastPostAt = lastPostDates.length > 0 ? new Date(Math.max(...lastPostDates)) : null;
 
       // Clean up channels from response to avoid bloating
-      const { channels, ...projectData } = project;
+      const { channels: _, ...projectData } = project;
 
       return {
         ...projectData,

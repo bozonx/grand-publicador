@@ -100,8 +100,8 @@ describe('SystemConfigService', () => {
 
   describe('ensureConfigExists', () => {
     it('should copy default config if main config does not exist', () => {
-      // Setup paths
-      const configPath = `${mockCwd}/${mockDataDir}/app-config.yaml`;
+      // Setup paths (not used in expectation, but kept as comment if needed)
+      // const configPath = `${mockCwd}/${mockDataDir}/app-config.yaml`;
 
       // Mock fs.existsSync
       mockFs.existsSync.mockImplementation(((path: string) => {

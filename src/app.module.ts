@@ -44,15 +44,15 @@ import { ArchiveModule } from './modules/archive/archive.module.js';
             // Use pino-pretty for better readability in development
             transport: isDev
               ? {
-                target: 'pino-pretty',
-                options: {
-                  colorize: true,
-                  singleLine: false,
-                  translateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss.l'Z'",
-                  ignore: 'pid,hostname',
-                  messageFormat: '[{context}] {msg}',
-                },
-              }
+                  target: 'pino-pretty',
+                  options: {
+                    colorize: true,
+                    singleLine: false,
+                    translateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss.l'Z'",
+                    ignore: 'pid,hostname',
+                    messageFormat: '[{context}] {msg}',
+                  },
+                }
               : undefined,
             serializers: {
               req: req => ({
@@ -128,4 +128,4 @@ import { ArchiveModule } from './modules/archive/archive.module.js';
  * The root module of the application.
  * Configures global imports, providers, and modules.
  */
-export class AppModule { }
+export class AppModule {}

@@ -36,7 +36,14 @@ export class ApiTokenDto {
   public plainToken!: string;
 
   @Expose()
-  @Transform(({ value }) => (typeof value === 'string' ? JSON.parse(value) : value))
+  @Transform(({ value }) => {
+    if (typeof value !== 'string') return value;
+    try {
+      return JSON.parse(value);
+    } catch {
+      return [];
+    }
+  })
   public scopeProjectIds!: string[];
 
   @Expose()

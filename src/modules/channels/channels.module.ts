@@ -13,4 +13,4 @@ import { ChannelsService } from './channels.service.js';
   providers: [ChannelsService],
   exports: [ChannelsService],
 })
-export class ChannelsModule { }
+export class ChannelsModule {}

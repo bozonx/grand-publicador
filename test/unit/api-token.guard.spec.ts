@@ -6,7 +6,6 @@ import { jest } from '@jest/globals';
 
 describe('ApiTokenGuard (unit)', () => {
   let guard: ApiTokenGuard;
-  let apiTokensService: ApiTokensService;
   let moduleRef: TestingModule;
 
   const mockApiTokensService = {
@@ -26,7 +25,6 @@ describe('ApiTokenGuard (unit)', () => {
     }).compile();
 
     guard = moduleRef.get<ApiTokenGuard>(ApiTokenGuard);
-    apiTokensService = moduleRef.get<ApiTokensService>(ApiTokensService);
   });
 
   afterAll(async () => {

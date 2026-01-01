@@ -5,12 +5,12 @@ import type { FastifyRequest } from 'fastify';
  * Controllers can use this to work with either authentication method.
  */
 export interface UnifiedAuthUser {
-    /** The unique identifier of the user (from JWT 'sub' or API token 'userId'). */
-    userId: string;
-    /** Optional list of project IDs this user/token is allowed to access. Empty or undefined means all. */
-    scopeProjectIds?: string[];
-    /** Optional token ID if authenticated via API token. */
-    tokenId?: string;
+  /** The unique identifier of the user (from JWT 'sub' or API token 'userId'). */
+  userId: string;
+  /** Optional list of project IDs this user/token is allowed to access. Empty or undefined means all. */
+  scopeProjectIds?: string[];
+  /** Optional token ID if authenticated via API token. */
+  tokenId?: string;
 }
 
 /**
@@ -18,6 +18,6 @@ export interface UnifiedAuthUser {
  * This works for both JWT and API token authentication.
  */
 export interface UnifiedAuthRequest extends FastifyRequest {
-    /** The authenticated user from either JWT or API token. */
-    user: UnifiedAuthUser;
+  /** The authenticated user from either JWT or API token. */
+  user: UnifiedAuthUser;
 }
