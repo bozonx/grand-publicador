@@ -33,7 +33,7 @@ const formData = reactive({
   tags: props.publication?.tags || '',
   status: (props.publication?.status || 'DRAFT') as 'DRAFT' | 'SCHEDULED',
   scheduledAt: '',
-  channelIds: [] as string[],
+  channelIds: props.publication?.posts?.map((p: any) => p.channelId) || [] as string[],
 })
 
 const isEditMode = computed(() => !!props.publication?.id)
@@ -73,12 +73,23 @@ async function handleSubmit() {
         status: formData.status,
     }
     
-    // Note: updating status to SCHEDULED ? Backend might not handle distribution automatically on update
+    // Update the publication itself
+    await updatePublication(props.publication.id, updateData)
     
-    const result = await updatePublication(props.publication.id, updateData)
-    if (result) {
-      emit('success', result.id)
+    // Handle post creation for newly selected channels
+    const originalChannelIds = props.publication.posts?.map((p: any) => p.channelId) || []
+    const newChannelIds = formData.channelIds.filter(id => !originalChannelIds.includes(id))
+    
+    if (newChannelIds.length > 0) {
+        await createPostsFromPublication(
+            props.publication.id, 
+            newChannelIds, 
+            formData.status === 'SCHEDULED' ? formData.scheduledAt : undefined
+        )
     }
+
+    emit('success', props.publication.id)
+
   } else {
     // Create new publication
     const createData: any = {
@@ -153,9 +164,8 @@ function toggleChannel(channelId: string) {
 
     <form class="p-6 space-y-6" @submit.prevent="handleSubmit">
       
-      <!-- Channels (Multi-select) - Only for new publications for now -->
       <!-- Channels (Multi-select) -->
-      <div v-if="!isEditMode">
+      <div>
         <UFormField :label="t('channel.titlePlural', 'Channels')" :help="t('publication.channelsHelp', 'Select channels to create posts immediately')">
             <div v-if="channelOptions.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
                 <div 
