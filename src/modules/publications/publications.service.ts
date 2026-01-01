@@ -12,7 +12,7 @@ export class PublicationsService {
   constructor(
     private prisma: PrismaService,
     private permissions: PermissionsService,
-  ) {}
+  ) { }
 
   /**
    * Create a new publication.
@@ -66,13 +66,14 @@ export class PublicationsService {
       status?: PostStatus;
       limit?: number;
       offset?: number;
+      includeArchived?: boolean;
     },
   ) {
     await this.permissions.checkProjectAccess(projectId, userId);
 
     const where: Prisma.PublicationWhereInput = {
       projectId,
-      archivedAt: null,
+      ...(filters?.includeArchived ? {} : { archivedAt: null }),
       project: { archivedAt: null },
     };
     if (filters?.status) {

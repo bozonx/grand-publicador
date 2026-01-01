@@ -23,6 +23,7 @@ const {
 
 // Filter state
 const selectedStatus = ref<PublicationStatus | null>(null)
+const showArchived = ref(false)
 // const searchQuery = ref('') // Search depends on backend implementation
 
 // Delete modal state
@@ -33,14 +34,15 @@ const isDeleting = ref(false)
 // Fetch data on mount
 onMounted(async () => {
   if (projectId.value) {
-    await fetchPublicationsByProject(projectId.value)
+    await fetchPublicationsByProject(projectId.value, { includeArchived: showArchived.value })
   }
 })
 
 // Watch for filter changes
-watch([selectedStatus], () => {
+watch([selectedStatus, showArchived], () => {
   fetchPublicationsByProject(projectId.value, {
     status: selectedStatus.value || undefined,
+    includeArchived: showArchived.value
   })
 })
 
@@ -159,6 +161,18 @@ function resetFilters() {
             </UButton>
         </div>
       </div>
+    </div>
+
+    <!-- Archived Toggle -->
+    <div class="flex items-center justify-end mb-4 px-1">
+        <UToggle 
+            v-model="showArchived" 
+            color="primary"
+        >
+             <template #label>
+                 <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('common.showArchived', 'Show Archived') }}</span>
+             </template>
+        </UToggle>
     </div>
 
     <!-- Error state -->

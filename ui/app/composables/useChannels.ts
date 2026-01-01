@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { ArchiveEntityType } from '~/types/archive.types'
 
 export type SocialMedia = 'TELEGRAM' | 'INSTAGRAM' | 'VK' | 'YOUTUBE' | 'TIKTOK' | 'X' | 'FACEBOOK' | 'LINKEDIN' | 'SITE'
 
@@ -43,12 +44,14 @@ export interface ChannelsFilter {
     socialMedia?: SocialMedia | null
     isActive?: boolean | null
     search?: string
+    includeArchived?: boolean
 }
 
 export function useChannels() {
     const api = useApi()
     const { t } = useI18n()
     const toast = useToast()
+    const { archiveEntity, restoreEntity } = useArchive()
 
     const channels = ref<ChannelWithProject[]>([])
     const currentChannel = ref<ChannelWithProject | null>(null)
@@ -76,9 +79,13 @@ export function useChannels() {
         error.value = null
 
         try {
-            const data = await api.get<ChannelWithProject[]>('/channels', {
-                params: { projectId }
-            })
+            // Merge projectId arg with local filter state
+            const params: any = {
+                projectId,
+                ...filter.value
+            }
+
+            const data = await api.get<ChannelWithProject[]>('/channels', { params })
             channels.value = data
             return data
         } catch (err: any) {
@@ -193,22 +200,11 @@ export function useChannels() {
         error.value = null
 
         try {
-            const updatedChannel = await api.post<Channel>(`/channels/${channelId}/archive`)
-            toast.add({
-                title: t('common.success'),
-                description: t('channel.archiveSuccess', 'Channel archived successfully'),
-                color: 'success',
-            })
-            currentChannel.value = updatedChannel as ChannelWithProject
-            return updatedChannel
+            await archiveEntity(ArchiveEntityType.CHANNEL, channelId)
+            // Refresh
+            const current = await fetchChannel(channelId)
+            return current
         } catch (err: any) {
-            const message = err.message || 'Failed to archive channel'
-            error.value = message
-            toast.add({
-                title: t('common.error'),
-                description: message,
-                color: 'error',
-            })
             return null
         } finally {
             isLoading.value = false
@@ -220,22 +216,10 @@ export function useChannels() {
         error.value = null
 
         try {
-            const updatedChannel = await api.post<Channel>(`/channels/${channelId}/unarchive`)
-            toast.add({
-                title: t('common.success'),
-                description: t('channel.unarchiveSuccess', 'Channel unarchived successfully'),
-                color: 'success',
-            })
-            currentChannel.value = updatedChannel as ChannelWithProject
-            return updatedChannel
+            await restoreEntity(ArchiveEntityType.CHANNEL, channelId)
+            const current = await fetchChannel(channelId)
+            return current
         } catch (err: any) {
-            const message = err.message || 'Failed to unarchive channel'
-            error.value = message
-            toast.add({
-                title: t('common.error'),
-                description: message,
-                color: 'error',
-            })
             return null
         } finally {
             isLoading.value = false

@@ -27,7 +27,7 @@ export class PostsController {
   constructor(
     private readonly postsService: PostsService,
     private readonly channelsService: ChannelsService,
-  ) {}
+  ) { }
 
   @Post()
   public async create(@Request() req: UnifiedAuthRequest, @Body() createPostDto: CreatePostDto) {
@@ -53,8 +53,9 @@ export class PostsController {
     @Query('status') status?: any,
     @Query('postType') postType?: any,
     @Query('search') search?: string,
+    @Query('includeArchived') includeArchived?: string,
   ) {
-    const filters = { status, postType, search };
+    const filters = { status, postType, search, includeArchived: includeArchived === 'true' };
 
     // Validate project scope for API token users
     if (req.user.scopeProjectIds) {

@@ -22,6 +22,7 @@ const {
 
 // Local filter state
 const statusFilter = ref<'all' | 'active' | 'inactive'>('all')
+const showArchived = ref(false)
 
 const statusOptions = computed(() => [
   { value: 'all', label: t('common.all') },
@@ -37,14 +38,15 @@ onMounted(() => {
 })
 
 // Watch for filter changes
-watch(statusFilter, (val) => {
+watch([statusFilter, showArchived], ([statusVal, archivedVal]) => {
   const map: Record<string, boolean | null> = {
     all: null,
     active: true,
     inactive: false
   }
   setFilter({
-    isActive: map[val]
+    isActive: map[statusVal],
+    includeArchived: archivedVal
   })
   fetchChannels(props.projectId)
 })
@@ -82,6 +84,16 @@ function formatDate(date: string | null | undefined): string {
                 fieldset: 'flex items-center gap-4' 
             }"
          />
+
+        <UToggle 
+            v-model="showArchived" 
+            :label="t('common.showArchived', 'Show Archived')" 
+            color="primary"
+        >
+             <template #label>
+                 <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('common.showArchived', 'Show Archived') }}</span>
+             </template>
+        </UToggle>
 
         <UButton 
             icon="i-heroicons-plus" 

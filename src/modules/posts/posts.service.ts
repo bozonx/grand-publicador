@@ -76,7 +76,7 @@ export class PostsService {
   public async findAllForProject(
     projectId: string,
     userId: string,
-    filters?: { status?: PostStatus; postType?: PostType; search?: string },
+    filters?: { status?: PostStatus; postType?: PostType; search?: string; includeArchived?: boolean },
   ) {
     // Check project permission (owner/admin/editor/viewer)
     const role = await this.permissions.getUserProjectRole(projectId, userId);
@@ -85,10 +85,10 @@ export class PostsService {
     }
 
     const where: any = {
-      archivedAt: null,
+      ...(filters?.includeArchived ? {} : { archivedAt: null }),
       channel: {
         projectId,
-        archivedAt: null,
+        ...(filters?.includeArchived ? {} : { archivedAt: null }),
         project: { archivedAt: null },
       },
     };
@@ -141,15 +141,15 @@ export class PostsService {
   public async findAllForChannel(
     channelId: string,
     userId: string,
-    filters?: { status?: PostStatus; postType?: PostType; search?: string },
+    filters?: { status?: PostStatus; postType?: PostType; search?: string, includeArchived?: boolean },
   ) {
     await this.channelsService.findOne(channelId, userId); // Validates access
 
     const where: any = {
       channelId,
-      archivedAt: null,
+      ...(filters?.includeArchived ? {} : { archivedAt: null }),
       channel: {
-        archivedAt: null,
+        ...(filters?.includeArchived ? {} : { archivedAt: null }),
         project: { archivedAt: null },
       },
     };

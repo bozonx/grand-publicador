@@ -14,10 +14,15 @@ const { ArchiveEntityType } = await import('~/types/archive.types')
 const showDeleteModal = ref(false)
 const projectToDelete = ref<string | null>(null)
 const isDeleting = ref(false)
+const showArchived = ref(false)
 
 // Fetch projects on mount
 onMounted(() => {
-  fetchProjects()
+  fetchProjects(showArchived.value)
+})
+
+watch(showArchived, (newVal) => {
+    fetchProjects(newVal)
 })
 
 /**
@@ -85,6 +90,19 @@ function cancelDelete() {
       <UButton icon="i-heroicons-plus" @click="goToCreateProject">
         {{ t('project.createProject') }}
       </UButton>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex items-center justify-end mb-4">
+        <UToggle 
+            v-model="showArchived" 
+            :label="t('common.showArchived', 'Show Archived')" 
+            color="primary"
+        >
+             <template #label>
+                 <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('common.showArchived', 'Show Archived') }}</span>
+             </template>
+        </UToggle>
     </div>
 
     <!-- Error state -->

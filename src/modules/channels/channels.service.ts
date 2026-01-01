@@ -54,13 +54,18 @@ export class ChannelsService {
    * @param userId - The ID of the user requesting the channels.
    * @returns A list of channels with post counts.
    */
-  public async findAllForProject(projectId: string, userId: string, allowArchived = false) {
+  public async findAllForProject(
+    projectId: string,
+    userId: string,
+    options: { allowArchived?: boolean, isActive?: boolean } = {}
+  ) {
     await this.projectsService.findOne(projectId, userId, true); // Validates membership, allow archived project
     const channels = await this.prisma.channel.findMany({
       where: {
         projectId,
-        ...(allowArchived ? {} : { archivedAt: null }),
+        ...(options.allowArchived ? {} : { archivedAt: null }),
         project: { archivedAt: null },
+        ...(options.isActive !== undefined ? { isActive: options.isActive } : {}),
       },
       include: {
         _count: {

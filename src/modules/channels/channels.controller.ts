@@ -44,7 +44,12 @@ export class ChannelsController {
   }
 
   @Get()
-  public async findAll(@Request() req: UnifiedAuthRequest, @Query('projectId') projectId: string) {
+  public async findAll(
+    @Request() req: UnifiedAuthRequest,
+    @Query('projectId') projectId: string,
+    @Query('isActive') isActive?: string,
+    @Query('includeArchived') includeArchived?: string,
+  ) {
     // Validate project scope for API token users
     if (req.user.scopeProjectIds) {
       ApiTokenGuard.validateProjectScope(projectId, req.user.scopeProjectIds, {
@@ -53,7 +58,10 @@ export class ChannelsController {
       });
     }
 
-    return this.channelsService.findAllForProject(projectId, req.user.userId);
+    return this.channelsService.findAllForProject(projectId, req.user.userId, {
+      isActive: isActive !== undefined ? isActive === 'true' : undefined,
+      allowArchived: includeArchived === 'true'
+    });
   }
 
   @Get(':id')
@@ -105,33 +113,5 @@ export class ChannelsController {
     return this.channelsService.remove(id, req.user.userId);
   }
 
-  @Post(':id/archive')
-  public async archive(@Request() req: UnifiedAuthRequest, @Param('id') id: string) {
-    const channel = await this.channelsService.findOne(id, req.user.userId, true);
 
-    // Validate project scope for API token users
-    if (req.user.scopeProjectIds) {
-      ApiTokenGuard.validateProjectScope(channel.projectId, req.user.scopeProjectIds, {
-        userId: req.user.userId,
-        tokenId: req.user.tokenId,
-      });
-    }
-
-    return this.channelsService.archive(id, req.user.userId);
-  }
-
-  @Post(':id/unarchive')
-  public async unarchive(@Request() req: UnifiedAuthRequest, @Param('id') id: string) {
-    const channel = await this.channelsService.findOne(id, req.user.userId, true);
-
-    // Validate project scope for API token users
-    if (req.user.scopeProjectIds) {
-      ApiTokenGuard.validateProjectScope(channel.projectId, req.user.scopeProjectIds, {
-        userId: req.user.userId,
-        tokenId: req.user.tokenId,
-      });
-    }
-
-    return this.channelsService.unarchive(id, req.user.userId);
-  }
 }

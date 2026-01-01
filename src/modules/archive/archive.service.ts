@@ -5,9 +5,14 @@ import { ArchiveEntityType, ArchiveStatsDto } from './dto/archive.dto.js';
 
 type ArchivableEntity = Project | Channel | Publication | Post;
 
+import { PermissionsService } from '../../common/services/permissions.service.js';
+
 @Injectable()
 export class ArchiveService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly permissions: PermissionsService,
+  ) { }
 
   public async archiveEntity(
     type: ArchiveEntityType,
@@ -21,15 +26,34 @@ export class ArchiveService {
 
     switch (type) {
       case ArchiveEntityType.PROJECT: {
+        await this.permissions.checkProjectPermission(id, userId, ['OWNER', 'ADMIN']);
         return this.prisma.project.update({ where: { id }, data });
       }
       case ArchiveEntityType.CHANNEL: {
+        const channel = await this.prisma.channel.findUnique({ where: { id } });
+        if (!channel) throw new NotFoundException('Channel not found');
+        await this.permissions.checkProjectPermission(channel.projectId, userId, ['OWNER', 'ADMIN', 'EDITOR']);
         return this.prisma.channel.update({ where: { id }, data });
       }
       case ArchiveEntityType.PUBLICATION: {
+        const publication = await this.prisma.publication.findUnique({ where: { id } });
+        if (!publication) throw new NotFoundException('Publication not found');
+        // Author or Admin/Owner
+        if (publication.authorId !== userId) {
+          await this.permissions.checkProjectPermission(publication.projectId, userId, ['OWNER', 'ADMIN']);
+        }
         return this.prisma.publication.update({ where: { id }, data });
       }
       case ArchiveEntityType.POST: {
+        const post = await this.prisma.post.findUnique({ where: { id } });
+        if (!post) throw new NotFoundException('Post not found');
+        // Author or Admin/Owner
+        if (post.authorId !== userId) {
+          const channel = await this.prisma.channel.findUnique({ where: { id: post.channelId } });
+          if (channel) {
+            await this.permissions.checkProjectPermission(channel.projectId, userId, ['OWNER', 'ADMIN']);
+          }
+        }
         return this.prisma.post.update({ where: { id }, data });
       }
       default: {
@@ -38,7 +62,7 @@ export class ArchiveService {
     }
   }
 
-  public async restoreEntity(type: ArchiveEntityType, id: string): Promise<ArchivableEntity> {
+  public async restoreEntity(type: ArchiveEntityType, id: string, userId: string): Promise<ArchivableEntity> {
     const data = {
       archivedAt: null,
       archivedBy: null,
@@ -46,15 +70,32 @@ export class ArchiveService {
 
     switch (type) {
       case ArchiveEntityType.PROJECT: {
+        await this.permissions.checkProjectPermission(id, userId, ['OWNER', 'ADMIN']);
         return this.prisma.project.update({ where: { id }, data });
       }
       case ArchiveEntityType.CHANNEL: {
+        const channel = await this.prisma.channel.findUnique({ where: { id } });
+        if (!channel) throw new NotFoundException('Channel not found');
+        await this.permissions.checkProjectPermission(channel.projectId, userId, ['OWNER', 'ADMIN', 'EDITOR']);
         return this.prisma.channel.update({ where: { id }, data });
       }
       case ArchiveEntityType.PUBLICATION: {
+        const publication = await this.prisma.publication.findUnique({ where: { id } });
+        if (!publication) throw new NotFoundException('Publication not found');
+        if (publication.authorId !== userId) {
+          await this.permissions.checkProjectPermission(publication.projectId, userId, ['OWNER', 'ADMIN']);
+        }
         return this.prisma.publication.update({ where: { id }, data });
       }
       case ArchiveEntityType.POST: {
+        const post = await this.prisma.post.findUnique({ where: { id } });
+        if (!post) throw new NotFoundException('Post not found');
+        if (post.authorId !== userId) {
+          const channel = await this.prisma.channel.findUnique({ where: { id: post.channelId } });
+          if (channel) {
+            await this.permissions.checkProjectPermission(channel.projectId, userId, ['OWNER', 'ADMIN']);
+          }
+        }
         return this.prisma.post.update({ where: { id }, data });
       }
       default: {
@@ -66,18 +107,36 @@ export class ArchiveService {
   public async deleteEntityPermanently(
     type: ArchiveEntityType,
     id: string,
+    userId: string
   ): Promise<ArchivableEntity> {
     switch (type) {
       case ArchiveEntityType.PROJECT: {
+        await this.permissions.checkProjectPermission(id, userId, ['OWNER']);
         return this.prisma.project.delete({ where: { id } });
       }
       case ArchiveEntityType.CHANNEL: {
+        const channel = await this.prisma.channel.findUnique({ where: { id } });
+        if (!channel) throw new NotFoundException('Channel not found');
+        await this.permissions.checkProjectPermission(channel.projectId, userId, ['OWNER', 'ADMIN']);
         return this.prisma.channel.delete({ where: { id } });
       }
       case ArchiveEntityType.PUBLICATION: {
+        const publication = await this.prisma.publication.findUnique({ where: { id } });
+        if (!publication) throw new NotFoundException('Publication not found');
+        if (publication.authorId !== userId) {
+          await this.permissions.checkProjectPermission(publication.projectId, userId, ['OWNER', 'ADMIN']);
+        }
         return this.prisma.publication.delete({ where: { id } });
       }
       case ArchiveEntityType.POST: {
+        const post = await this.prisma.post.findUnique({ where: { id } });
+        if (!post) throw new NotFoundException('Post not found');
+        if (post.authorId !== userId) {
+          const channel = await this.prisma.channel.findUnique({ where: { id: post.channelId } });
+          if (channel) {
+            await this.permissions.checkProjectPermission(channel.projectId, userId, ['OWNER', 'ADMIN']);
+          }
+        }
         return this.prisma.post.delete({ where: { id } });
       }
       default: {

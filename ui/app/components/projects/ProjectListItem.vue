@@ -71,19 +71,19 @@ function formatDate(date: string | null | undefined): string {
             
             <div class="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
 
-            <div class="flex items-center gap-1.5" :title="t('post.titlePlural')">
+            <div class="flex items-center gap-1.5" :title="t('publication.titlePlural')">
               <UIcon name="i-heroicons-document-text" class="w-4 h-4 flex-shrink-0" />
               <span>
-                {{ project.publicationsCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
+                {{ project.publicationsCount || 0 }} {{ t('publication.titlePlural').toLowerCase() }}
               </span>
             </div>
           </div>
 
-          <!-- Last Post Date -->
-          <div v-if="project.lastPostAt" class="mt-2 flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
+          <!-- Last Publication Date -->
+          <div v-if="project.lastPublicationAt" class="mt-2 flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
              <UIcon name="i-heroicons-clock" class="w-3.5 h-3.5 flex-shrink-0" />
              <span>
-                {{ t('common.lastPost') }}: {{ formatDate(project.lastPostAt) }}
+                {{ t('project.lastPublication', 'Last publication') }}: {{ formatDate(project.lastPublicationAt) }}
              </span>
           </div>
         </div>

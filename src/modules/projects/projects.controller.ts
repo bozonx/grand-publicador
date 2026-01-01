@@ -52,8 +52,13 @@ export class ProjectsController {
     @Request() req: UnifiedAuthRequest,
     @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit?: number,
     @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset?: number,
+    @Query('includeArchived') includeArchived?: string,
   ) {
-    const projects = await this.projectsService.findAllForUser(req.user.userId, { limit, offset });
+    const projects = await this.projectsService.findAllForUser(req.user.userId, {
+      limit,
+      offset,
+      includeArchived: includeArchived === 'true'
+    });
 
     // Filter projects based on token scope
     if (req.user.scopeProjectIds && req.user.scopeProjectIds.length > 0) {
@@ -105,29 +110,5 @@ export class ProjectsController {
     return this.projectsService.remove(id, req.user.userId);
   }
 
-  @Post(':id/archive')
-  public async archive(@Request() req: UnifiedAuthRequest, @Param('id') id: string) {
-    // Validate project scope for API token users
-    if (req.user.scopeProjectIds) {
-      ApiTokenGuard.validateProjectScope(id, req.user.scopeProjectIds, {
-        userId: req.user.userId,
-        tokenId: req.user.tokenId,
-      });
-    }
 
-    return this.projectsService.archive(id, req.user.userId);
-  }
-
-  @Post(':id/unarchive')
-  public async unarchive(@Request() req: UnifiedAuthRequest, @Param('id') id: string) {
-    // Validate project scope for API token users
-    if (req.user.scopeProjectIds) {
-      ApiTokenGuard.validateProjectScope(id, req.user.scopeProjectIds, {
-        userId: req.user.userId,
-        tokenId: req.user.tokenId,
-      });
-    }
-
-    return this.projectsService.unarchive(id, req.user.userId);
-  }
 }

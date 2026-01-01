@@ -97,6 +97,13 @@ async function handleUnarchive() {
         isArchiving.value = false
     }
 }
+/**
+ * Format date for display
+ */
+function formatDate(date: string | null | undefined): string {
+  if (!date) return '-'
+  return new Date(date).toLocaleDateString()
+}
 </script>
 
 <template>
@@ -192,16 +199,16 @@ async function handleUnarchive() {
                 </span>
                 <span class="flex items-center gap-1">
                   <UIcon name="i-heroicons-document-text" class="w-4 h-4" />
-                  {{ t('post.titlePlural') }}: {{ currentProject.publicationsCount || 0 }}
+                  {{ t('publication.titlePlural') }}: {{ currentProject.publicationsCount || 0 }}
                 </span>
                 <span class="flex items-center gap-1">
                   <UIcon name="i-heroicons-signal" class="w-4 h-4" />
                   {{ t('channel.titlePlural') }}: {{ currentProject.channelCount || 0 }}
                 </span>
-                <span v-if="currentProject.lastPostAt" class="flex items-center gap-1">
+                <span v-if="currentProject.lastPublicationAt" class="flex items-center gap-1">
                   <UIcon name="i-heroicons-clock" class="w-4 h-4" />
-                  {{ t('project.lastPost', 'Last post') }}:
-                  {{ d(new Date(currentProject.lastPostAt), 'short') }}
+                  {{ t('project.lastPublication', 'Last publication') }}:
+                  {{ formatDate(currentProject.lastPublicationAt) }}
                 </span>
               </div>
             </div>

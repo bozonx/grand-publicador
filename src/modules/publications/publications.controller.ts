@@ -26,7 +26,7 @@ import { PublicationsService } from './publications.service.js';
 @Controller('publications')
 @UseGuards(JwtOrApiTokenGuard)
 export class PublicationsController {
-  constructor(private readonly publicationsService: PublicationsService) {}
+  constructor(private readonly publicationsService: PublicationsService) { }
 
   /**
    * Create a new publication.
@@ -56,11 +56,13 @@ export class PublicationsController {
     @Query('status') status?: PostStatus,
     @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit?: number,
     @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset?: number,
+    @Query('includeArchived') includeArchived?: string,
   ) {
     return this.publicationsService.findAll(projectId, req.user.userId, {
       status,
       limit,
       offset,
+      includeArchived: includeArchived === 'true',
     });
   }
 

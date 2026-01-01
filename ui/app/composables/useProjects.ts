@@ -2,22 +2,25 @@ import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useProjectsStore } from '~/stores/projects'
 import type { Project, ProjectWithRole, ProjectMemberWithUser, ProjectRole } from '~/stores/projects'
+import { ArchiveEntityType } from '~/types/archive.types'
 
 export function useProjects() {
     const api = useApi()
     const { user } = useAuth()
     const { t } = useI18n()
     const toast = useToast()
+    const { archiveEntity, restoreEntity } = useArchive()
 
     const store = useProjectsStore()
     const { projects, currentProject, members, isLoading, error } = storeToRefs(store)
 
-    async function fetchProjects(): Promise<ProjectWithRole[]> {
+    async function fetchProjects(includeArchived = false): Promise<ProjectWithRole[]> {
         store.setLoading(true)
         store.setError(null)
 
         try {
-            const data = await api.get<ProjectWithRole[]>('/projects')
+            const params = { includeArchived }
+            const data = await api.get<ProjectWithRole[]>('/projects', { params })
             store.setProjects(data)
             return data
         } catch (err: any) {
@@ -142,22 +145,20 @@ export function useProjects() {
         store.setError(null)
 
         try {
-            const updatedProject = await api.post<Project>(`/projects/${projectId}/archive`)
-            toast.add({
-                title: t('common.success'),
-                description: t('project.archiveSuccess', 'Project archived successfully'),
-                color: 'success',
-            })
-            store.updateProject(projectId, updatedProject as ProjectWithRole)
-            return updatedProject
+            await archiveEntity(ArchiveEntityType.PROJECT, projectId)
+            // Ideally we should just update the state, but fetchProject/fetchProjects might be safer
+            // to ensure backend state consistency if needed. 
+            // For now, let's manual update or re-fetch.
+            // But wait, archiveEntity doesn't return the updated entity in a way we can immediately usage?
+            // it returns void in composable but the api returns entity.
+
+            // Let's refetch to be safe and simple
+            await fetchProject(projectId)
+
+            // Return current project from store
+            return store.currentProject
         } catch (err: any) {
-            const message = err.message || 'Failed to archive project'
-            store.setError(message)
-            toast.add({
-                title: t('common.error'),
-                description: message,
-                color: 'error',
-            })
+            // Error already handled by useArchive
             return null
         } finally {
             store.setLoading(false)
@@ -169,22 +170,10 @@ export function useProjects() {
         store.setError(null)
 
         try {
-            const updatedProject = await api.post<Project>(`/projects/${projectId}/unarchive`)
-            toast.add({
-                title: t('common.success'),
-                description: t('project.unarchiveSuccess', 'Project unarchived successfully'),
-                color: 'success',
-            })
-            store.updateProject(projectId, updatedProject as ProjectWithRole)
-            return updatedProject
+            await restoreEntity(ArchiveEntityType.PROJECT, projectId)
+            await fetchProject(projectId)
+            return store.currentProject
         } catch (err: any) {
-            const message = err.message || 'Failed to unarchive project'
-            store.setError(message)
-            toast.add({
-                title: t('common.error'),
-                description: message,
-                color: 'error',
-            })
             return null
         } finally {
             store.setLoading(false)

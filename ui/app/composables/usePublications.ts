@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import { useApi } from './useApi'
 import { useAuth } from './useAuth'
-
+import { ArchiveEntityType } from '~/types/archive.types'
 export type PublicationStatus = 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'FAILED'
 
 export interface Publication {
@@ -16,6 +16,7 @@ export interface Publication {
     meta: string
     createdAt: string
     updatedAt: string
+    archivedAt?: string | null
 }
 
 export interface PublicationWithRelations extends Publication {
@@ -35,6 +36,7 @@ export interface PublicationsFilter {
     status?: PublicationStatus | null
     limit?: number
     offset?: number
+    includeArchived?: boolean
 }
 
 export function usePublications() {
@@ -42,6 +44,7 @@ export function usePublications() {
     const { user } = useAuth()
     const { t } = useI18n()
     const toast = useToast()
+    const { archiveEntity, restoreEntity } = useArchive()
 
     const publications = ref<PublicationWithRelations[]>([])
     const currentPublication = ref<PublicationWithRelations | null>(null)
@@ -61,6 +64,7 @@ export function usePublications() {
             if (filters.status) params.status = filters.status
             if (filters.limit) params.limit = filters.limit
             if (filters.offset) params.offset = filters.offset
+            if (filters.includeArchived) params.includeArchived = true
 
             const data = await api.get<PublicationWithRelations[]>('/publications', { params })
             publications.value = data
@@ -198,6 +202,35 @@ export function usePublications() {
         }
     }
 
+    async function toggleArchive(publicationId: string, isArchived: boolean) {
+        isLoading.value = true
+        try {
+            if (isArchived) {
+                await restoreEntity(ArchiveEntityType.PUBLICATION, publicationId)
+            } else {
+                await archiveEntity(ArchiveEntityType.PUBLICATION, publicationId)
+            }
+            // Refresh
+            if (currentPublication.value?.id === publicationId) {
+                await fetchPublication(publicationId)
+            } else {
+                // If in list, refresh list? Or just update local item if possible?
+                // Re-fetch is safest for now as we don't know filtering context perfectly
+                // access projectId from current view? We don't have it here.
+                // But we can check if the publication is in the `publications` list
+                const idx = publications.value.findIndex(p => p.id === publicationId)
+                if (idx !== -1) {
+                    const pub = publications.value[idx]
+                    await fetchPublicationsByProject(pub.projectId, { includeArchived: true }) // crude refresh
+                }
+            }
+        } catch (e) {
+            // handled by useArchive
+        } finally {
+            isLoading.value = false
+        }
+    }
+
     return {
         publications,
         currentPublication,
@@ -212,6 +245,7 @@ export function usePublications() {
         createPostsFromPublication,
         getStatusDisplayName,
         getStatusColor,
+        toggleArchive,
     }
 }
 

@@ -90,6 +90,12 @@ export class ProjectsService {
             publications: { where: { archivedAt: null } },
           },
         },
+        publications: {
+          where: { archivedAt: null },
+          take: 1,
+          orderBy: { createdAt: 'desc' },
+          select: { createdAt: true },
+        },
         channels: {
           where: { archivedAt: null },
           include: {
@@ -113,14 +119,7 @@ export class ProjectsService {
     return projects.map(project => {
       const userMember = project.members.find(m => m.userId === userId);
 
-      const postCount = project.channels.reduce((sum, channel) => sum + channel._count.posts, 0);
-
-      const lastPostDates = project.channels
-        .map(c => c.posts[0]?.createdAt)
-        .filter((d): d is Date => !!d)
-        .map(d => d.getTime());
-
-      const lastPostAt = lastPostDates.length > 0 ? new Date(Math.max(...lastPostDates)) : null;
+      const lastPublicationAt = project.publications[0]?.createdAt || null;
 
       const mappedChannels = project.channels.map(channel => ({
         ...channel,
@@ -129,7 +128,7 @@ export class ProjectsService {
       }));
 
       // Clean up channels from response to avoid bloating
-      const { channels: _, ...projectData } = project;
+      const { channels: _, publications: __, ...projectData } = project;
 
       return {
         ...projectData,
@@ -138,8 +137,7 @@ export class ProjectsService {
         channelCount: project._count.channels,
         publicationsCount: project._count.publications,
         memberCount: project.members.length,
-        postCount,
-        lastPostAt,
+        lastPublicationAt,
       };
     });
   }
@@ -171,6 +169,12 @@ export class ProjectsService {
             publications: { where: { archivedAt: null } },
           },
         },
+        publications: {
+          where: { archivedAt: null },
+          take: 1,
+          orderBy: { createdAt: 'desc' },
+          select: { createdAt: true },
+        },
         channels: {
           where: { archivedAt: null },
           include: {
@@ -197,14 +201,7 @@ export class ProjectsService {
       throw new NotFoundException('Project not found');
     }
 
-    const postCount = project.channels.reduce((sum, channel) => sum + channel._count.posts, 0);
-
-    const lastPostDates = project.channels
-      .map(c => c.posts[0]?.createdAt)
-      .filter((d): d is Date => !!d)
-      .map(d => d.getTime());
-
-    const lastPostAt = lastPostDates.length > 0 ? new Date(Math.max(...lastPostDates)) : null;
+    const lastPublicationAt = project.publications[0]?.createdAt || null;
 
     const mappedChannels = project.channels.map(channel => ({
       ...channel,
@@ -219,8 +216,7 @@ export class ProjectsService {
       channelCount: project._count.channels,
       publicationsCount: project._count.publications,
       memberCount: project.members.length,
-      postCount,
-      lastPostAt,
+      lastPublicationAt,
     };
   }
 

@@ -8,7 +8,7 @@ import { ArchiveEntityType, MoveEntityDto } from './dto/archive.dto.js';
 @Controller('archive')
 @UseGuards(AuthGuard(JWT_STRATEGY))
 export class ArchiveController {
-  constructor(private readonly archiveService: ArchiveService) {}
+  constructor(private readonly archiveService: ArchiveService) { }
 
   @Post(':type/:id')
   public archive(
@@ -20,13 +20,21 @@ export class ArchiveController {
   }
 
   @Post(':type/:id/restore')
-  public restore(@Param('type') type: ArchiveEntityType, @Param('id') id: string) {
-    return this.archiveService.restoreEntity(type, id);
+  public restore(
+    @Request() req: AuthenticatedRequest,
+    @Param('type') type: ArchiveEntityType,
+    @Param('id') id: string
+  ) {
+    return this.archiveService.restoreEntity(type, id, req.user.sub);
   }
 
   @Delete(':type/:id')
-  public remove(@Param('type') type: ArchiveEntityType, @Param('id') id: string) {
-    return this.archiveService.deleteEntityPermanently(type, id);
+  public remove(
+    @Request() req: AuthenticatedRequest,
+    @Param('type') type: ArchiveEntityType,
+    @Param('id') id: string
+  ) {
+    return this.archiveService.deleteEntityPermanently(type, id, req.user.sub);
   }
 
   @Post(':type/:id/move')
