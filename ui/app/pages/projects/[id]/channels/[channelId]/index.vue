@@ -21,6 +21,7 @@ const {
   getSocialMediaColor,
   getSocialMediaDisplayName,
   toggleChannelActive,
+  unarchiveChannel,
 } = useChannels()
 
 const {
@@ -59,6 +60,7 @@ const showDeletePostModal = ref(false)
 const postToDelete = ref<PostWithRelations | null>(null)
 const isDeletingPost = ref(false)
 const isTogglingActive = ref(false)
+const isArchiving = ref(false)
 
 // Initialization
 onMounted(async () => {
@@ -149,6 +151,19 @@ async function handleToggleActive() {
         await toggleChannelActive(channel.value.id)
     } finally {
         isTogglingActive.value = false
+    }
+}
+
+/**
+ * Handle channel unarchiving from banner
+ */
+async function handleUnarchive() {
+    if (!channel.value) return
+    isArchiving.value = true
+    try {
+        await unarchiveChannel(channel.value.id)
+    } finally {
+        isArchiving.value = false
     }
 }
 
@@ -271,9 +286,40 @@ function getStatusBadgeColor(isActive: boolean): 'success' | 'neutral' {
                 </div>
             </div>
 
+            <!-- Archived Status Banner -->
+            <div 
+                v-if="channel.archivedAt" 
+                class="bg-neutral-100 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-800 rounded-lg p-4"
+            >
+                <div class="flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-neutral-200 dark:bg-neutral-800 rounded-full">
+                            <UIcon name="i-heroicons-archive-box" class="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                                {{ t('channel.archived_notice', 'Channel is archived') }}
+                            </p>
+                            <p class="text-xs text-neutral-700 dark:text-neutral-300 mt-0.5">
+                                {{ t('channel.archived_info_banner', 'Archived channels are hidden from the project but their history is preserved.') }}
+                            </p>
+                        </div>
+                    </div>
+                    <UButton 
+                        size="sm" 
+                        color="primary" 
+                        variant="solid" 
+                        :loading="isArchiving"
+                        @click="handleUnarchive"
+                    >
+                        {{ t('channel.unarchive') }}
+                    </UButton>
+                </div>
+            </div>
+
             <!-- Deactivated Status Banner -->
             <div 
-                v-if="!channel.isActive" 
+                v-else-if="!channel.isActive" 
                 class="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg p-4"
             >
                 <div class="flex items-center justify-between gap-4">
