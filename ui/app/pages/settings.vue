@@ -458,7 +458,7 @@ function formatDate(date: string | null | undefined): string {
       </template>
 
       <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-        {{ t('settings.apiTokensDescription', 'Manage API tokens for external integrations and automation') }}
+        {{ t('settings.apiTokensDescription', 'Manage API tokens for external integrations') }}
       </p>
 
       <div v-if="tokensLoading" class="space-y-3">

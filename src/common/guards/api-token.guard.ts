@@ -11,12 +11,12 @@ import { ApiTokensService } from '../../modules/api-tokens/api-tokens.service.js
 import type { ApiTokenRequest } from '../types/api-token-user.interface.js';
 
 /**
- * Guard to protect External and Automation API endpoints with user API tokens.
+ * Guard to protect External API endpoints with user API tokens.
  * Validates the token and adds user information to the request.
  */
 @Injectable()
 export class ApiTokenGuard implements CanActivate {
-  constructor(private apiTokensService: ApiTokensService) {}
+  constructor(private apiTokensService: ApiTokensService) { }
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<FastifyRequest>();

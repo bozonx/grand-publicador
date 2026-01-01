@@ -265,7 +265,7 @@
     "noNameFound": "Не удалось определить имя из Telegram",
     "syncedSuccess": "Профиль синхронизирован с Telegram",
     "syncError": "Не удалось синхронизировать имя",
-    "apiTokensDescription": "Управление API токенами для внешних интеграций и автоматизации",
+    "apiTokensDescription": "Управление API токенами для внешних интеграций",
     "createToken": "Создать токен",
     "editToken": "Редактировать токен",
     "tokenName": "Название токена",

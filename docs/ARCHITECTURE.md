@@ -117,10 +117,6 @@ src/
 │   │   ├── auth.service.ts
 │   │   └── auth.module.ts
 │   │
-│   ├── automation/              # Автоматизация публикаций
-│   │   ├── automation.service.ts
-│   │   └── automation.module.ts
-│   │
 │   ├── channels/                # Управление каналами
 │   │   ├── dto/
 │   │   ├── channels.controller.ts
@@ -277,12 +273,6 @@ module-name/
 - Восстановление из архива
 - Перемещение между проектами
 - Окончательное удаление
-
-#### AutomationModule
-- Планировщик публикаций (cron-like)
-- Обработка очереди постов
-- Публикация в социальные сети
-- Обработка ошибок и повторные попытки
 
 #### SystemConfigModule
 - Загрузка конфигурации из YAML
@@ -934,10 +924,7 @@ const updated = { ...original, field: newValue };
 #### 3. Микросервисы (будущее)
 
 Возможное разделение:
-- Auth Service
-- Projects Service
 - Publications Service
-- Automation Service (отдельный worker)
 
 #### 4. База данных
 
@@ -948,12 +935,6 @@ const updated = { ...original, field: newValue };
 - Read replicas для чтения
 - Sharding по проектам
 
-#### 5. Очереди
-
-Для автоматизации:
-- Bull/BullMQ для очередей
-- Отдельные workers для публикаций
-- Retry механизмы
 
 ### Мониторинг
 
