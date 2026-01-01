@@ -9,9 +9,7 @@ import { PermissionsModule } from './common/services/permissions.module.js';
 import appConfig, { AppConfig } from './config/app.config.js';
 import { ApiTokensModule } from './modules/api-tokens/api-tokens.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
-import { AutomationModule } from './modules/automation/automation.module.js';
 import { ChannelsModule } from './modules/channels/channels.module.js';
-import { ExternalModule } from './modules/external/external.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { PostsModule } from './modules/posts/posts.module.js';
 import { PrismaModule } from './modules/prisma/prisma.module.js';
@@ -114,8 +112,6 @@ import { ArchiveModule } from './modules/archive/archive.module.js';
     ChannelsModule,
     PostsModule,
     PublicationsModule,
-    ExternalModule,
-    AutomationModule,
     SystemConfigModule,
     ApiTokensModule,
     ArchiveModule,

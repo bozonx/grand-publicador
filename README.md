@@ -155,28 +155,26 @@ curl -X POST http://localhost:8080/api/v1/auth/telegram \
 
 ## API Endpoints
 
-### UI API (требует JWT auth)
+Все эндпоинты поддерживают два метода аутентификации:
+- **JWT токен** (для фронтенда): `Authorization: Bearer <JWT_TOKEN>`
+- **API токен** (для внешних интеграций): `x-api-key: <API_TOKEN>` или `Authorization: Bearer <API_TOKEN>`
+
+### Основной API (`/api/v1/*`)
+
+**Управление ресурсами:**
 - **Projects**: `/api/v1/projects` - управление проектами
 - **Channels**: `/api/v1/channels` - управление каналами
 - **Publications**: `/api/v1/publications` - управление публикациями
 - **Posts**: `/api/v1/posts` - управление постами
 
-### External API (требует пользовательский API токен)
-Для интеграции с n8n и другими системами автоматизации:
-- `POST /api/external/publications` - создание публикации
-- `POST /api/external/publications/schedule` - планирование публикации
+**Automation API** (для автоматической публикации по расписанию):
+- `GET /api/v1/publications/automation/pending` - получить посты готовые к публикации
+- `POST /api/v1/publications/automation/:id/claim` - забрать пост для публикации
+- `PATCH /api/v1/publications/automation/:id/status` - обновить статус после публикации
 
-**Создание токенов**: Пользователи создают API токены через Настройки > API Tokens в UI.
+**Создание API токенов**: Пользователи создают API токены через Настройки > API Tokens в UI.
 
-См. [External API Documentation](docs/api-external.md)
-
-### Automation API (требует пользовательский API токен)
-Для автоматической публикации по расписанию:
-- `GET /api/automation/v1/posts/pending` - получить посты готовые к публикации
-- `POST /api/automation/v1/posts/:id/claim` - забрать пост для публикации
-- `PATCH /api/automation/v1/posts/:id/status` - обновить статус после публикации
-
-См. [Automation API Documentation](docs/api-external.md)
+Подробнее см. [API Documentation](docs/api-external.md)
 
 ### Archive API (требует JWT auth)
 Для управления архивированным контентом с виртуальным каскадированием:
