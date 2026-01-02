@@ -191,6 +191,8 @@
     "languagePlaceholder": "Select or enter language",
     "languageHelp": "Content language of the channel (e.g., ru-RU, en-US)",
     "languageCannotChange": "Language cannot be changed after channel creation",
+    "languageWarningOnCreate": "Language cannot be changed after channel creation",
+    "socialMediaWarningOnCreate": "Social media cannot be changed after channel creation",
     "createdAt": "Created At",
     "createdAtHelp": "The date when this channel was created",
     "project": "Project",

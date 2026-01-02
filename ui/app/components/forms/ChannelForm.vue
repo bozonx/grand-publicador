@@ -211,7 +211,7 @@ const projectOptions = computed(() =>
         <UFormField
           :label="t('channel.language')"
           required
-          :help="t('channel.languageHelp')"
+          :help="t('channel.languageWarningOnCreate')"
         >
           <USelectMenu
             v-model="state.language"
@@ -221,11 +221,7 @@ const projectOptions = computed(() =>
             class="w-full"
           >
             <template #leading>
-              <span v-if="state.language" class="flex items-center gap-2">
-                <UIcon name="i-heroicons-language" class="w-4 h-4" />
-                {{ languageOptions.find(o => o.value === state.language)?.label }}
-              </span>
-              <span v-else>Select language</span>
+              <UIcon name="i-heroicons-language" class="w-4 h-4" />
             </template>
           </USelectMenu>
         </UFormField>
@@ -248,7 +244,11 @@ const projectOptions = computed(() =>
 
       <!-- Social media type (only for create mode) -->
       <div v-if="!isEditMode">
-        <UFormField :label="t('channel.socialMedia')" required>
+        <UFormField 
+          :label="t('channel.socialMedia')" 
+          required
+          :help="t('channel.socialMediaWarningOnCreate')"
+        >
           <USelectMenu
             v-model="state.socialMedia"
             :items="socialMediaOptions"

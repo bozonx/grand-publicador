@@ -191,6 +191,8 @@
     "languagePlaceholder": "Выберите или введите язык",
     "languageHelp": "Язык контента канала (например, ru-RU, en-US)",
     "languageCannotChange": "Язык нельзя изменить после создания канала",
+    "languageWarningOnCreate": "После создания канала язык нельзя будет изменить",
+    "socialMediaWarningOnCreate": "После создания канала социальную сеть нельзя будет изменить",
     "createdAt": "Дата создания",
     "createdAtHelp": "Дата, когда был создан этот канал",
     "project": "Проект",
