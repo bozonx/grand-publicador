@@ -31,8 +31,8 @@ model User {
 
   ownedProjects  Project[]       @relation("ProjectOwner")
   projectMembers ProjectMember[]
-  posts          Post[]
-  publications   Publication[]
+  posts              Post[]        @relation("PostCreator")
+  publications       Publication[] @relation("PublicationCreator")
   apiTokens      ApiToken[]
 
   @@index([telegramUsername])
@@ -131,7 +131,7 @@ model Publication {
   translationGroupId String? @map("translation_group_id")
 
   // User who created the publication (nullable for system-generated)
-  authorId   String?   @map("author_id")
+  createdBy  String?   @map("created_by")
   createdAt  DateTime  @default(now()) @map("created_at")
   updatedAt  DateTime  @updatedAt @map("updated_at")
   // Timestamp when publication was archived
@@ -159,7 +159,7 @@ model Publication {
   language      String     @default("ru-RU")
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  author  User?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  creator User?   @relation("PublicationCreator", fields: [createdBy], references: [id], onDelete: SetNull)
   posts   Post[]
 
   @@index([translationGroupId])
@@ -181,7 +181,7 @@ model Post {
   publishedAt   DateTime? @map("published_at")
 
   // User who created the post (nullable for system-generated)
-  authorId   String?   @map("author_id")
+  createdBy  String?   @map("created_by")
   createdAt  DateTime  @default(now()) @map("created_at")
   updatedAt  DateTime  @updatedAt @map("updated_at")
   // Timestamp when post was archived
@@ -213,7 +213,7 @@ model Post {
 
   publication Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
   channel     Channel     @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  author      User?       @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  creator     User?       @relation("PostCreator", fields: [createdBy], references: [id], onDelete: SetNull)
 
   @@index([status, scheduledAt])
   @@index([channelId, createdAt])

@@ -55,7 +55,7 @@ export class PostsService {
       const publication = await this.prisma.publication.create({
         data: {
           projectId: channel.projectId,
-          authorId: userId,
+          createdBy: userId,
           title: data.title || 'Standalone Post',
           description: data.description,
           content: data.content,
@@ -74,7 +74,7 @@ export class PostsService {
       data: {
         channelId,
         publicationId,
-        authorId: userId,
+        createdBy: userId,
         content: data.content,
         socialMedia: data.socialMedia ?? channel.socialMedia,
         postType: data.postType,
@@ -143,7 +143,7 @@ export class PostsService {
             socialMedia: true,
           },
         },
-        author: {
+        creator: {
           select: {
             id: true,
             fullName: true,
@@ -204,7 +204,7 @@ export class PostsService {
             socialMedia: true,
           },
         },
-        author: {
+        creator: {
           select: {
             id: true,
             fullName: true,
@@ -265,7 +265,7 @@ export class PostsService {
             socialMedia: true,
           },
         },
-        author: {
+        creator: {
           select: {
             id: true,
             fullName: true,
@@ -306,7 +306,7 @@ export class PostsService {
             socialMedia: true,
           },
         },
-        author: {
+        creator: {
           select: {
             id: true,
             fullName: true,
@@ -353,7 +353,7 @@ export class PostsService {
     const post = await this.findOne(id, userId);
 
     // Permission: Only author or admin/owner of the project can update
-    if (post.authorId !== userId) {
+    if (post.createdBy !== userId) {
       const channel = await this.prisma.channel.findUnique({ where: { id: post.channelId } });
       if (channel) {
         await this.permissions.checkProjectPermission(channel.projectId, userId, [
@@ -392,7 +392,7 @@ export class PostsService {
     const post = await this.findOne(id, userId);
 
     // Permission: Only author or admin/owner of the project can delete
-    if (post.authorId !== userId) {
+    if (post.createdBy !== userId) {
       const channel = await this.prisma.channel.findUnique({ where: { id: post.channelId } });
       if (channel) {
         await this.permissions.checkProjectPermission(channel.projectId, userId, [

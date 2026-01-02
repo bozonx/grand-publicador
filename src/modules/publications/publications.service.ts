@@ -66,7 +66,7 @@ export class PublicationsService {
     const publication = await this.prisma.publication.create({
       data: {
         projectId: data.projectId,
-        authorId: userId ?? null,
+        createdBy: userId ?? null,
         title: data.title,
         description: data.description,
         content: data.content,
@@ -123,7 +123,7 @@ export class PublicationsService {
     return this.prisma.publication.findMany({
       where,
       include: {
-        author: {
+        creator: {
           select: {
             id: true,
             fullName: true,
@@ -181,7 +181,7 @@ export class PublicationsService {
     return this.prisma.publication.findMany({
       where,
       include: {
-        author: {
+        creator: {
           select: {
             id: true,
             fullName: true,
@@ -223,7 +223,7 @@ export class PublicationsService {
         project: { archivedAt: null },
       },
       include: {
-        author: {
+        creator: {
           select: {
             id: true,
             fullName: true,
@@ -261,7 +261,7 @@ export class PublicationsService {
     const publication = await this.findOne(id, userId);
 
     // Check if user is author or has admin rights
-    if (publication.authorId !== userId) {
+    if (publication.createdBy !== userId) {
       await this.permissions.checkProjectPermission(publication.projectId, userId, [
         ProjectRole.OWNER,
         ProjectRole.ADMIN,
@@ -330,7 +330,7 @@ export class PublicationsService {
     const publication = await this.findOne(id, userId);
 
     // Check if user is author or has admin rights
-    if (publication.authorId !== userId) {
+    if (publication.createdBy !== userId) {
       await this.permissions.checkProjectPermission(publication.projectId, userId, [
         ProjectRole.OWNER,
         ProjectRole.ADMIN,
@@ -399,7 +399,7 @@ export class PublicationsService {
           data: {
             publicationId: publication.id,
             channelId: channel.id,
-            authorId: userId ?? null,
+            createdBy: userId ?? null,
             content: publication.content,
             socialMedia: channel.socialMedia,
             postType: publication.postType, // Use master publication type

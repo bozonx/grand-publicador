@@ -66,9 +66,9 @@ function handleDelete(e: Event) {
       <!-- Footer Info -->
       <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-gray-500 dark:text-gray-400">
         <!-- Author -->
-        <div v-if="publication.author" class="flex items-center gap-1.5 min-w-0">
+        <div v-if="publication.creator" class="flex items-center gap-1.5 min-w-0">
           <UIcon name="i-heroicons-user" class="w-4 h-4 shrink-0" />
-          <span class="truncate">{{ publication.author.fullName || publication.author.telegramUsername }}</span>
+          <span class="truncate">{{ publication.creator.fullName || publication.creator.telegramUsername }}</span>
         </div>
 
         <!-- Date -->

@@ -258,9 +258,9 @@ function resetFilters() {
                <!-- Meta info -->
               <div class="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                 <!-- Author -->
-                <span v-if="publication.author" class="flex items-center gap-1">
+                <span v-if="publication.creator" class="flex items-center gap-1">
                   <UIcon name="i-heroicons-user" class="w-3.5 h-3.5" />
-                  {{ publication.author.fullName || publication.author.telegramUsername || 'User' }}
+                  {{ publication.creator.fullName || publication.creator.telegramUsername || 'User' }}
                 </span>
 
                 <!-- Created date -->

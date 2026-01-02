@@ -7,7 +7,7 @@ export type PublicationStatus = 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'FAILED' |
 export interface Publication {
     id: string
     projectId: string
-    authorId: string | null
+    createdBy: string | null
     title: string | null
     description: string | null
     content: string
@@ -26,7 +26,7 @@ export interface Publication {
 }
 
 export interface PublicationWithRelations extends Publication {
-    author?: {
+    creator?: {
         id: string
         fullName: string | null
         telegramUsername: string | null

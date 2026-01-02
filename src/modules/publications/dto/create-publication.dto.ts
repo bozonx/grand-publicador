@@ -49,7 +49,7 @@ export class CreatePublicationDto {
 
   @IsString()
   @IsOptional()
-  public authorId?: string;
+  public createdBy?: string;
 
   @IsString()
   @IsNotEmpty()

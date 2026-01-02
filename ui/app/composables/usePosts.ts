@@ -15,7 +15,7 @@ export interface Post {
     id: string
     channelId: string
     publicationId: string
-    authorId: string | null
+    createdBy: string | null
     content: string | null
     socialMedia: string
     postType: PostType
@@ -42,7 +42,7 @@ export interface PostWithRelations extends Post {
         socialMedia: string
         language: string
     } | null
-    author?: {
+    creator?: {
         id: string
         fullName: string | null
         username: string | null
@@ -90,7 +90,7 @@ export interface PostUpdateInput {
 export interface PostsFilter {
     status?: PostStatus | null
     postType?: PostType | null
-    authorId?: string | null
+    createdBy?: string | null
     channelId?: string | null
     search?: string
     limit?: number
@@ -128,7 +128,7 @@ export function usePosts() {
             if (filter.value.status) params.status = filter.value.status
             if (filter.value.postType) params.postType = filter.value.postType
             if (filter.value.search) params.search = filter.value.search
-            if (filter.value.authorId) params.authorId = filter.value.authorId
+            if (filter.value.createdBy) params.createdBy = filter.value.createdBy
             if (filter.value.includeArchived) params.includeArchived = true
 
             const data = await api.get<PostWithRelations[]>('/posts', { params })
@@ -153,7 +153,7 @@ export function usePosts() {
             if (filter.value.status) params.status = filter.value.status
             if (filter.value.postType) params.postType = filter.value.postType
             if (filter.value.search) params.search = filter.value.search
-            if (filter.value.authorId) params.authorId = filter.value.authorId
+            if (filter.value.createdBy) params.createdBy = filter.value.createdBy
             if (filter.value.includeArchived) params.includeArchived = true
 
             const data = await api.get<PostWithRelations[]>('/posts', { params })
@@ -302,7 +302,7 @@ export function usePosts() {
     function canDelete(post: PostWithRelations): boolean {
         if (!user.value) return false
         // Allow deleting if user is author or if user is owner/admin of the project (logic can be refined)
-        return post.authorId === user.value.id
+        return post.createdBy === user.value.id
     }
 
     function canEdit(post: PostWithRelations): boolean {
