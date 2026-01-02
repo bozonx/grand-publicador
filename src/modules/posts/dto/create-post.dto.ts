@@ -15,8 +15,8 @@ export class CreatePostDto {
   public publicationId?: string;
 
   @IsString()
-  @IsNotEmpty()
-  public content!: string;
+  @IsOptional()
+  public content?: string;
 
   @IsString()
   @IsOptional()

@@ -54,9 +54,9 @@ const hasContent = !!safePost.value.content && safePost.value.content.length > 0
 
 // Toggles for optional fields
 // If creating, default showTitle/Content/Tags to true for better UX, or follow preference
-const showTitle = ref(props.isCreating ? true : hasTitle)
-const showContent = ref(props.isCreating ? true : hasContent)
-const showTags = ref(props.isCreating ? true : hasTags)
+const showTitle = ref(props.isCreating ? false : hasTitle)
+const showContent = ref(props.isCreating ? false : hasContent)
+const showTags = ref(props.isCreating ? false : hasTags)
 const showScheduledAt = ref(hasScheduledAt)
 
 // Form Data
@@ -113,17 +113,17 @@ async function handleSave() {
       const newPost = await createPost({
           channelId: formData.channelId,
           publicationId: props.publication.id,
-          content: showContent.value ? formData.content : '',
-          title: showTitle.value ? formData.title : undefined,
-          tags: showTags.value ? formData.tags : undefined,
+          content: showContent.value ? formData.content : null,
+          title: showTitle.value ? formData.title : null,
+          tags: showTags.value ? formData.tags : null,
           postType: formData.postType as any,
-          scheduledAt: showScheduledAt.value && formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : undefined,
+          scheduledAt: showScheduledAt.value && formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : null,
           language: formData.language,
-          description: formData.description || undefined,
-          postDate: formData.postDate ? new Date(formData.postDate).toISOString() : undefined,
+          description: formData.description || null,
+          postDate: formData.postDate ? new Date(formData.postDate).toISOString() : null,
           meta: formData.meta,
           status: 'DRAFT',
-          socialMedia: selectedChannel.value?.socialMedia // createPost might need this or infer it
+          socialMedia: selectedChannel.value?.socialMedia
       })
 
       if (newPost) {
@@ -133,7 +133,7 @@ async function handleSave() {
   } else {
       if (!props.post) return
       await updatePost(props.post.id, {
-        content: showContent.value ? formData.content : '',
+        content: showContent.value ? formData.content : null,
         title: showTitle.value ? formData.title : null,
         tags: showTags.value ? formData.tags : null,
         scheduledAt: showScheduledAt.value && formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : (showScheduledAt.value ? undefined : null), 
@@ -183,8 +183,9 @@ watch(() => props.post, (newPost) => {
 
 onMounted(() => {
     if (props.isCreating) {
-         if (props.availableChannels?.length === 1) {
-            formData.channelId = props.availableChannels[0].id
+        const channels = props.availableChannels
+        if (channels && channels.length === 1 && channels[0]) {
+            formData.channelId = channels[0].id
         }
     } else if (props.post) {
         formData.scheduledAt = toDatetimeLocal(props.post.scheduledAt)
@@ -310,11 +311,11 @@ const isValid = computed(() => {
                 class="w-full"
                 :placeholder="t('post.selectChannel', 'Select a channel...')"
             >
-                <template #option="{ option }">
+                <template #item="{ item }">
                     <div class="flex items-center gap-2 w-full">
-                        <SocialIcon :platform="option.socialMedia" size="xs" />
-                        <span class="truncate">{{ option.label }}</span>
-                        <span class="ml-auto text-xs text-gray-500 uppercase">{{ option.language }}</span>
+                        <SocialIcon :platform="item.socialMedia" size="xs" />
+                        <span class="truncate">{{ item.label }}</span>
+                        <span class="ml-auto text-xs text-gray-500 uppercase">{{ item.language }}</span>
                     </div>
                 </template>
             </USelectMenu>
@@ -332,7 +333,7 @@ const isValid = computed(() => {
 
        <!-- Content -->
        <div class="space-y-2">
-             <UCheckbox v-model="showContent" :label="t('post.content')" required :ui="{ label: 'font-medium text-gray-700 dark:text-gray-200' }" />
+             <UCheckbox v-model="showContent" :label="t('post.content')" :ui="{ label: 'font-medium text-gray-700 dark:text-gray-200' }" />
              <div v-if="showContent" class="pl-6 animate-fade-in"> 
                 <EditorTiptapEditor
                   v-model="formData.content"

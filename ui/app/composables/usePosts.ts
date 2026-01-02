@@ -52,18 +52,18 @@ export interface PostWithRelations extends Post {
 export interface PostCreateInput {
     channelId: string
     publicationId?: string
-    content: string
+    content?: string | null
     postType: PostType
     socialMedia?: string
-    title?: string
-    description?: string
-    authorComment?: string
-    tags?: string | string[]
-    postDate?: string
-    status?: PostStatus
-    scheduledAt?: string
-    language?: string
-    meta?: string
+    title?: string | null
+    description?: string | null
+    authorComment?: string | null
+    tags?: string | string[] | null
+    postDate?: string | null
+    status?: PostStatus | null
+    scheduledAt?: string | null
+    language?: string | null
+    meta?: string | null
 }
 
 export interface PostUpdateInput {
