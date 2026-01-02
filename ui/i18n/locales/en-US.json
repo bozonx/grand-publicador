@@ -35,6 +35,7 @@
     "settings": "Settings",
     "danger_zone": "Danger Zone",
     "lastPost": "Last post",
+    "lastPublishedPost": "Date of the last published post",
     "archive": "Archive",
     "restore": "Restore",
     "archived": "Archived",

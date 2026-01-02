@@ -38,19 +38,11 @@ function formatDate(date: string | null | undefined): string {
           </span>
           <UBadge 
             v-if="!channel.isActive" 
-            color="neutral" 
+            color="warning" 
             variant="subtle" 
             size="xs"
           >
             {{ t('channel.inactive') }}
-          </UBadge>
-          <UBadge 
-            v-else 
-            color="success" 
-            variant="subtle" 
-            size="xs"
-          >
-            {{ t('channel.active') }}
           </UBadge>
         </div>
 
@@ -68,7 +60,7 @@ function formatDate(date: string | null | undefined): string {
             </span>
           </div>
 
-          <div class="flex items-center gap-1.5" :title="t('common.lastPost')">
+          <div class="flex items-center gap-1.5" :title="t('common.lastPublishedPost')">
             <UIcon name="i-heroicons-clock" class="w-4 h-4" />
             <span>
               {{ t('common.lastPost') }}: {{ formatDate(channel.lastPostAt) }}

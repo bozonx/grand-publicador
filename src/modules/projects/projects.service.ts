@@ -240,7 +240,7 @@ export class ProjectsService {
               select: { posts: true },
             },
             posts: {
-              where: { archivedAt: null },
+              where: { archivedAt: null, status: 'PUBLISHED' },
               take: 1,
               orderBy: { createdAt: 'desc' },
               select: { createdAt: true },
