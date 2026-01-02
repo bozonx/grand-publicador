@@ -290,7 +290,7 @@ function toggleChannel(channelId: string) {
         </UFormField>
 
         <!-- Language -->
-        <UFormField :label="t('common.language', 'Language')" required>
+        <UFormField v-if="!isEditMode" :label="t('common.language', 'Language')" required>
             <USelectMenu
                 v-model="formData.language"
                 :items="languageOptions"
@@ -304,7 +304,7 @@ function toggleChannel(channelId: string) {
             </USelectMenu>
         </UFormField>
 
-         <UFormField :label="t('post.postType', 'Post Type')" required>
+         <UFormField v-if="!isEditMode" :label="t('post.postType', 'Post Type')" required>
             <USelectMenu
                 v-model="formData.postType"
                 :items="typeOptions"

@@ -316,6 +316,15 @@ export class PublicationsService {
       this.logger.log(`Cascade updated language to ${data.language} for posts of publication ${id}`);
     }
 
+    // Cascade update postType to associated posts if changed
+    if (data.postType && data.postType !== publication.postType) {
+      await this.prisma.post.updateMany({
+        where: { publicationId: id },
+        data: { postType: data.postType },
+      });
+      this.logger.log(`Cascade updated postType to ${data.postType} for posts of publication ${id}`);
+    }
+
     return updated;
   }
 
