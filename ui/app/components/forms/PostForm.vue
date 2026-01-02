@@ -11,6 +11,8 @@ interface Props {
   post?: PostWithRelations | null
   /** Pre-selected channel ID */
   channelId?: string
+  /** Pre-selected publication ID */
+  publicationId?: string
 }
 
 interface Emits {
@@ -21,6 +23,7 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   post: null,
   channelId: undefined,
+  publicationId: undefined,
 })
 
 const emit = defineEmits<Emits>()
@@ -141,6 +144,7 @@ async function handleSubmit() {
       scheduledAt:
         formData.status === 'SCHEDULED' ? formData.scheduledAt || undefined : undefined,
       language: formData.language || undefined,
+      publicationId: props.publicationId,
     }
 
     const result = await createPost(createData)

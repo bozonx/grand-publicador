@@ -11,6 +11,10 @@ export class CreatePostDto {
   public channelId!: string;
 
   @IsString()
+  @IsOptional()
+  public publicationId?: string;
+
+  @IsString()
   @IsNotEmpty()
   public content!: string;
 

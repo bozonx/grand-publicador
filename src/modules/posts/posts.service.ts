@@ -38,6 +38,7 @@ export class PostsService {
       scheduledAt?: Date;
       status?: PostStatus;
       language?: string;
+      publicationId?: string;
     },
   ) {
     const channel = await this.channelsService.findOne(channelId, userId);
@@ -47,9 +48,29 @@ export class PostsService {
       ProjectRole.EDITOR,
     ]);
 
+    let publicationId = data.publicationId;
+
+    // If no publicationId is provided, create a wrapper publication
+    if (!publicationId) {
+      const publication = await this.prisma.publication.create({
+        data: {
+          projectId: channel.projectId,
+          authorId: userId,
+          title: data.title || 'Standalone Post',
+          content: data.content,
+          status: data.status || PostStatus.DRAFT,
+          postType: data.postType,
+          language: data.language || channel.language,
+          meta: JSON.stringify({ isStandalone: true }),
+        },
+      });
+      publicationId = publication.id;
+    }
+
     return this.prisma.post.create({
       data: {
         channelId,
+        publicationId,
         authorId: userId,
         content: data.content,
         socialMedia: data.socialMedia ?? channel.socialMedia,

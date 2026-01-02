@@ -57,6 +57,7 @@ export interface PostWithRelations extends Post {
 
 export interface PostCreateInput {
     channelId: string
+    publicationId?: string
     content: string
     postType: PostType
     socialMedia?: string

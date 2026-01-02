@@ -211,6 +211,16 @@ async function main() {
             status: PostStatus.DRAFT,
             postType: PostType.POST,
             language: 'ru-RU',
+        },
+        {
+            id: '44444444-4444-4444-4444-444444444446',
+            projectId: projectData[0].id,
+            authorId: devUser.id,
+            title: 'Быстрый Привет!',
+            content: 'Просто хотел поздороваться со всеми нашими подписчиками! Сегодня без больших постов.',
+            status: PostStatus.PUBLISHED,
+            postType: PostType.POST,
+            language: 'ru-RU',
         }
     ];
 
@@ -287,9 +297,10 @@ async function main() {
             authorComment: 'Превышено время ожидания загрузки видео. Размер файла: 4ГБ.',
             language: 'en-US',
         },
-        // Independent Post (no master publication)
+        // Post previously known as independent
         {
             id: '33333333-3333-3333-3333-333333333335',
+            publicationId: publications[5].id,
             channelId: channelData[0].id,
             authorId: devUser.id,
             socialMedia: 'TELEGRAM',

@@ -165,8 +165,8 @@ model Publication {
 
 model Post {
   id            String       @id @default(uuid())
-  // Optional link to parent publication (null for standalone posts)
-  publicationId String?      @map("publication_id")
+  // Link to parent publication
+  publicationId String       @map("publication_id")
   channelId     String       @map("channel_id")
   // User who created the post (nullable for system-generated)
   authorId      String?      @map("author_id")
@@ -203,7 +203,7 @@ model Post {
   // User ID who archived the post
   archivedBy    String?      @map("archived_by")
 
-  publication Publication? @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  publication Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
   channel     Channel      @relation(fields: [channelId], references: [id], onDelete: Cascade)
   author      User?        @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
