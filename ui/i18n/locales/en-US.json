@@ -293,7 +293,9 @@
     "linked": "Linked to a group",
     "selectToLink": "Select to link...",
     "noPublicationsFound": "No publications found",
-    "noPublicationsDescription": "You don't have any publications yet."
+    "noPublicationsDescription": "You don't have any publications yet.",
+    "createInLanguage": "Create publication in language:",
+    "publicationsBlock": "Publications"
   },
   "postType": {
     "post": "Post",

@@ -293,7 +293,9 @@
     "linked": "Связано с группой",
     "selectToLink": "Выберите для связывания...",
     "noPublicationsFound": "Публикации не найдены",
-    "noPublicationsDescription": "У вас еще нет созданных публикаций."
+    "noPublicationsDescription": "У вас еще нет созданных публикаций.",
+    "createInLanguage": "Создать публикацию на языке:",
+    "publicationsBlock": "Публикации"
   },
   "postType": {
     "post": "Пост",

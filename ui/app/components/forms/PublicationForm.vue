@@ -26,6 +26,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>()
 
 const { t } = useI18n()
+const route = useRoute()
 const { createPublication, updatePublication, createPostsFromPublication, isLoading, getStatusDisplayName, fetchPublicationsByProject, publications } = usePublications()
 const { 
   channels, 
@@ -35,6 +36,9 @@ const {
 const { typeOptions, statusOptions: allStatusOptions } = usePosts()
 const router = useRouter()
 
+// Get language from URL query parameter
+const languageParam = computed(() => route.query.language as string | undefined)
+
 // Form state
 const formData = reactive({
   title: props.publication?.title || '',
@@ -43,7 +47,7 @@ const formData = reactive({
   postType: (props.publication?.postType || 'POST') as PostType,
   status: (props.publication?.status || 'DRAFT') as PostStatus,
   scheduledAt: '',
-  language: props.publication?.language || 'en-US',
+  language: props.publication?.language || languageParam.value || 'en-US',
   channelIds: props.publication?.posts?.map((p: any) => p.channelId) || [] as string[],
   translationGroupId: props.publication?.translationGroupId || undefined as string | undefined,
   meta: props.publication?.meta ? JSON.parse(props.publication.meta) : {},
@@ -57,9 +61,17 @@ const showAdvancedFields = ref(false)
 // Fetch channels and publications on mount
 onMounted(async () => {
   if (props.projectId) {
-    fetchChannels(props.projectId)
+    await fetchChannels(props.projectId)
     // Fetch recent publications to allow linking (limit 50 for now)
     await fetchPublicationsByProject(props.projectId, { limit: 50 })
+    
+    // Auto-select channels matching the language parameter
+    if (languageParam.value && !isEditMode.value) {
+      const matchingChannels = channels.value
+        .filter(ch => ch.language === languageParam.value)
+        .map(ch => ch.id)
+      formData.channelIds = matchingChannels
+    }
   }
 })
 

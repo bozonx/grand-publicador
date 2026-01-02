@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useProjects } from '~/composables/useProjects'
+import { useChannels } from '~/composables/useChannels'
 
 definePageMeta({
   middleware: 'auth',
@@ -28,6 +29,11 @@ const {
   fetchPublicationsByProject,
 } = usePublications()
 
+const {
+  channels,
+  fetchChannels,
+} = useChannels()
+
 const projectId = computed(() => route.params.id as string)
 const isArchiving = ref(false)
 
@@ -36,7 +42,8 @@ onMounted(async () => {
   if (projectId.value) {
     await Promise.all([
       fetchProject(projectId.value),
-      fetchPublicationsByProject(projectId.value, { status: 'DRAFT', limit: 5 })
+      fetchPublicationsByProject(projectId.value, { status: 'DRAFT', limit: 5 }),
+      fetchChannels(projectId.value)
     ])
   }
 })
@@ -58,6 +65,15 @@ function goBack() {
  */
 import { getRoleBadgeColor } from '~/utils/roles'
 
+/**
+ * Get unique languages from project channels
+ */
+const availableLanguages = computed(() => {
+  if (!channels.value || channels.value.length === 0) return []
+  
+  const languagesSet = new Set(channels.value.map(ch => ch.language))
+  return Array.from(languagesSet).sort()
+})
 
 /**
  * Handle project unarchiving from banner
@@ -209,23 +225,6 @@ function formatDateWithTime(date: string | null | undefined): string {
             <!-- Actions -->
             <div class="flex items-center gap-2 ml-4">
               <UButton
-                color="neutral"
-                variant="ghost"
-                icon="i-heroicons-document-text"
-                :to="`/projects/${currentProject.id}/publications`"
-              >
-                {{ t('publication.titlePlural', 'Publications') }}
-              </UButton>
-
-              <UButton
-                color="primary"
-                icon="i-heroicons-plus"
-                :to="`/projects/${currentProject.id}/publications/new`"
-              >
-                {{ t('publication.create', 'Create Publication') }}
-              </UButton>
-
-              <UButton
                 v-if="canEdit(currentProject)"
                 color="neutral"
                 variant="ghost"
@@ -268,12 +267,12 @@ function formatDateWithTime(date: string | null | undefined): string {
           </div>
       </div>
 
-      <!-- Drafts Section -->
-      <div v-if="draftPublications.length > 0" class="bg-white dark:bg-gray-800 rounded-lg shadow mt-6 p-6">
+      <!-- Publications Section -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow mt-6 p-6">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
             <UIcon name="i-heroicons-document-duplicate" class="w-5 h-5 text-gray-400" />
-            {{ t('postStatus.draft') }} {{ t('publication.titlePlural').toLowerCase() }}
+            {{ t('publication.publicationsBlock') }}
           </h2>
           <UButton
             variant="ghost"
@@ -287,13 +286,37 @@ function formatDateWithTime(date: string | null | undefined): string {
           </UButton>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <PublicationsPublicationDraftCard
-            v-for="draft in draftPublications"
-            :key="draft.id"
-            :draft="draft"
-            :project-id="projectId"
-          />
+        <!-- Create publication buttons by language -->
+        <div v-if="availableLanguages.length > 0" class="mb-6">
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+            {{ t('publication.createInLanguage') }}
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <UButton
+              v-for="lang in availableLanguages"
+              :key="lang"
+              color="primary"
+              icon="i-heroicons-plus"
+              :to="`/projects/${projectId}/publications/new?language=${lang}`"
+            >
+              {{ lang }}
+            </UButton>
+          </div>
+        </div>
+
+        <!-- Draft publications list -->
+        <div v-if="draftPublications.length > 0" class="mt-6">
+          <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            {{ t('postStatus.draft') }}
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <PublicationsPublicationDraftCard
+              v-for="draft in draftPublications"
+              :key="draft.id"
+              :draft="draft"
+              :project-id="projectId"
+            />
+          </div>
         </div>
       </div>
 
