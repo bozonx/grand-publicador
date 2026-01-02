@@ -76,20 +76,23 @@ function formatDateWithTime(date: string | null | undefined): string {
                 {{ project.publicationsCount || 0 }} {{ t('publication.titlePlural').toLowerCase() }}
               </span>
             </div>
-          </div>
 
-          <!-- Last Publication Date -->
-          <div v-if="project.lastPublicationAt" class="mt-2 flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
-             <UIcon name="i-heroicons-clock" class="w-3.5 h-3.5 shrink-0" />
-             <span>
-                {{ t('project.lastPublication') }}:
-                <span 
-                  class="text-primary-500 hover:text-primary-400 transition-colors cursor-pointer font-medium underline decoration-dotted decoration-primary-500/30 underline-offset-2"
-                  @click.stop.prevent="router.push(`/projects/${project.id}/publications/${project.lastPublicationId}`)"
-                >
-                  {{ formatDateWithTime(project.lastPublicationAt) }}
+            <template v-if="project.lastPublicationAt">
+              <div class="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+
+              <div class="flex items-center gap-1.5">
+                <UIcon name="i-heroicons-clock" class="w-4 h-4 shrink-0" />
+                <span>
+                   {{ t('project.lastPublication') }}:
+                   <span 
+                     class="text-primary-500 hover:text-primary-400 transition-colors cursor-pointer font-medium underline decoration-dotted decoration-primary-500/30 underline-offset-2"
+                     @click.stop.prevent="router.push(`/projects/${project.id}/publications/${project.lastPublicationId}`)"
+                   >
+                     {{ formatDateWithTime(project.lastPublicationAt) }}
+                   </span>
                 </span>
-             </span>
+              </div>
+            </template>
           </div>
         </div>
       </div>
