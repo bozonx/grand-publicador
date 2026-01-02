@@ -113,7 +113,7 @@ async function fetchProjectChannels(projectId: string) {
 }
 
 function getChannelLink(projectId: string, channelId: string) {
-  return `/projects/${projectId}/posts?channelId=${channelId}`
+  return `/projects/${projectId}/channels/${channelId}`
 }
 </script>
 
@@ -191,7 +191,7 @@ function getChannelLink(projectId: string, channelId: string) {
                 <NuxtLink
                   :to="getChannelLink(project.id, channel.id)"
                   class="flex items-center justify-center w-8 h-8 rounded-lg transition-all hover:bg-gray-100 dark:hover:bg-gray-800"
-                  :class="{ 'bg-primary-100 dark:bg-primary-900 ring-2 ring-primary-500': route.query.channelId === channel.id }"
+                  :class="{ 'bg-primary-100 dark:bg-primary-900 ring-2 ring-primary-500': route.params.channelId === channel.id || route.query.channelId === channel.id }"
                 >
                   <UIcon 
                     :name="getSocialMediaIcon(channel.socialMedia)" 

@@ -167,7 +167,7 @@ async function handleDelete() {
     showDeleteModal.value = false
     // Emit cancel to close edit mode, then router will handle the redirect if needed
     // Actually, deletePost already shows a toast.
-    router.push(`/projects/${props.projectId}/posts`)
+    router.push(`/projects/${props.projectId}`)
   }
 }
 
