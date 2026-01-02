@@ -41,16 +41,32 @@ const {
 } = useChannels()
 
 const { languageOptions } = useLanguages()
+const { projects, fetchProjects } = useProjects()
 
 const isEditMode = computed(() => !!props.channel?.id)
 
+// Helper function to format date
+function formatDate(date: string | undefined): string {
+  if (!date) return '—'
+  return new Date(date).toLocaleString()
+}
+
+// Fetch projects for the selector
+if (isEditMode.value) {
+  fetchProjects()
+}
 
 const state = reactive({
   name: props.channel?.name || '',
   socialMedia: (props.channel?.socialMedia || 'TELEGRAM') as SocialMedia,
   channelIdentifier: props.channel?.channelIdentifier || '',
   language: props.channel?.language || 'en-US',
+  projectId: props.channel?.projectId || props.projectId,
   isActive: props.channel?.isActive ?? true,
+  credentials: {
+    telegramChannelId: props.channel?.credentials?.telegramChannelId || '',
+    telegramBotToken: props.channel?.credentials?.telegramBotToken || '',
+  }
 })
 
 /**
@@ -64,7 +80,15 @@ async function handleSubmit() {
     const updateData: ChannelUpdateInput = {
       name: state.name,
       channelIdentifier: state.channelIdentifier,
-      language: state.language,
+      projectId: state.projectId,
+    }
+
+    // Add credentials for Telegram channels
+    if (props.channel.socialMedia === 'TELEGRAM') {
+      updateData.credentials = {
+        telegramChannelId: state.credentials.telegramChannelId,
+        telegramBotToken: state.credentials.telegramBotToken,
+      }
     }
 
     const result = await updateChannel(props.channel.id, updateData)
@@ -73,14 +97,24 @@ async function handleSubmit() {
     }
   } else {
     // Create new channel
-    const result = await createChannel({
+    const createData: ChannelCreateInput = {
       projectId: props.projectId,
       name: state.name,
       socialMedia: state.socialMedia,
       channelIdentifier: state.channelIdentifier,
       language: state.language,
       isActive: state.isActive,
-    })
+    }
+
+    // Add credentials for Telegram channels
+    if (state.socialMedia === 'TELEGRAM') {
+      createData.credentials = {
+        telegramChannelId: state.credentials.telegramChannelId,
+        telegramBotToken: state.credentials.telegramBotToken,
+      }
+    }
+
+    const result = await createChannel(createData)
 
     if (result) {
       emit('success', result)
@@ -129,6 +163,13 @@ function getIdentifierHelp(socialMedia: SocialMedia | undefined): string {
 }
 
 const currentSocialMedia = computed(() => (isEditMode.value ? props.channel?.socialMedia : state.socialMedia))
+
+const projectOptions = computed(() => 
+  projects.value.map(project => ({
+    value: project.id,
+    label: project.name
+  }))
+)
 </script>
 
 <template>
@@ -143,6 +184,19 @@ const currentSocialMedia = computed(() => (isEditMode.value ? props.channel?.soc
     </div>
 
     <form class="space-y-6" @submit.prevent="handleSubmit">
+      <!-- Created date (read-only, edit mode only) -->
+      <div v-if="isEditMode && channel?.createdAt" class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          {{ t('channel.createdAt', 'Created At') }}
+        </label>
+        <div class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+          <span class="text-gray-900 dark:text-white">{{ formatDate(channel.createdAt) }}</span>
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400">
+          {{ t('channel.createdAtHelp', 'The date when this channel was created') }}
+        </p>
+      </div>
+
       <!-- Channel name -->
       <UFormField :label="t('channel.name')" required>
         <UInput
@@ -152,6 +206,23 @@ const currentSocialMedia = computed(() => (isEditMode.value ? props.channel?.soc
           size="lg"
         />
       </UFormField>
+
+      <!-- Project selector (edit mode only) -->
+      <div v-if="isEditMode">
+        <UFormField 
+          :label="t('channel.project', 'Project')" 
+          required
+          :help="t('channel.projectHelp', 'You can move this channel to another project')"
+        >
+          <USelectMenu
+            v-model="state.projectId"
+            :items="projectOptions"
+            value-key="value"
+            label-key="label"
+            class="w-full"
+          />
+        </UFormField>
+      </div>
 
       <!-- Social media type (only for create mode) -->
       <div v-if="!isEditMode">
@@ -229,27 +300,79 @@ const currentSocialMedia = computed(() => (isEditMode.value ? props.channel?.soc
       </UFormField>
 
       <!-- Channel language -->
-      <UFormField
-        :label="t('channel.language')"
-        required
-        :help="t('channel.languageHelp')"
-      >
-        <USelectMenu
-          v-model="state.language"
-          :items="languageOptions"
-          value-key="value"
-          label-key="label"
-          class="w-full"
+      <div v-if="!isEditMode">
+        <UFormField
+          :label="t('channel.language')"
+          required
+          :help="t('channel.languageHelp')"
         >
-          <template #label>
-             <span v-if="state.language" class="flex items-center gap-2">
-                 <UIcon name="i-heroicons-language" class="w-4 h-4" />
-                 {{ languageOptions.find(o => o.value === state.language)?.label }}
-             </span>
-             <span v-else>Select language</span>
-          </template>
-        </USelectMenu>
-      </UFormField>
+          <USelectMenu
+            v-model="state.language"
+            :items="languageOptions"
+            value-key="value"
+            label-key="label"
+            class="w-full"
+          >
+            <template #leading>
+              <span v-if="state.language" class="flex items-center gap-2">
+                <UIcon name="i-heroicons-language" class="w-4 h-4" />
+                {{ languageOptions.find(o => o.value === state.language)?.label }}
+              </span>
+              <span v-else>Select language</span>
+            </template>
+          </USelectMenu>
+        </UFormField>
+      </div>
+
+      <!-- Display current language for edit mode (read-only) -->
+      <div v-else class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          {{ t('channel.language') }}
+        </label>
+        <div class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+          <UIcon name="i-heroicons-language" class="w-5 h-5 text-gray-500" />
+          <span class="font-medium text-gray-900 dark:text-white">
+            {{ languageOptions.find(o => o.value === channel?.language)?.label || channel?.language }}
+          </span>
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400">
+          {{ t('channel.languageCannotChange', 'Language cannot be changed after channel creation') }}
+        </p>
+      </div>
+
+      <!-- Telegram credentials (only for Telegram channels) -->
+      <div v-if="currentSocialMedia === 'TELEGRAM'" class="space-y-4">
+        <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">
+            {{ t('channel.telegramCredentials', 'Telegram Credentials') }}
+          </h3>
+          
+          <div class="space-y-4">
+            <UFormField
+              :label="t('channel.telegramChannelId', 'Channel ID')"
+              :help="t('channel.telegramChannelIdHelp', 'Telegram channel ID (e.g., -1001234567890)')"
+            >
+              <UInput
+                v-model="state.credentials.telegramChannelId"
+                :placeholder="t('channel.telegramChannelIdPlaceholder', '-1001234567890')"
+                class="w-full"
+              />
+            </UFormField>
+
+            <UFormField
+              :label="t('channel.telegramBotToken', 'Bot Token')"
+              :help="t('channel.telegramBotTokenHelp', 'Telegram bot token from @BotFather')"
+            >
+              <UInput
+                v-model="state.credentials.telegramBotToken"
+                type="password"
+                :placeholder="t('channel.telegramBotTokenPlaceholder', '110201543:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw')"
+                class="w-full"
+              />
+            </UFormField>
+          </div>
+        </div>
+      </div>
 
 
       <div

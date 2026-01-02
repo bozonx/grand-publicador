@@ -7,6 +7,7 @@ export interface Channel {
     name: string
     channelIdentifier: string
     language: string
+    credentials?: Record<string, any>
     isActive: boolean
     archivedAt?: string | null
     createdAt: string
@@ -37,7 +38,8 @@ export interface ChannelCreateInput {
 export interface ChannelUpdateInput {
     name?: string
     channelIdentifier?: string
-    language?: string
+    projectId?: string
+    credentials?: Record<string, any>
     isActive?: boolean
 }
 

@@ -14,7 +14,7 @@ export class UpdateChannelDto {
 
   @IsString()
   @IsOptional()
-  public language?: string;
+  public projectId?: string;
 
   @IsObject()
   @IsOptional()

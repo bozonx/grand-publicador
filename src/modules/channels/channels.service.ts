@@ -291,6 +291,7 @@ export class ChannelsService {
   /**
    * Update an existing channel.
    * Requires OWNER, ADMIN, or EDITOR role.
+   * If projectId is being changed, requires permissions on both old and new projects.
    *
    * @param id - The ID of the channel.
    * @param userId - The ID of the user.
@@ -298,18 +299,29 @@ export class ChannelsService {
    */
   public async update(id: string, userId: string, data: UpdateChannelDto) {
     const channel = await this.findOne(id, userId);
+    
+    // Check permissions on current project
     await this.permissions.checkProjectPermission(channel.projectId, userId, [
       ProjectRole.OWNER,
       ProjectRole.ADMIN,
       ProjectRole.EDITOR,
     ]);
 
+    // If moving to a different project, check permissions on new project
+    if (data.projectId && data.projectId !== channel.projectId) {
+      await this.permissions.checkProjectPermission(data.projectId, userId, [
+        ProjectRole.OWNER,
+        ProjectRole.ADMIN,
+        ProjectRole.EDITOR,
+      ]);
+    }
+
     return this.prisma.channel.update({
       where: { id: id },
       data: {
         name: data.name,
         channelIdentifier: data.channelIdentifier,
-        language: data.language,
+        projectId: data.projectId,
         credentials: data.credentials ? JSON.stringify(data.credentials) : undefined,
         isActive: data.isActive,
       },
