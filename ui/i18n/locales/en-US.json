@@ -317,6 +317,9 @@
     "noPublicationsDescription": "You don't have any publications yet.",
     "createInLanguage": "Create publication in language:",
     "linkedPosts": "Linked Posts",
+    "noPosts": "No linked posts",
+    "deleteConfirm": "Are you sure you want to delete this publication?",
+    "deleteCascadeWarning": "This action is cascading and will permanently delete all associated posts.",
     "publicationsBlock": "Publications"
   },
   "postType": {

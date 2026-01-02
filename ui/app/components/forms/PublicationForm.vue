@@ -228,22 +228,7 @@ function toggleChannel(channelId: string) {
 </script>
 
 <template>
-  <div class="app-card">
-    <!-- Header -->
-    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-      <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-        {{ isEditMode ? t('publication.edit', 'Edit Publication') : t('publication.create', 'Create Publication') }}
-      </h2>
-      <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">
-        {{
-          isEditMode
-            ? t('publication.editDescription', 'Update your publication content')
-            : t('publication.createDescription', 'Create content to distribute across channels')
-        }}
-      </p>
-    </div>
-
-    <form class="p-6 space-y-6" @submit.prevent="handleSubmit">
+    <form class="space-y-6" @submit.prevent="handleSubmit">
       
       <!-- Channels (Multi-select) -->
       <div v-if="!isEditMode">
@@ -426,50 +411,10 @@ function toggleChannel(channelId: string) {
              <UTextarea v-model="formData.meta" :rows="4" font-family="mono" />
           </UFormField>
           
-          <!-- System Info (Read-only) -->
-          <div v-if="publication" class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg text-sm">
-             <div v-if="publication.author">
-                 <span class="text-gray-500 block text-xs uppercase font-bold">Author</span>
-                 <div class="flex items-center gap-2 mt-1">
-                     <img v-if="publication.author.avatarUrl" :src="publication.author.avatarUrl" class="w-6 h-6 rounded-full" />
-                     <span>{{ publication.author.fullName || publication.author.telegramUsername || 'Unknown' }}</span>
-                 </div>
-             </div>
-             
-             <div>
-                <span class="text-gray-500 block text-xs uppercase font-bold">Created At</span>
-                <span class="block mt-1">{{ new Date(publication.createdAt).toLocaleString() }}</span>
-             </div>
-
-             <div>
-                <span class="text-gray-500 block text-xs uppercase font-bold">Updated At</span>
-                <span class="block mt-1">{{ new Date(publication.updatedAt).toLocaleString() }}</span>
-             </div>
-             
-             <div v-if="publication.archivedBy">
-                <span class="text-gray-500 block text-xs uppercase font-bold">Archived By</span>
-                <span class="block mt-1">{{ publication.archivedBy }}</span>
-             </div>
-
-             <div v-if="publication.archivedAt">
-                <span class="text-gray-500 block text-xs uppercase font-bold">Archived At</span>
-                <span class="block mt-1">{{ new Date(publication.archivedAt).toLocaleString() }}</span>
-             </div>
-          </div>
-
         </div>
       </Transition>
 
-      <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
-        <UButton
-          type="button"
-          color="neutral"
-          variant="ghost"
-          :disabled="isLoading"
-          @click="handleCancel"
-        >
-          {{ t('common.cancel') }}
-        </UButton>
+      <div class="flex items-center justify-end gap-3 pt-6">
         <UButton
           type="submit"
           color="primary"
@@ -480,5 +425,4 @@ function toggleChannel(channelId: string) {
         </UButton>
       </div>
     </form>
-  </div>
 </template>

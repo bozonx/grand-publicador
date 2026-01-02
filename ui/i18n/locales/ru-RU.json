@@ -317,6 +317,9 @@
     "noPublicationsDescription": "У вас еще нет созданных публикаций.",
     "createInLanguage": "Создать публикацию на языке:",
     "linkedPosts": "Связанные посты",
+    "noPosts": "Нет связанных постов",
+    "deleteConfirm": "Вы уверены, что хотите удалить эту публикацию?",
+    "deleteCascadeWarning": "Это действие каскадное и повлечет за собой удаление всех связанных постов.",
     "publicationsBlock": "Публикации"
   },
   "postType": {
