@@ -232,7 +232,7 @@ function toggleChannel(channelId: string) {
     <form class="p-6 space-y-6" @submit.prevent="handleSubmit">
       
       <!-- Channels (Multi-select) -->
-      <div>
+      <div v-if="!isEditMode">
         <UFormField :label="t('channel.titlePlural', 'Channels')" :help="t('publication.channelsHelp', 'Select channels to create posts immediately')">
             <div v-if="channelOptions.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
                 <div 
