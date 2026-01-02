@@ -8,10 +8,22 @@ const props = defineProps<{
 }>()
 
 const { t, d } = useI18n()
+const router = useRouter()
 
 function formatDate(date: string | null | undefined): string {
   if (!date) return '-'
   return d(new Date(date), 'short')
+}
+
+function formatDateWithTime(date: string | null | undefined): string {
+  if (!date) return '-'
+  return d(new Date(date), {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 </script>
 
@@ -70,7 +82,13 @@ function formatDate(date: string | null | undefined): string {
           <div v-if="project.lastPublicationAt" class="mt-2 flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
              <UIcon name="i-heroicons-clock" class="w-3.5 h-3.5 shrink-0" />
              <span>
-                {{ t('project.lastPublication') }}: {{ formatDate(project.lastPublicationAt) }}
+                {{ t('project.lastPublication') }}:
+                <span 
+                  class="text-primary-500 hover:text-primary-400 transition-colors cursor-pointer font-medium underline decoration-dotted decoration-primary-500/30 underline-offset-2"
+                  @click.stop.prevent="router.push(`/projects/${project.id}/publications/${project.lastPublicationId}`)"
+                >
+                  {{ formatDateWithTime(project.lastPublicationAt) }}
+                </span>
              </span>
           </div>
         </div>

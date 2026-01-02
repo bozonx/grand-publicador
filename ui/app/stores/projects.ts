@@ -35,6 +35,7 @@ export interface ProjectWithRole extends ProjectWithOwner {
   channelCount?: number
   publicationsCount?: number
   lastPublicationAt?: string | null
+  lastPublicationId?: string | null
 }
 
 export interface ProjectMemberWithUser extends ProjectMember {

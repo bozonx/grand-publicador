@@ -78,6 +78,20 @@ function formatDate(date: string | null | undefined): string {
   if (!date) return '-'
   return d(new Date(date), 'short')
 }
+
+/**
+ * Format date for display with time (until minutes)
+ */
+function formatDateWithTime(date: string | null | undefined): string {
+  if (!date) return '-'
+  return d(new Date(date), {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 </script>
 
 <template>
@@ -179,11 +193,16 @@ function formatDate(date: string | null | undefined): string {
                   <UIcon name="i-heroicons-signal" class="w-4 h-4" />
                   {{ t('channel.titlePlural') }}: {{ currentProject.channelCount || 0 }}
                 </span>
-                <span v-if="currentProject.lastPublicationAt" class="flex items-center gap-1">
+                <div v-if="currentProject.lastPublicationAt" class="flex items-center gap-1">
                   <UIcon name="i-heroicons-clock" class="w-4 h-4" />
-                  {{ t('project.lastPublication', 'Last publication') }}:
-                  {{ formatDate(currentProject.lastPublicationAt) }}
-                </span>
+                  <span>{{ t('project.lastPublication', 'Last publication') }}:</span>
+                  <NuxtLink 
+                    :to="`/projects/${currentProject.id}/publications/${currentProject.lastPublicationId}`"
+                    class="text-primary-600 dark:text-primary-400 hover:text-primary-500 transition-colors font-medium border-b border-dotted border-primary-500/50"
+                  >
+                    {{ formatDateWithTime(currentProject.lastPublicationAt) }}
+                  </NuxtLink>
+                </div>
               </div>
             </div>
 

@@ -92,10 +92,9 @@ export class ProjectsService {
           },
         },
         publications: {
-          where: { archivedAt: null },
           take: 1,
           orderBy: { createdAt: 'desc' },
-          select: { createdAt: true },
+          select: { id: true, createdAt: true },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -105,6 +104,7 @@ export class ProjectsService {
       const userMember = project.members[0]; // We filtered by userId, so there is at most one
 
       const lastPublicationAt = project.publications[0]?.createdAt || null;
+      const lastPublicationId = project.publications[0]?.id || null;
 
       const { publications: _, ...projectData } = project;
 
@@ -120,6 +120,7 @@ export class ProjectsService {
         // The previous code returned "memberCount" but loaded all members.
         // Let's add members to _count.
         lastPublicationAt,
+        lastPublicationId,
       };
     });
   }
@@ -158,10 +159,9 @@ export class ProjectsService {
           },
         },
         publications: {
-          where: { archivedAt: null },
           take: 1,
           orderBy: { createdAt: 'desc' },
-          select: { createdAt: true },
+          select: { id: true, createdAt: true },
         },
       },
       orderBy: { archivedAt: 'desc' },
@@ -171,6 +171,7 @@ export class ProjectsService {
       const userMember = project.members[0];
 
       const lastPublicationAt = project.publications[0]?.createdAt || null;
+      const lastPublicationId = project.publications[0]?.id || null;
 
       const { publications: _, ...projectData } = project;
 
@@ -180,6 +181,7 @@ export class ProjectsService {
         channelCount: project._count.channels,
         publicationsCount: project._count.publications,
         lastPublicationAt,
+        lastPublicationId,
       };
     });
   }
@@ -213,10 +215,9 @@ export class ProjectsService {
           },
         },
         publications: {
-          where: { archivedAt: null },
           take: 1,
           orderBy: { createdAt: 'desc' },
-          select: { createdAt: true },
+          select: { id: true, createdAt: true },
         },
         channels: {
           where: { archivedAt: null },
@@ -245,6 +246,7 @@ export class ProjectsService {
     }
 
     const lastPublicationAt = project.publications[0]?.createdAt || null;
+    const lastPublicationId = project.publications[0]?.id || null;
 
     const mappedChannels = project.channels.map(channel => ({
       ...channel,
@@ -260,6 +262,7 @@ export class ProjectsService {
       publicationsCount: project._count.publications,
       memberCount: project.members.length,
       lastPublicationAt,
+      lastPublicationId,
     };
   }
 
