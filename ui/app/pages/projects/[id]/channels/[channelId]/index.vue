@@ -190,9 +190,7 @@ const hasActiveFilters = computed(() => {
   return selectedStatus.value || selectedType.value || searchQuery.value
 })
 
-function getStatusBadgeColor(isActive: boolean): 'success' | 'neutral' {
-    return isActive ? 'success' : 'neutral'
-}
+
 
 </script>
 
@@ -252,9 +250,10 @@ function getStatusBadgeColor(isActive: boolean): 'success' | 'neutral' {
                                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white truncate">
                                     {{ channel.name }}
                                 </h1>
-                                <UBadge :color="getStatusBadgeColor(channel.isActive)" variant="subtle">
-                                    {{ channel.isActive ? t('channel.active') : t('channel.inactive') }}
-                                </UBadge>
+                                <div class="flex items-center gap-1 text-gray-500 dark:text-gray-400" :title="t('channel.language')">
+                                    <UIcon name="i-heroicons-language" class="w-5 h-5" />
+                                    <span class="text-sm font-medium uppercase">{{ channel.language }}</span>
+                                </div>
                             </div>
 
                             <div
@@ -275,11 +274,16 @@ function getStatusBadgeColor(isActive: boolean): 'success' | 'neutral' {
                                 <span v-if="channel.lastPostAt" class="flex items-center gap-1">
                                     <UIcon name="i-heroicons-clock" class="w-4 h-4" />
                                     {{ t('project.lastPost', 'Last post') }}:
-                                    {{ formatDateTime(channel.lastPostAt) }}
-                                </span>
-                                <span class="flex items-center gap-1">
-                                    <UIcon name="i-heroicons-language" class="w-4 h-4" />
-                                    {{ t('channel.language') }}: {{ channel.language }}
+                                    <NuxtLink 
+                                        v-if="channel.lastPostId"
+                                        :to="`/projects/${projectId}/posts/${channel.lastPostId}`"
+                                        class="hover:underline hover:text-primary-500 font-medium relative z-10"
+                                    >
+                                        {{ formatDateTime(channel.lastPostAt) }}
+                                    </NuxtLink>
+                                    <span v-else>
+                                        {{ formatDateTime(channel.lastPostAt) }}
+                                    </span>
                                 </span>
                             </div>
                         </div>
