@@ -42,6 +42,11 @@ onMounted(async () => {
   }
 })
 
+const isProjectEmpty = computed(() => {
+  if (!currentProject.value) return true
+  return (currentProject.value.channelCount || 0) === 0 && (currentProject.value.publicationsCount || 0) === 0
+})
+
 // Clean up on unmount
 onUnmounted(() => {
   clearCurrentProject()
@@ -72,6 +77,10 @@ async function handleUpdate(data: { name: string; description: string }) {
  * Open delete confirmation modal
  */
 function confirmDelete() {
+  if (isProjectEmpty.value) {
+    handleDelete()
+    return
+  }
   deleteConfirmationInput.value = ''
   showDeleteModal.value = true
 }
@@ -232,6 +241,7 @@ function cancelDelete() {
               color="error"
               variant="solid"
               icon="i-heroicons-trash"
+              :loading="isDeleting"
               @click="confirmDelete"
             >
               {{ t('project.deleteProject') }}
@@ -257,10 +267,15 @@ function cancelDelete() {
             </h3>
           </div>
 
-          <p v-if="currentProject" class="text-gray-600 dark:text-gray-400 mb-6">
-            {{ t('project.deleteConfirmWithInput', 'To confirm deletion, please type the project name: ') }}
-            <span class="font-bold text-gray-900 dark:text-white">{{ currentProject.name }}</span>
-          </p>
+          <div v-if="currentProject" class="mb-6">
+            <p class="text-gray-600 dark:text-gray-400 mb-2">
+              {{ t('project.deleteConfirmWithInput') }}
+              <span class="font-bold text-gray-900 dark:text-white">{{ currentProject.name }}</span>
+            </p>
+            <p class="text-sm text-red-500 font-medium">
+              {{ t('project.deleteCascadeInfo') }}
+            </p>
+          </div>
 
           <UInput
             v-if="currentProject"
@@ -268,6 +283,7 @@ function cancelDelete() {
             :placeholder="currentProject.name"
             class="mb-6"
             autofocus
+            @keyup.enter="deleteConfirmationInput === currentProject.name ? handleDelete() : null"
           />
 
           <div class="flex justify-end gap-3">

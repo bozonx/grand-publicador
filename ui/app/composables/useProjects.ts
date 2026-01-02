@@ -295,7 +295,7 @@ export function useProjects() {
 
     function canDelete(project: ProjectWithRole): boolean {
         if (!user.value) return false
-        return project.ownerId === user.value.id || project.role === 'owner'
+        return project.ownerId === user.value.id || project.role === 'owner' || project.role === 'admin'
     }
 
     function canManageMembers(project: ProjectWithRole): boolean {

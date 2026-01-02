@@ -291,7 +291,7 @@ export class ProjectsService {
    * @param userId - The ID of the user.
    */
   public async remove(projectId: string, userId: string) {
-    await this.permissions.checkProjectPermission(projectId, userId, [ProjectRole.OWNER]);
+    await this.permissions.checkProjectPermission(projectId, userId, [ProjectRole.OWNER, ProjectRole.ADMIN]);
 
     return this.prisma.project.delete({
       where: { id: projectId },
