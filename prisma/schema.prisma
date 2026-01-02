@@ -1,4 +1,3 @@
-
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -11,25 +10,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id         String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  fullName   String?  @map("full_name")
+  fullName         String?  @map("full_name")
   // Telegram username without @ symbol
-  telegramUsername String? @map("telegram_username")
-  avatarUrl  String?  @map("avatar_url")
+  telegramUsername String?  @map("telegram_username")
+  avatarUrl        String?  @map("avatar_url")
   // Unique Telegram user ID for authentication
-  telegramId BigInt?  @unique @map("telegram_id")
+  telegramId       BigInt?  @unique @map("telegram_id")
   // System administrator flag for elevated permissions
-  isAdmin    Boolean  @default(false) @map("is_admin")
+  isAdmin          Boolean  @default(false) @map("is_admin")
   // User ban status
-  isBanned   Boolean  @default(false) @map("is_banned")
-  banReason  String?  @map("ban_reason")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  isBanned         Boolean  @default(false) @map("is_banned")
+  banReason        String?  @map("ban_reason")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
   // User preferences stored as JSON string (SQLite limitation)
-  preferences String   @default("{}") // Store as JSON string in SQLite
+  preferences      String   @default("{}") // Store as JSON string in SQLite
 
   ownedProjects  Project[]       @relation("ProjectOwner")
   projectMembers ProjectMember[]
@@ -64,12 +62,12 @@ model ApiToken {
 }
 
 model Project {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   name        String
   description String?
-  ownerId     String   @map("owner_id")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  ownerId     String    @map("owner_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
   // Timestamp when project was archived
   archivedAt  DateTime? @map("archived_at")
   // User ID who archived the project
@@ -84,12 +82,12 @@ model Project {
 }
 
 model ProjectMember {
-  id        String          @id @default(uuid())
-  projectId String          @map("project_id")
-  userId    String          @map("user_id")
+  id        String      @id @default(uuid())
+  projectId String      @map("project_id")
+  userId    String      @map("user_id")
   // User's role in the project (OWNER, ADMIN, EDITOR, VIEWER)
-  role      ProjectRole     @default(VIEWER)
-  createdAt DateTime        @default(now()) @map("created_at")
+  role      ProjectRole @default(VIEWER)
+  createdAt DateTime    @default(now()) @map("created_at")
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -127,31 +125,38 @@ model Channel {
 }
 
 model Publication {
-  id         String     @id @default(uuid())
-  projectId  String     @map("project_id")
-  // User who created the publication (nullable for system-generated)
-  authorId   String?    @map("author_id")
-  title      String?
-  content    String
-  // Array of media file URLs stored as JSON string
-  mediaFiles String     @default("[]") @map("media_files")
-  tags       String?
-  // Publication status (DRAFT, SCHEDULED, PUBLISHED, etc.)
-  status     PostStatus @default(DRAFT)
-  // Type of post (POST, ARTICLE, VIDEO, etc.) - master type for distribution
-  postType   PostType   @default(POST) @map("post_type")
-  // Language of the publication (ru-RU, en-US, etc.)
-  language   String    @default("ru-RU")
+  id                 String  @id @default(uuid())
+  projectId          String  @map("project_id")
   // ID for linking translations of the same content
   translationGroupId String? @map("translation_group_id")
-  // Additional metadata stored as JSON string
-  meta       String     @default("{}")
-  createdAt  DateTime   @default(now()) @map("created_at")
-  updatedAt  DateTime   @updatedAt @map("updated_at")
+
+  // User who created the publication (nullable for system-generated)
+  authorId   String?   @map("author_id")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
   // Timestamp when publication was archived
-  archivedAt DateTime?  @map("archived_at")
+  archivedAt DateTime? @map("archived_at")
   // User ID who archived the publication
-  archivedBy String?    @map("archived_by")
+  archivedBy String?   @map("archived_by")
+
+  title         String?
+  description   String?
+  content       String
+  // Comment from author for post with type NEWS
+  authorComment String?    @map("author_comment")
+  tags          String?
+  // Array of media file URLs stored as JSON string
+  mediaFiles    String     @default("[]") @map("media_files")
+  // Additional metadata stored as JSON string
+  meta          String     @default("{}")
+  // Type of post (POST, ARTICLE, VIDEO, etc.) - master type for distribution
+  postType      PostType   @default(POST) @map("post_type")
+  // Date of the article which the author specified
+  postDate      DateTime?  @map("post_date")
+  // Publication status (DRAFT, SCHEDULED, PUBLISHED, etc.)
+  status        PostStatus @default(DRAFT)
+  // Language of the publication (ru-RU, en-US, etc.)
+  language      String     @default("ru-RU")
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   author  User?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
@@ -164,48 +169,49 @@ model Publication {
 }
 
 model Post {
-  id            String       @id @default(uuid())
+  id            String    @id @default(uuid())
   // Link to parent publication
-  publicationId String       @map("publication_id")
-  channelId     String       @map("channel_id")
-  // User who created the post (nullable for system-generated)
-  authorId      String?      @map("author_id")
-  // Post content (can differ from publication for platform-specific formatting)
-  content       String?
+  publicationId String    @map("publication_id")
+  channelId     String    @map("channel_id")
   // Social media platform type stored as string for flexibility
-  socialMedia   String       @map("social_media") // Kept as String for flexibility or could link to Channel's socialMedia
-  // Type of post (POST, ARTICLE, VIDEO, etc.)
-  postType      PostType     @map("post_type")
-  title         String?
-  description   String?
-  // comment from author for post with type NEWS
-  authorComment String?      @map("author_comment")
-  // Tags stored as comma-separated
-  tags          String?
-  // Array of media file URLs stored as JSON string
-  mediaFiles    String       @default("[]") @map("media_files")
-  // Custom display date (can differ from actual publish date)
-  postDate      DateTime?    @map("post_date")
-  // Post status (DRAFT, SCHEDULED, PUBLISHED, FAILED, EXPIRED)
-  status        PostStatus   @default(DRAFT)
+  socialMedia   String    @map("social_media") // Kept as String for flexibility or could link to Channel's socialMedia
   // When post is scheduled to be published
-  scheduledAt   DateTime?    @map("scheduled_at")
+  scheduledAt   DateTime? @map("scheduled_at")
   // Actual timestamp when post was published to platform
-  publishedAt   DateTime?    @map("published_at")
-  // Language of the post (inherited from publication)
-  language      String       @default("ru-RU")
-  // Additional metadata stored as JSON string
-  meta          String       @default("{}")
-  createdAt     DateTime     @default(now()) @map("created_at")
-  updatedAt     DateTime     @updatedAt @map("updated_at")
+  publishedAt   DateTime? @map("published_at")
+
+  // User who created the post (nullable for system-generated)
+  authorId   String?   @map("author_id")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
   // Timestamp when post was archived
-  archivedAt    DateTime?    @map("archived_at")
+  archivedAt DateTime? @map("archived_at")
   // User ID who archived the post
-  archivedBy    String?      @map("archived_by")
+  archivedBy String?   @map("archived_by")
+
+  title       String?
+  description String?
+  // Post content (can differ from publication for platform-specific formatting)
+  content     String?
+  // Tags stored as comma-separated
+  tags        String?
+  // Array of media file URLs stored as JSON string
+  mediaFiles  String     @default("[]") @map("media_files")
+  // Custom display date (can differ from actual publish date)
+  // Additional metadata stored as JSON string
+  meta        String     @default("{}")
+  // Type of post (POST, ARTICLE, VIDEO, etc.)
+  postType    PostType   @map("post_type")
+  // Date of the article which the author specified
+  postDate    DateTime?  @map("post_date")
+  // Post status (DRAFT, SCHEDULED, PUBLISHED, FAILED, EXPIRED)
+  status      PostStatus @default(DRAFT)
+  // Language of the post (inherited from publication)
+  language    String     @default("ru-RU")
 
   publication Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
-  channel     Channel      @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  author      User?        @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  channel     Channel     @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  author      User?       @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
   @@index([status, scheduledAt])
   @@index([channelId, createdAt])
