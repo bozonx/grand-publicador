@@ -48,4 +48,8 @@ export class UpdatePostDto {
   @IsDate()
   @IsOptional()
   public publishedAt?: Date;
+
+  @IsString()
+  @IsOptional()
+  public meta?: string;
 }

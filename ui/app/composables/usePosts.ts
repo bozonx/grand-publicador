@@ -78,6 +78,7 @@ export interface PostUpdateInput {
     scheduledAt?: string | null
     publishedAt?: string | null
     language?: string | null
+    meta?: string | null
 }
 
 export interface PostsFilter {

@@ -15,6 +15,7 @@ const { updatePost, deletePost, isLoading } = usePosts()
 
 const isCollapsed = ref(true)
 const isDeleting = ref(false)
+const showAdvancedFields = ref(false)
 
 // Formatting date helper
 const toDatetimeLocal = (dateStr?: string | null) => {
@@ -31,14 +32,16 @@ const toDatetimeLocal = (dateStr?: string | null) => {
   return `${year}-${month}-${day}T${hours}:${minutes}`
 }
 
-// Initial state helpers. Content defaults to true if string is present or if empty?
-// User said "Checkmark change content". I'll assume it behaves like others.
+const formatPublishedAt = (dateStr?: string | null) => {
+    if (!dateStr) return ''
+    const d = new Date(dateStr)
+    return d.toLocaleString()
+}
+
+// Initial state helpers
 const hasTitle = !!props.post.title
 const hasTags = !!props.post.tags
 const hasScheduledAt = !!props.post.scheduledAt
-const hasPublishedAt = !!props.post.publishedAt
-// For content, since it's the main thing, we usually want it. But let's respect the "empty fields hidden" rule. 
-// If content is empty string, we hide it.
 const hasContent = !!props.post.content && props.post.content.length > 0
 
 // Toggles for optional fields
@@ -46,7 +49,6 @@ const showTitle = ref(hasTitle)
 const showContent = ref(hasContent)
 const showTags = ref(hasTags)
 const showScheduledAt = ref(hasScheduledAt)
-const showPublishedAt = ref(hasPublishedAt)
 
 // Form Data
 const formData = reactive({
@@ -54,20 +56,28 @@ const formData = reactive({
   title: props.post.title || '',
   tags: props.post.tags || '',
   scheduledAt: toDatetimeLocal(props.post.scheduledAt),
-  publishedAt: toDatetimeLocal(props.post.publishedAt),
+  description: props.post.description || '',
+  postDate: toDatetimeLocal(props.post.postDate),
+  meta: props.post.meta || '{}',
 })
 
 function toggleCollapse() {
   isCollapsed.value = !isCollapsed.value
 }
 
+function toggleAdvancedFields() {
+  showAdvancedFields.value = !showAdvancedFields.value
+}
+
 async function handleSave() {
   await updatePost(props.post.id, {
-    content: showContent.value ? formData.content : '', // If hidden/unchecked, maybe send empty string or null?
+    content: showContent.value ? formData.content : '',
     title: showTitle.value ? formData.title : null,
     tags: showTags.value ? formData.tags : null,
     scheduledAt: showScheduledAt.value && formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : (showScheduledAt.value ? undefined : null), 
-    publishedAt: showPublishedAt.value && formData.publishedAt ? new Date(formData.publishedAt).toISOString() : (showPublishedAt.value ? undefined : null),
+    description: formData.description || null,
+    postDate: formData.postDate ? new Date(formData.postDate).toISOString() : null,
+    meta: formData.meta,
   })
 }
 
@@ -89,19 +99,20 @@ watch(() => props.post, (newPost) => {
     formData.title = newPost.title || ''
     formData.tags = newPost.tags || ''
     formData.scheduledAt = toDatetimeLocal(newPost.scheduledAt)
-    formData.publishedAt = toDatetimeLocal(newPost.publishedAt)
+    formData.description = newPost.description || ''
+    formData.postDate = toDatetimeLocal(newPost.postDate)
+    formData.meta = newPost.meta || '{}'
     
     // Update visibility if new data comes in and has value
     if (newPost.title) showTitle.value = true
     if (newPost.content) showContent.value = true
     if (newPost.tags) showTags.value = true
     if (newPost.scheduledAt) showScheduledAt.value = true
-    if (newPost.publishedAt) showPublishedAt.value = true
 }, { deep: true })
 
 onMounted(() => {
     formData.scheduledAt = toDatetimeLocal(props.post.scheduledAt)
-    formData.publishedAt = toDatetimeLocal(props.post.publishedAt)
+    formData.postDate = toDatetimeLocal(props.post.postDate)
 })
 </script>
 
@@ -126,7 +137,7 @@ onMounted(() => {
           {{ post.channel?.name || t('common.unknownChannel') }}
         </span>
 
-        <!-- Language Code (Always visible, no uppercase) -->
+        <!-- Language Code -->
         <UBadge 
           v-if="post.language" 
           variant="subtle" 
@@ -136,14 +147,18 @@ onMounted(() => {
         >
           {{ post.language }}
         </UBadge>
+
+        <!-- Published At Display -->
+        <span v-if="post.publishedAt" class="text-xs text-gray-500 flex items-center gap-1">
+             <UIcon name="i-heroicons-check-circle" class="w-3.5 h-3.5 text-green-500" />
+             {{ formatPublishedAt(post.publishedAt) }}
+        </span>
       </div>
 
       <!-- Expand/Collapse Button -->
       <div class="flex items-center gap-2">
-          <!-- Icons to show what's set when collapsed? Optional -->
            <span v-if="isCollapsed" class="text-xs text-gray-500 hidden sm:flex gap-1">
                <UIcon v-if="post.scheduledAt" name="i-heroicons-clock" class="w-4 h-4" />
-               <UIcon v-if="post.publishedAt" name="i-heroicons-check-circle" class="w-4 h-4 text-green-500" />
            </span>
           <UButton
             variant="ghost"
@@ -196,13 +211,53 @@ onMounted(() => {
             </div>
         </div>
 
-        <!-- Published At -->
-        <div class="space-y-2">
-            <UCheckbox v-model="showPublishedAt" :label="t('post.publishedAt')" :ui="{ label: 'font-medium text-gray-700 dark:text-gray-200' }" />
-            <div v-if="showPublishedAt" class="pl-6 animate-fade-in">
-                 <UInput v-model="formData.publishedAt" type="datetime-local" icon="i-heroicons-calendar" />
-            </div>
+       <!-- Advanced fields toggle -->
+      <div class="flex justify-center pt-2">
+        <UButton
+          variant="outline"
+          color="neutral"
+          size="sm"
+          :icon="showAdvancedFields ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'"
+          class="rounded-full"
+          @click="toggleAdvancedFields"
+        >
+          {{
+            showAdvancedFields
+              ? t('post.hideAdvanced', 'Hide advanced options')
+              : t('post.showAdvanced', 'Show advanced options')
+          }}
+        </UButton>
+      </div>
+
+       <!-- Advanced fields -->
+      <Transition
+        enter-active-class="transition duration-100 ease-out"
+        enter-from-class="transform scale-95 opacity-0"
+        enter-to-class="transform scale-100 opacity-100"
+        leave-active-class="transition duration-75 ease-in"
+        leave-from-class="transform scale-100 opacity-100"
+        leave-to-class="transform scale-95 opacity-0"
+      >
+        <div
+          v-if="showAdvancedFields"
+          class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700/50"
+        >
+             <!-- Post Date -->
+          <UFormField label="Post Date" help="Date of the article (optional)">
+            <UInput v-model="formData.postDate" type="datetime-local" class="w-full" icon="i-heroicons-calendar" />
+          </UFormField>
+
+          <!-- Description -->
+          <UFormField label="Description" help="Short description">
+             <UTextarea v-model="formData.description" :rows="3" />
+          </UFormField>
+
+          <!-- Meta -->
+          <UFormField label="Meta (JSON)" help="Additional metadata in JSON format">
+             <UTextarea v-model="formData.meta" :rows="4" font-family="mono" />
+          </UFormField>
         </div>
+      </Transition>
 
       <!-- Actions -->
       <div class="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700/50 mt-4">

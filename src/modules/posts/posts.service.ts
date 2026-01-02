@@ -338,9 +338,11 @@ export class PostsService {
       authorComment?: string;
       tags?: string;
       mediaFiles?: any;
+      meta?: string;
       status?: PostStatus;
       scheduledAt?: Date;
       publishedAt?: Date;
+      postDate?: Date;
     },
   ) {
     const post = await this.findOne(id, userId);
@@ -369,6 +371,8 @@ export class PostsService {
         status: data.status,
         scheduledAt: data.scheduledAt,
         publishedAt: data.publishedAt,
+        postDate: data.postDate,
+        meta: data.meta,
         mediaFiles: data.mediaFiles ? JSON.stringify(data.mediaFiles) : undefined,
       },
     });
