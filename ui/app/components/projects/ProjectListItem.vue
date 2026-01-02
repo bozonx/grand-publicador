@@ -61,19 +61,19 @@ function formatDateWithTime(date: string | null | undefined): string {
           </p>
           <!-- Metrics / Stats -->
           <div class="flex items-center gap-3 text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-2 flex-wrap">
-            <div class="flex items-center gap-1.5" :title="t('channel.titlePlural')">
-              <UIcon name="i-heroicons-signal" class="w-4 h-4 shrink-0" />
+            <div class="flex items-center gap-1.5" :title="t('publication.titlePlural')">
+              <UIcon name="i-heroicons-document-text" class="w-4 h-4 shrink-0" />
               <span>
-                {{ project.channelCount || 0 }} {{ t('channel.titlePlural').toLowerCase() }}
+                {{ project.publicationsCount || 0 }} {{ t('publication.titlePlural').toLowerCase() }}
               </span>
             </div>
             
             <div class="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
 
-            <div class="flex items-center gap-1.5" :title="t('publication.titlePlural')">
-              <UIcon name="i-heroicons-document-text" class="w-4 h-4 shrink-0" />
+            <div class="flex items-center gap-1.5" :title="t('channel.titlePlural')">
+              <UIcon name="i-heroicons-signal" class="w-4 h-4 shrink-0" />
               <span>
-                {{ project.publicationsCount || 0 }} {{ t('publication.titlePlural').toLowerCase() }}
+                {{ project.channelCount || 0 }} {{ t('channel.titlePlural').toLowerCase() }}
               </span>
             </div>
 
