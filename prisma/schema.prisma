@@ -133,7 +133,6 @@ model Publication {
   // User who created the publication (nullable for system-generated)
   createdBy  String?   @map("created_by")
   createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @updatedAt @map("updated_at")
   // Timestamp when publication was archived
   archivedAt DateTime? @map("archived_at")
   // User ID who archived the publication
@@ -183,7 +182,6 @@ model Post {
   // User who created the post (nullable for system-generated)
   createdBy String?  @map("created_by")
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
   // Archive flag (cascaded from publication)
   archived  Boolean  @default(false)
 

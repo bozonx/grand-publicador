@@ -20,7 +20,6 @@ export interface Publication {
     translationGroupId?: string | null
     postDate: string | null
     createdAt: string
-    updatedAt: string
     archivedBy: string | null
     archivedAt?: string | null
 }

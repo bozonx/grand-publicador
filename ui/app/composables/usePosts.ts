@@ -28,7 +28,6 @@ export interface Post {
     scheduledAt: string | null
     publishedAt: string | null
     createdAt: string
-    updatedAt: string
     archived: boolean
     language: string
     meta: string

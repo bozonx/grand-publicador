@@ -214,16 +214,8 @@ function formatDate(dateString: string | null | undefined): string {
                         <div class="text-gray-900 dark:text-white font-medium">
                             {{ formatDate(currentPublication.createdAt) }}
                         </div>
-                        <div v-if="currentPublication.author" class="text-gray-600 dark:text-gray-400 text-xs mt-0.5">
-                            {{ currentPublication.author.fullName || currentPublication.author.telegramUsername || t('common.unknown') }}
-                        </div>
-                    </div>
-
-                    <!-- Updated -->
-                    <div>
-                        <div class="text-gray-500 dark:text-gray-400 mb-1">{{ t('post.updatedAt') }}</div>
-                        <div class="text-gray-900 dark:text-white font-medium">
-                            {{ formatDate(currentPublication.updatedAt) }}
+                        <div v-if="currentPublication.creator" class="text-gray-600 dark:text-gray-400 text-xs mt-0.5">
+                            {{ currentPublication.creator.fullName || currentPublication.creator.telegramUsername || t('common.unknown') }}
                         </div>
                     </div>
 
