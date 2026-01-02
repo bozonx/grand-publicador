@@ -73,9 +73,8 @@ CREATE TABLE "publications" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "project_id" TEXT NOT NULL,
     "translation_group_id" TEXT,
-    "author_id" TEXT,
+    "created_by" TEXT,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
     "archived_at" DATETIME,
     "archived_by" TEXT,
     "title" TEXT,
@@ -90,7 +89,7 @@ CREATE TABLE "publications" (
     "status" TEXT NOT NULL DEFAULT 'DRAFT',
     "language" TEXT NOT NULL DEFAULT 'ru-RU',
     CONSTRAINT "publications_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "publications_author_id_fkey" FOREIGN KEY ("author_id") REFERENCES "users" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT "publications_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "users" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -101,11 +100,8 @@ CREATE TABLE "posts" (
     "social_media" TEXT NOT NULL,
     "scheduled_at" DATETIME,
     "published_at" DATETIME,
-    "author_id" TEXT,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
-    "archived_at" DATETIME,
-    "archived_by" TEXT,
+    "archived" BOOLEAN NOT NULL DEFAULT false,
     "title" TEXT,
     "description" TEXT,
     "author_comment" TEXT,
@@ -118,8 +114,7 @@ CREATE TABLE "posts" (
     "status" TEXT NOT NULL DEFAULT 'DRAFT',
     "language" TEXT NOT NULL DEFAULT 'ru-RU',
     CONSTRAINT "posts_publication_id_fkey" FOREIGN KEY ("publication_id") REFERENCES "publications" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "posts_channel_id_fkey" FOREIGN KEY ("channel_id") REFERENCES "channels" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "posts_author_id_fkey" FOREIGN KEY ("author_id") REFERENCES "users" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT "posts_channel_id_fkey" FOREIGN KEY ("channel_id") REFERENCES "channels" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateIndex
