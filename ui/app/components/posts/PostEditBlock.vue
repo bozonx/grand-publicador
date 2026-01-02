@@ -62,9 +62,9 @@ const showScheduledAt = ref(hasScheduledAt)
 // Form Data
 const formData = reactive({
   channelId: '', 
-  content: safePost.value.content || props.publication?.content || '',
-  title: safePost.value.title || (props.isCreating ? props.publication?.title : '') || '',
-  tags: safePost.value.tags || (props.isCreating ? props.publication?.tags : '') || '',
+  content: safePost.value.content || '',
+  title: safePost.value.title || '',
+  tags: safePost.value.tags || '',
   scheduledAt: toDatetimeLocal(safePost.value.scheduledAt),
   description: safePost.value.description || '',
   postDate: toDatetimeLocal(safePost.value.postDate),

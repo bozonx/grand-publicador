@@ -63,4 +63,8 @@ export class CreatePostDto {
   @IsString()
   @IsOptional()
   public language?: string;
+
+  @IsString()
+  @IsOptional()
+  public meta?: string;
 }

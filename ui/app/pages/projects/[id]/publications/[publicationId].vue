@@ -525,7 +525,7 @@ function formatDate(dateString: string | null | undefined): string {
                             <div class="flex items-center gap-2">
                                 <UIcon name="i-heroicons-language" class="w-5 h-5 text-gray-400" />
                                 <span class="text-gray-900 dark:text-white font-medium text-base">
-                                    {{ languageOptions.find(l => l.value === currentPublication.language)?.label || currentPublication.language }}
+                                    {{ languageOptions.find(l => l.value === currentPublication?.language)?.label || currentPublication?.language }}
                                 </span>
                                 <UButton
                                     icon="i-heroicons-pencil-square"
@@ -546,7 +546,7 @@ function formatDate(dateString: string | null | undefined): string {
                             <div class="flex items-center gap-2">
                                 <UIcon name="i-heroicons-document-duplicate" class="w-5 h-5 text-gray-400" />
                                 <span class="text-gray-900 dark:text-white font-medium text-base">
-                                    {{ typeOptions.find(t => t.value === currentPublication.postType)?.label || currentPublication.postType }}
+                                    {{ typeOptions.find(t => t.value === currentPublication?.postType)?.label || currentPublication?.postType }}
                                 </span>
                                 <UButton
                                     icon="i-heroicons-pencil-square"
