@@ -316,6 +316,7 @@
     "noPublicationsFound": "Публикации не найдены",
     "noPublicationsDescription": "У вас еще нет созданных публикаций.",
     "createInLanguage": "Создать публикацию на языке:",
+    "linkedPosts": "Связанные посты",
     "publicationsBlock": "Публикации"
   },
   "postType": {

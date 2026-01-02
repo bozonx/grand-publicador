@@ -316,6 +316,7 @@
     "noPublicationsFound": "No publications found",
     "noPublicationsDescription": "You don't have any publications yet.",
     "createInLanguage": "Create publication in language:",
+    "linkedPosts": "Linked Posts",
     "publicationsBlock": "Publications"
   },
   "postType": {

@@ -78,6 +78,26 @@ function handleCancel() {
       @success="handleSuccess"
       @cancel="handleCancel"
     />
+
+    <!-- Linked Posts Section -->
+    <div v-if="currentPublication && currentPublication.posts && currentPublication.posts.length > 0" class="mt-8 pb-12">
+      <div class="flex items-center gap-2 mb-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+          {{ t('publication.linkedPosts', 'Linked Posts') }}
+        </h3>
+        <UBadge variant="subtle" color="neutral" size="sm" class="rounded-full">
+          {{ currentPublication.posts.length }}
+        </UBadge>
+      </div>
+      
+      <div class="space-y-4">
+        <PostsPostEditBlock
+          v-for="post in currentPublication.posts"
+          :key="post.id"
+          :post="post"
+        />
+      </div>
+    </div>
     
     <!-- Error/Not Found -->
     <div v-else class="text-center py-12">
