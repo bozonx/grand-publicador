@@ -36,8 +36,9 @@ const {
 const { typeOptions, statusOptions: allStatusOptions } = usePosts()
 const router = useRouter()
 
-// Get language from URL query parameter
+// Get language and channelId from URL query parameters
 const languageParam = computed(() => route.query.language as string | undefined)
+const channelIdParam = computed(() => route.query.channelId as string | undefined)
 
 // Form state
 const formData = reactive({
@@ -65,8 +66,16 @@ onMounted(async () => {
     // Fetch recent publications to allow linking (limit 50 for now)
     await fetchPublicationsByProject(props.projectId, { limit: 50 })
     
-    // Auto-select channels matching the language parameter
-    if (languageParam.value && !isEditMode.value) {
+    // Auto-select channel if channelId parameter is provided
+    if (channelIdParam.value && !isEditMode.value) {
+      const selectedChannel = channels.value.find(ch => ch.id === channelIdParam.value)
+      if (selectedChannel) {
+        formData.channelIds = [channelIdParam.value]
+        formData.language = selectedChannel.language
+      }
+    }
+    // Otherwise, auto-select channels matching the language parameter
+    else if (languageParam.value && !isEditMode.value) {
       const matchingChannels = channels.value
         .filter(ch => ch.language === languageParam.value)
         .map(ch => ch.id)

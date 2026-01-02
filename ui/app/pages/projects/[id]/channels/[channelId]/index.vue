@@ -97,13 +97,17 @@ watch(
  */
 function goToCreatePost() {
   router.push({
-      path: `/projects/${projectId.value}/posts/new`,
+      path: `/projects/${projectId.value}/publications/new`,
       query: { channelId: channelId.value }
   })
 }
 
 function goToPost(postId: string) {
-  router.push(`/projects/${projectId.value}/posts/${postId}`)
+  // Find the post to get its publicationId
+  const post = posts.value.find(p => p.id === postId)
+  if (post?.publicationId) {
+    router.push(`/projects/${projectId.value}/publications/${post.publicationId}`)
+  }
 }
 
 function goBack() {
@@ -275,8 +279,8 @@ const hasActiveFilters = computed(() => {
                                     <UIcon name="i-heroicons-clock" class="w-4 h-4" />
                                     {{ t('project.lastPost', 'Last post') }}:
                                     <NuxtLink 
-                                        v-if="channel.lastPostId"
-                                        :to="`/projects/${projectId}/posts/${channel.lastPostId}`"
+                                        v-if="channel.lastPublicationId"
+                                        :to="`/projects/${projectId}/publications/${channel.lastPublicationId}`"
                                         class="hover:underline hover:text-primary-500 font-medium relative z-10"
                                     >
                                         {{ formatDateTime(channel.lastPostAt) }}

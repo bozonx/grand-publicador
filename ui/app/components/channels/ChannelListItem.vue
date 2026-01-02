@@ -72,8 +72,8 @@ function formatDate(date: string | null | undefined): string {
             <span>
               {{ t('common.lastPost') }}: 
               <NuxtLink 
-                v-if="channel.lastPostId"
-                :to="`/projects/${channel.projectId}/posts/${channel.lastPostId}`"
+                v-if="channel.lastPublicationId"
+                :to="`/projects/${channel.projectId}/publications/${channel.lastPublicationId}`"
                 class="hover:underline hover:text-primary-500 font-medium relative z-10"
                 @click.stop
               >

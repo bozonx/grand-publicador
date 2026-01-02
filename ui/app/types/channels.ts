@@ -23,6 +23,7 @@ export interface ChannelWithProject extends Channel {
     postsCount?: number
     lastPostAt?: string
     lastPostId?: string | null
+    lastPublicationId?: string | null
 }
 
 export interface ChannelCreateInput {

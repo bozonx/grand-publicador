@@ -14,6 +14,7 @@ export type { PostStatus, PostType } from '~/types/posts'
 export interface Post {
     id: string
     channelId: string
+    publicationId: string
     authorId: string | null
     content: string | null
     socialMedia: string

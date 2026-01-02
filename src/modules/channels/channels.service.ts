@@ -75,7 +75,7 @@ export class ChannelsService {
           where: { archivedAt: null, status: 'PUBLISHED' },
           take: 1,
           orderBy: { createdAt: 'desc' },
-          select: { createdAt: true, id: true },
+          select: { createdAt: true, id: true, publicationId: true },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -89,6 +89,7 @@ export class ChannelsService {
         postsCount: _count.posts,
         lastPostAt: posts[0]?.createdAt || null,
         lastPostId: posts[0]?.id || null,
+        lastPublicationId: posts[0]?.publicationId || null,
       };
     });
   }
@@ -132,7 +133,7 @@ export class ChannelsService {
           where: { archivedAt: null },
           take: 1,
           orderBy: { createdAt: 'desc' },
-          select: { createdAt: true, id: true },
+          select: { createdAt: true, id: true, publicationId: true },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -146,6 +147,7 @@ export class ChannelsService {
         postsCount: _count.posts,
         lastPostAt: posts[0]?.createdAt || null,
         lastPostId: posts[0]?.id || null,
+        lastPublicationId: posts[0]?.publicationId || null,
       };
     });
   }
@@ -179,7 +181,7 @@ export class ChannelsService {
           where: { archivedAt: null },
           take: 1,
           orderBy: { createdAt: 'desc' },
-          select: { createdAt: true, id: true },
+          select: { createdAt: true, id: true, publicationId: true },
         },
       },
       orderBy: { archivedAt: 'desc' },
@@ -193,6 +195,7 @@ export class ChannelsService {
         postsCount: _count.posts,
         lastPostAt: posts[0]?.createdAt || null,
         lastPostId: posts[0]?.id || null,
+        lastPublicationId: posts[0]?.publicationId || null,
       };
     });
   }
@@ -227,7 +230,7 @@ export class ChannelsService {
           where: { archivedAt: null },
           take: 1,
           orderBy: { createdAt: 'desc' },
-          select: { createdAt: true, id: true },
+          select: { createdAt: true, id: true, publicationId: true },
         },
       },
       orderBy: { archivedAt: 'desc' },
@@ -241,6 +244,7 @@ export class ChannelsService {
         postsCount: _count.posts,
         lastPostAt: posts[0]?.createdAt || null,
         lastPostId: posts[0]?.id || null,
+        lastPublicationId: posts[0]?.publicationId || null,
       };
     });
   }
@@ -271,7 +275,7 @@ export class ChannelsService {
           where: { archivedAt: null },
           take: 1,
           orderBy: { createdAt: 'desc' },
-          select: { createdAt: true, id: true },
+          select: { createdAt: true, id: true, publicationId: true },
         },
       },
     });
@@ -291,6 +295,7 @@ export class ChannelsService {
       postsCount: _count.posts,
       lastPostAt: posts[0]?.createdAt || null,
       lastPostId: posts[0]?.id || null,
+      lastPublicationId: posts[0]?.publicationId || null,
     };
   }
 
