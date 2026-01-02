@@ -178,10 +178,10 @@ model Post {
   postType      PostType     @map("post_type")
   title         String?
   description   String?
-  // Internal comment from author (not published)
+  // comment from author for post with type NEWS
   authorComment String?      @map("author_comment")
-  // Tags stored as comma-separated or JSON string
-  tags          String? // Store as comma-separated or JSON string
+  // Tags stored as comma-separated
+  tags          String?
   // Array of media file URLs stored as JSON string
   mediaFiles    String       @default("[]") @map("media_files")
   // Custom display date (can differ from actual publish date)

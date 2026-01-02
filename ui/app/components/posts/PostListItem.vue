@@ -11,18 +11,8 @@ const emit = defineEmits<{
   (e: 'delete', post: PostWithRelations): void
 }>()
 
-const { t } = useI18n()
+const { t, d } = useI18n()
 const { getStatusColor, getStatusDisplayName, getTypeDisplayName, canDelete } = usePosts()
-
-function formatDate(date: string | null): string {
-  if (!date) return '-'
-  return new Date(date).toLocaleDateString()
-}
-
-function formatDateTime(date: string | null): string {
-  if (!date) return '-'
-  return new Date(date).toLocaleString()
-}
 
 function truncateContent(content: string | null | undefined, maxLength = 150): string {
   if (!content) return ''
@@ -43,66 +33,81 @@ function handleDelete(e: Event) {
 
 <template>
   <div
-    class="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer p-4 sm:p-6"
+    class="bg-white dark:bg-gray-800/50 rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer p-5 border border-gray-100 dark:border-gray-700/50 hover:border-primary-500/30 group"
     @click="handleClick"
   >
-    <div class="flex items-start justify-between gap-4">
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-3 mb-2">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white truncate">
-            {{ post.title || t('post.untitled', 'Untitled') }}
-          </h3>
-          <UBadge :color="getStatusColor(post.status)" size="xs" variant="subtle">
-            {{ getStatusDisplayName(post.status) }}
-          </UBadge>
-          <UBadge color="neutral" size="xs" variant="outline">
-            {{ getTypeDisplayName(post.postType) }}
-          </UBadge>
-          <span v-if="post.language !== post.channel?.language" class="text-[10px] px-1.5 py-0.5 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 rounded font-mono uppercase">
-            {{ post.language }}
-          </span>
-        </div>
-        <p class="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 mb-3">
-          {{ truncateContent(post.content) }}
-        </p>
-        <div class="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-          <span class="flex items-center gap-1">
-            <UIcon name="i-heroicons-calendar" class="w-3.5 h-3.5" />
-            {{ formatDate(post.createdAt) }}
-          </span>
-          <span
-            v-if="post.status === 'SCHEDULED' && post.scheduledAt"
-            class="flex items-center gap-1 text-amber-600 dark:text-amber-400"
-          >
-            <UIcon name="i-heroicons-clock" class="w-3.5 h-3.5" />
-            {{ formatDateTime(post.scheduledAt) }}
-          </span>
-          <span v-if="showChannelInfo && post.channel" class="flex items-center gap-1">
-            <UIcon name="i-heroicons-hashtag" class="w-3.5 h-3.5" />
-            {{ post.channel.name }}
-            <span class="ml-1 text-[10px] px-1 bg-gray-100 dark:bg-gray-700 rounded uppercase font-mono">
-                {{ post.channel.language }}
+    <div class="flex flex-col h-full">
+      <!-- Title and Action Buttons -->
+      <div class="flex items-start justify-between gap-4 mb-3">
+        <div class="flex flex-col gap-2 min-w-0">
+          <div class="flex flex-wrap items-center gap-2">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate leading-tight">
+              {{ post.title || t('post.untitled') }}
+            </h3>
+            
+            <UBadge :color="getStatusColor(post.status)" size="xs" variant="subtle" class="capitalize">
+              {{ getStatusDisplayName(post.status) }}
+            </UBadge>
+            
+            <UBadge color="neutral" size="xs" variant="outline" class="font-normal text-[10px]">
+              {{ getTypeDisplayName(post.postType) }}
+            </UBadge>
+            
+            <span class="text-[10px] px-1.5 py-0.5 bg-orange-500/10 text-orange-600 dark:text-orange-400 rounded font-mono uppercase border border-orange-200/50 dark:border-orange-500/20">
+              {{ post.language }}
             </span>
-          </span>
+          </div>
+        </div>
+
+        <!-- Right Side Actions -->
+        <div class="flex items-center gap-1 -mt-1 -mr-1">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            icon="i-heroicons-pencil-square"
+            size="xs"
+            class="opacity-0 group-hover:opacity-100 transition-opacity"
+            @click="handleClick"
+          />
+          <UButton
+            v-if="canDelete(post)"
+            color="error"
+            variant="ghost"
+            icon="i-heroicons-trash"
+            size="xs"
+            class="opacity-0 group-hover:opacity-100 transition-opacity"
+            @click="handleDelete"
+          />
         </div>
       </div>
 
-      <div class="flex items-center gap-2">
-        <UButton
-          color="neutral"
-          variant="ghost"
-          icon="i-heroicons-pencil-square"
-          size="sm"
-          @click="handleClick"
-        />
-        <UButton
-          v-if="canDelete(post)"
-          color="error"
-          variant="ghost"
-          icon="i-heroicons-trash"
-          size="sm"
-          @click="handleDelete"
-        />
+      <!-- Content Snippet (Only if meaningful content exists) -->
+      <p v-if="post.content" class="text-sm text-gray-500 dark:text-gray-400 line-clamp-1 mb-4 grow italic">
+        {{ truncateContent(post.content, 100) }}
+      </p>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-between mt-auto pt-3 border-t border-gray-100 dark:border-gray-700/50">
+        <div class="flex items-center gap-4 text-[12px] text-gray-500 dark:text-gray-400">
+          <span class="flex items-center gap-1.5">
+            <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
+            {{ d(new Date(post.createdAt), 'short') }}
+          </span>
+          
+          <span v-if="post.scheduledAt && post.status === 'SCHEDULED'" class="flex items-center gap-1.5 text-amber-500">
+            <UIcon name="i-heroicons-clock" class="w-4 h-4" />
+            {{ d(new Date(post.scheduledAt), 'long') }}
+          </span>
+        </div>
+
+        <!-- Optional Channel Link if needed outside channel page context -->
+        <div v-if="showChannelInfo && post.channel" class="flex items-center gap-1.5 text-[11px] bg-gray-50 dark:bg-gray-800 px-2 py-0.5 rounded border border-gray-100 dark:border-gray-700">
+          <UIcon 
+            :name="post.channel.socialMedia === 'TELEGRAM' ? 'i-logos-telegram' : 'i-heroicons-hashtag'" 
+            class="w-3 h-3" 
+          />
+          <span>{{ post.channel.name }}</span>
+        </div>
       </div>
     </div>
   </div>
