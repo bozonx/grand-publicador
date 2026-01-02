@@ -58,6 +58,7 @@ CREATE TABLE "channels" (
     "social_media" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "channel_identifier" TEXT NOT NULL,
+    "language" TEXT NOT NULL,
     "credentials" TEXT NOT NULL DEFAULT '{}',
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -77,6 +78,9 @@ CREATE TABLE "publications" (
     "media_files" TEXT NOT NULL DEFAULT '[]',
     "tags" TEXT,
     "status" TEXT NOT NULL DEFAULT 'DRAFT',
+    "post_type" TEXT NOT NULL DEFAULT 'POST',
+    "language" TEXT NOT NULL DEFAULT 'ru-RU',
+    "translation_group_id" TEXT,
     "meta" TEXT NOT NULL DEFAULT '{}',
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
@@ -104,6 +108,7 @@ CREATE TABLE "posts" (
     "status" TEXT NOT NULL DEFAULT 'DRAFT',
     "scheduled_at" DATETIME,
     "published_at" DATETIME,
+    "language" TEXT NOT NULL DEFAULT 'ru-RU',
     "meta" TEXT NOT NULL DEFAULT '{}',
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
@@ -131,6 +136,9 @@ CREATE UNIQUE INDEX "project_members_project_id_user_id_key" ON "project_members
 
 -- CreateIndex
 CREATE INDEX "channels_project_id_idx" ON "channels"("project_id");
+
+-- CreateIndex
+CREATE INDEX "publications_translation_group_id_idx" ON "publications"("translation_group_id");
 
 -- CreateIndex
 CREATE INDEX "publications_project_id_status_idx" ON "publications"("project_id", "status");

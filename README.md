@@ -156,7 +156,7 @@ npx prisma generate
 
 # Наполнение базы тестовыми данными (опционально)
 node prisma-wrapper.mjs db seed
-```
+``` 
 
 ### 3. Настройка Telegram Mini App
 
