@@ -81,12 +81,17 @@ async function handleSave() {
   })
 }
 
+const isDeleteModalOpen = ref(false)
+
 async function handleDelete() {
-  if (!confirm(t('post.deleteConfirm'))) return
-  
+  isDeleteModalOpen.value = true
+}
+
+async function confirmDelete() {
   isDeleting.value = true
   const success = await deletePost(props.post.id)
   isDeleting.value = false
+  isDeleteModalOpen.value = false
   
   if (success) {
     emit('deleted', props.post.id)
@@ -118,6 +123,39 @@ onMounted(() => {
 
 <template>
   <div class="border border-gray-200 dark:border-gray-700/50 rounded-lg bg-white dark:bg-gray-800/50 overflow-hidden mb-4 shadow-sm">
+    <!-- Delete Confirmation Modal -->
+    <UModal v-model:open="isDeleteModalOpen">
+      <template #content>
+        <div class="p-6">
+          <div class="flex items-center gap-3 text-red-600 dark:text-red-400 mb-4">
+            <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6"></UIcon>
+            <h3 class="text-lg font-medium">
+              {{ t('post.deleteConfirm') }}
+            </h3>
+          </div>
+
+          <p class="text-gray-500 dark:text-gray-400 mb-6">
+            {{ t('archive.delete_permanent_warning') }}
+          </p>
+
+          <div class="flex justify-end gap-3">
+            <UButton
+              color="neutral"
+              variant="ghost"
+              :label="t('common.cancel')"
+              @click="isDeleteModalOpen = false"
+            ></UButton>
+            <UButton
+              color="error"
+              :label="t('common.delete')"
+              :loading="isDeleting"
+              @click="confirmDelete"
+            ></UButton>
+          </div>
+        </div>
+      </template>
+    </UModal>
+
     <!-- Header -->
     <div 
       class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-colors select-none"
