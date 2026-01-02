@@ -16,30 +16,22 @@ export class PostsService {
   /**
    * Create a new post in a specific channel.
    * Requires OWNER, ADMIN, or EDITOR role in the channel's project.
+   * All content comes from the parent Publication.
    *
    * @param userId - The ID of the user creating the post.
    * @param channelId - The ID of the target channel.
-   * @param data - The post creation data.
+   * @param data - The post creation data (channel-specific only).
    * @returns The created post.
    */
   public async create(
     userId: string,
     channelId: string,
     data: {
-      content: string;
+      publicationId: string; // Now required
       socialMedia?: string;
-      postType: PostType;
-      title?: string;
-      description?: string;
-      authorComment?: string;
       tags?: string;
-      mediaFiles?: any;
-      postDate?: Date;
-      scheduledAt?: Date;
       status?: PostStatus;
-      language?: string;
-      publicationId?: string;
-      meta?: string;
+      scheduledAt?: Date;
     },
   ) {
     const channel = await this.channelsService.findOne(channelId, userId);
@@ -49,45 +41,30 @@ export class PostsService {
       ProjectRole.EDITOR,
     ]);
 
-    let publicationId = data.publicationId;
+    // Verify publication exists and belongs to same project
+    const publication = await this.prisma.publication.findFirst({
+      where: {
+        id: data.publicationId,
+        projectId: channel.projectId,
+      },
+    });
 
-    // If no publicationId is provided, create a wrapper publication
-    if (!publicationId) {
-      const publication = await this.prisma.publication.create({
-        data: {
-          projectId: channel.projectId,
-          createdBy: userId,
-          title: data.title || 'Standalone Post',
-          description: data.description,
-          content: data.content,
-          authorComment: data.authorComment,
-          status: data.status || PostStatus.DRAFT,
-          postType: data.postType,
-          postDate: data.postDate,
-          language: data.language || channel.language,
-          meta: JSON.stringify({ isStandalone: true }),
-        },
-      });
-      publicationId = publication.id;
+    if (!publication) {
+      throw new NotFoundException('Publication not found or does not belong to this project');
     }
 
     return this.prisma.post.create({
       data: {
         channelId,
-        publicationId,
-        content: data.content,
+        publicationId: data.publicationId,
         socialMedia: data.socialMedia ?? channel.socialMedia,
-        postType: data.postType,
-        title: data.title,
-        description: data.description,
-        authorComment: data.authorComment,
         tags: data.tags,
-        mediaFiles: JSON.stringify(data.mediaFiles ?? []),
-        postDate: data.postDate,
-        scheduledAt: data.scheduledAt,
         status: data.status ?? PostStatus.DRAFT,
-        language: data.language ?? channel.language,
-        meta: data.meta,
+        scheduledAt: data.scheduledAt,
+      },
+      include: {
+        channel: true,
+        publication: true,
       },
     });
   }
@@ -127,10 +104,13 @@ export class PostsService {
       where.postType = filters.postType.toUpperCase() as PostType;
     }
     if (filters?.search) {
-      where.OR = [
-        { title: { contains: filters.search, mode: 'insensitive' } },
-        { content: { contains: filters.search, mode: 'insensitive' } },
-      ];
+      // Search in publication content instead of post
+      where.publication = {
+        OR: [
+          { title: { contains: filters.search, mode: 'insensitive' } },
+          { content: { contains: filters.search, mode: 'insensitive' } },
+        ],
+      };
     }
 
     return this.prisma.post.findMany({
@@ -144,12 +124,7 @@ export class PostsService {
             socialMedia: true,
           },
         },
-        publication: {
-          select: {
-            id: true,
-            createdBy: true,
-          },
-        },
+        publication: true, // Include full publication with content
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -186,10 +161,13 @@ export class PostsService {
       where.postType = filters.postType.toUpperCase() as PostType;
     }
     if (filters?.search) {
-      where.OR = [
-        { title: { contains: filters.search, mode: 'insensitive' } },
-        { content: { contains: filters.search, mode: 'insensitive' } },
-      ];
+      // Search in publication content
+      where.publication = {
+        OR: [
+          { title: { contains: filters.search, mode: 'insensitive' } },
+          { content: { contains: filters.search, mode: 'insensitive' } },
+        ],
+      };
     }
 
     return this.prisma.post.findMany({
@@ -203,12 +181,7 @@ export class PostsService {
             socialMedia: true,
           },
         },
-        publication: {
-          select: {
-            id: true,
-            createdBy: true,
-          },
-        },
+        publication: true, // Include full publication
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -245,10 +218,13 @@ export class PostsService {
       where.postType = filters.postType.toUpperCase() as PostType;
     }
     if (filters?.search) {
-      where.OR = [
-        { title: { contains: filters.search, mode: 'insensitive' } },
-        { content: { contains: filters.search, mode: 'insensitive' } },
-      ];
+      // Search in publication content
+      where.publication = {
+        OR: [
+          { title: { contains: filters.search, mode: 'insensitive' } },
+          { content: { contains: filters.search, mode: 'insensitive' } },
+        ],
+      };
     }
 
     return this.prisma.post.findMany({
@@ -262,12 +238,7 @@ export class PostsService {
             socialMedia: true,
           },
         },
-        publication: {
-          select: {
-            id: true,
-            createdBy: true,
-          },
-        },
+        publication: true, // Include full publication
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -301,15 +272,7 @@ export class PostsService {
             socialMedia: true,
           },
         },
-        publication: {
-          select: {
-            id: true,
-            title: true,
-            content: true,
-            status: true,
-            createdBy: true,
-          },
-        },
+        publication: true, // Include full publication with all content
       },
     });
 
@@ -323,28 +286,23 @@ export class PostsService {
 
   /**
    * Update an existing post.
+   * Only channel-specific fields can be updated (tags, status, scheduledAt, publishedAt).
+   * Content fields are part of Publication and must be updated there.
    * Allowed for the publication author or project OWNER/ADMIN.
    *
    * @param id - The ID of the post.
    * @param userId - The ID of the user.
-   * @param data - The data to update.
+   * @param data - The data to update (channel-specific fields only).
    * @throws ForbiddenException if the user lacks permissions.
    */
   public async update(
     id: string,
     userId: string,
     data: {
-      content?: string;
-      title?: string;
-      description?: string;
-      authorComment?: string;
       tags?: string;
-      mediaFiles?: any;
-      meta?: string;
       status?: PostStatus;
       scheduledAt?: Date;
       publishedAt?: Date;
-      postDate?: Date;
     },
   ) {
     const post = await this.findOne(id, userId);
@@ -365,17 +323,14 @@ export class PostsService {
     return this.prisma.post.update({
       where: { id },
       data: {
-        content: data.content,
-        title: data.title,
-        description: data.description,
-        authorComment: data.authorComment,
         tags: data.tags,
         status: data.status,
         scheduledAt: data.scheduledAt,
         publishedAt: data.publishedAt,
-        postDate: data.postDate,
-        meta: data.meta,
-        mediaFiles: data.mediaFiles ? JSON.stringify(data.mediaFiles) : undefined,
+      },
+      include: {
+        channel: true,
+        publication: true,
       },
     });
   }

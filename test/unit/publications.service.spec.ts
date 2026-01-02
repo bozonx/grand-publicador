@@ -75,6 +75,7 @@ describe('PublicationsService (unit)', () => {
         mediaFiles: ['image1.jpg'],
         tags: 'test,demo',
         status: PostStatus.DRAFT,
+        language: 'ru-RU',
       };
 
       mockPermissionsService.checkProjectAccess.mockResolvedValue(undefined);
@@ -82,7 +83,7 @@ describe('PublicationsService (unit)', () => {
       const expectedPublication = {
         id: 'pub-1',
         ...createDto,
-        authorId: userId,
+        createdBy: userId,
         mediaFiles: JSON.stringify(createDto.mediaFiles),
         meta: '{}',
         createdAt: new Date(),
@@ -142,7 +143,7 @@ describe('PublicationsService (unit)', () => {
       const mockPublication = {
         id: publicationId,
         projectId: 'project-1',
-        authorId: userId,
+        createdBy: userId,
       };
 
       mockPrismaService.publication.findUnique.mockResolvedValue(mockPublication);
@@ -157,7 +158,7 @@ describe('PublicationsService (unit)', () => {
     it('should allow admin to update others publication', async () => {
       const userId = 'admin-user';
       mockPrismaService.publication.findUnique.mockResolvedValue({
-        authorId: 'other',
+        createdBy: 'other',
         projectId: 'p1',
       });
       mockPermissionsService.checkProjectAccess.mockResolvedValue(undefined);
@@ -222,7 +223,7 @@ describe('PublicationsService (unit)', () => {
       const mockPublication = {
         id: publicationId,
         projectId: 'project-1',
-        authorId: userId,
+        createdBy: userId,
       };
 
       mockPrismaService.publication.findUnique.mockResolvedValue(mockPublication);

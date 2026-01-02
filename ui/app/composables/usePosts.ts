@@ -12,74 +12,57 @@ import {
 export type { PostStatus, PostType } from '~/types/posts'
 
 export interface Post {
-    id: string
-    channelId: string
-    publicationId: string
-    content: string | null
-    socialMedia: string
-    postType: PostType
-    title: string | null
-    description: string | null
-    authorComment: string | null
-    tags: string | null
-    postDate: string | null
-    status: PostStatus
-    scheduledAt: string | null
-    publishedAt: string | null
-    createdAt: string
-    archived: boolean
-    language: string
-    meta: string
+  id: string
+  channelId: string
+  publicationId: string
+  socialMedia: string
+  tags: string | null  // Can override publication tags
+  status: PostStatus  // Post-specific status
+  scheduledAt: string | null
+  publishedAt: string | null
+  createdAt: string
+  updatedAt: string
+  archived: boolean
 }
 
 export interface PostWithRelations extends Post {
-    channel?: {
-        id: string
-        name: string
-        projectId: string
-        socialMedia: string
-        language: string
-    } | null
-    publication?: {
-        id: string
-        title: string | null
-        content: string
-        status: string
-        createdBy: string | null
-    } | null
+  channel?: {
+    id: string
+    name: string
+    projectId: string
+    socialMedia: string
+    language: string
+  } | null
+  publication?: {
+    id: string
+    title: string | null
+    description: string | null
+    content: string
+    authorComment: string | null
+    tags: string | null // Fallback if post.tags is null
+    mediaFiles: string
+    meta: string
+    postType: string
+    postDate: string | null
+    status: string // Publication status
+    language: string
+    createdBy: string | null
+  } | null
 }
 
 export interface PostCreateInput {
-    channelId: string
-    publicationId?: string
-    content?: string | null
-    postType: PostType
-    socialMedia?: string
-    title?: string | null
-    description?: string | null
-    authorComment?: string | null
-    tags?: string | string[] | null
-    postDate?: string | null
-    status?: PostStatus | null
-    scheduledAt?: string | null
-    language?: string | null
-    meta?: string | null
+  channelId: string
+  publicationId: string  // Required
+  tags?: string | null  // Override publication tags
+  status?: PostStatus | null
+  scheduledAt?: string | null
 }
 
 export interface PostUpdateInput {
-    content?: string | null
-    postType?: PostType
-    socialMedia?: string | null
-    title?: string | null
-    description?: string | null
-    authorComment?: string | null
-    tags?: string | string[] | null
-    postDate?: string | null
-    status?: PostStatus
-    scheduledAt?: string | null
-    publishedAt?: string | null
-    language?: string | null
-    meta?: string | null
+  tags?: string | null  // Update tags
+  status?: PostStatus  // Update status
+  scheduledAt?: string | null
+  publishedAt?: string | null
 }
 
 export interface PostsFilter {
@@ -360,4 +343,30 @@ export function usePosts() {
         },
         clearCurrentPost,
     }
+}
+
+// Utility functions to access publication data from post
+export function getPostTitle(post: PostWithRelations): string | null {
+  return post.publication?.title ?? null
+}
+
+export function getPostContent(post: PostWithRelations): string {
+  return post.publication?.content ?? ''
+}
+
+export function getPostTags(post: PostWithRelations): string | null {
+  // Priority: post tags > publication tags
+  return post.tags ?? post.publication?.tags ?? null
+}
+
+export function getPostDescription(post: PostWithRelations): string | null {
+  return post.publication?.description ?? null
+}
+
+export function getPostType(post: PostWithRelations): string {
+  return post.publication?.postType ?? 'POST'
+}
+
+export function getPostLanguage(post: PostWithRelations): string {
+  return post.publication?.language ?? 'en-US'
 }

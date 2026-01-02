@@ -4,40 +4,16 @@ import { PostStatus } from '@prisma/client';
 
 /**
  * DTO for updating an existing post.
+ * Posts inherit content from Publication, so only channel-specific fields can be updated.
  */
 export class UpdatePostDto {
   @IsString()
   @IsOptional()
-  public content?: string;
-
-  @IsString()
-  @IsOptional()
-  public title?: string;
-
-  @IsString()
-  @IsOptional()
-  public description?: string;
-
-  @IsString()
-  @IsOptional()
-  public authorComment?: string;
-
-  @IsString()
-  @IsOptional()
-  public tags?: string;
-
-  @IsArray()
-  @IsOptional()
-  public mediaFiles?: string[];
+  public tags?: string; // Can override publication tags
 
   @IsEnum(PostStatus)
   @IsOptional()
   public status?: PostStatus;
-
-  @Type(() => Date)
-  @IsDate()
-  @IsOptional()
-  public postDate?: Date;
 
   @Type(() => Date)
   @IsDate()
@@ -48,8 +24,4 @@ export class UpdatePostDto {
   @IsDate()
   @IsOptional()
   public publishedAt?: Date;
-
-  @IsString()
-  @IsOptional()
-  public meta?: string;
 }

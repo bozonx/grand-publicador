@@ -173,7 +173,11 @@ model Post {
   publicationId String    @map("publication_id")
   channelId     String    @map("channel_id")
   // Social media platform type stored as string for flexibility
-  socialMedia   String    @map("social_media") // Kept as String for flexibility or could link to Channel's socialMedia
+  socialMedia   String    @map("social_media")
+  // Tags specific to this channel (can override publication tags)
+  tags          String?
+  // Post status for tracking publication success (DRAFT, SCHEDULED, PUBLISHED, FAILED, EXPIRED)
+  status        PostStatus @default(DRAFT)
   // When post is scheduled to be published
   scheduledAt   DateTime? @map("scheduled_at")
   // Actual timestamp when post was published to platform
@@ -183,28 +187,6 @@ model Post {
   updatedAt DateTime @updatedAt @default(now()) @map("updated_at")
   // Archive flag (cascaded from publication)
   archived  Boolean  @default(false)
-
-  title         String?
-  description   String?
-  // Comment from author for post with type NEWS
-  authorComment String?    @map("author_comment")
-  // Post content (can differ from publication for platform-specific formatting)
-  content       String?
-  // Tags stored as comma-separated
-  tags          String?
-  // Array of media file URLs stored as JSON string
-  mediaFiles    String     @default("[]") @map("media_files")
-  // Custom display date (can differ from actual publish date)
-  // Additional metadata stored as JSON string
-  meta          String     @default("{}")
-  // Type of post (POST, ARTICLE, VIDEO, etc.)
-  postType      PostType   @map("post_type")
-  // Date of the article which the author specified
-  postDate      DateTime?  @map("post_date")
-  // Post status (DRAFT, SCHEDULED, PUBLISHED, FAILED, EXPIRED)
-  status        PostStatus @default(DRAFT)
-  // Language of the post (inherited from publication)
-  language      String     @default("ru-RU")
 
   publication Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
   channel     Channel     @relation(fields: [channelId], references: [id], onDelete: Cascade)

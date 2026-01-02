@@ -307,24 +307,6 @@ export class PublicationsService {
       },
     });
 
-    // Cascade update language to associated posts if changed
-    if (data.language && data.language !== publication.language) {
-      await this.prisma.post.updateMany({
-        where: { publicationId: id },
-        data: { language: data.language },
-      });
-      this.logger.log(`Cascade updated language to ${data.language} for posts of publication ${id}`);
-    }
-
-    // Cascade update postType to associated posts if changed
-    if (data.postType && data.postType !== publication.postType) {
-      await this.prisma.post.updateMany({
-        where: { publicationId: id },
-        data: { postType: data.postType },
-      });
-      this.logger.log(`Cascade updated postType to ${data.postType} for posts of publication ${id}`);
-    }
-
     return updated;
   }
 
@@ -353,6 +335,7 @@ export class PublicationsService {
 
   /**
    * Generate individual posts for specified channels from a publication.
+   * Posts inherit content from the publication automatically.
    * Verifies that all channels belong to the same project as the publication.
    *
    * @param publicationId - The ID of the source publication.
@@ -371,9 +354,6 @@ export class PublicationsService {
     if (!channelIds || channelIds.length === 0) {
       throw new BadRequestException('At least one channel must be specified');
     }
-
-    // Fetch publication without auth check initially, but check later if userId present
-    // Or if userId is needed for finding it...
 
     let publication;
 
@@ -401,26 +381,21 @@ export class PublicationsService {
       throw new NotFoundException('Some channels not found or do not belong to this project');
     }
 
-    // Create posts for each channel
+    // Create posts for each channel (content comes from publication via relation)
     const posts = await Promise.all(
       channels.map(channel =>
         this.prisma.post.create({
           data: {
             publicationId: publication.id,
             channelId: channel.id,
-            content: publication.content,
             socialMedia: channel.socialMedia,
-            postType: publication.postType, // Use master publication type
-            title: publication.title,
-            description: publication.description,
-            authorComment: publication.authorComment,
-            tags: publication.tags,
-            mediaFiles: publication.mediaFiles,
+            tags: null, // Can be overridden later, defaults to publication tags
             status: scheduledAt ? PostStatus.SCHEDULED : PostStatus.DRAFT,
             scheduledAt,
-            postDate: publication.postDate,
-            language: publication.language,
-            meta: publication.meta,
+          },
+          include: {
+            channel: true,
+            publication: true, // Include full publication with content
           },
         }),
       ),

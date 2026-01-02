@@ -4,6 +4,8 @@ import { PostStatus, PostType } from '@prisma/client';
 
 /**
  * DTO for creating a new post.
+ * Posts now inherit content from their parent Publication.
+ * Only channel-specific data is stored directly in Post.
  */
 export class CreatePostDto {
   @IsString()
@@ -11,60 +13,23 @@ export class CreatePostDto {
   public channelId!: string;
 
   @IsString()
-  @IsOptional()
-  public publicationId?: string;
-
-  @IsString()
-  @IsOptional()
-  public content?: string;
+  @IsNotEmpty()
+  public publicationId!: string; // Now required - all posts must belong to a publication
 
   @IsString()
   @IsOptional()
   public socialMedia?: string;
 
-  @IsEnum(PostType)
-  @IsNotEmpty()
-  public postType!: PostType;
-
   @IsString()
   @IsOptional()
-  public title?: string;
-
-  @IsString()
-  @IsOptional()
-  public description?: string;
-
-  @IsString()
-  @IsOptional()
-  public authorComment?: string;
-
-  @IsString()
-  @IsOptional()
-  public tags?: string;
-
-  @IsArray()
-  @IsOptional()
-  public mediaFiles?: string[];
-
-  @Type(() => Date)
-  @IsDate()
-  @IsOptional()
-  public postDate?: Date;
-
-  @Type(() => Date)
-  @IsDate()
-  @IsOptional()
-  public scheduledAt?: Date;
+  public tags?: string; // Can override publication tags
 
   @IsEnum(PostStatus)
   @IsOptional()
   public status?: PostStatus;
 
-  @IsString()
+  @Type(() => Date)
+  @IsDate()
   @IsOptional()
-  public language?: string;
-
-  @IsString()
-  @IsOptional()
-  public meta?: string;
+  public scheduledAt?: Date;
 }

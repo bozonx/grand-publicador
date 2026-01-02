@@ -297,7 +297,10 @@
     "notFoundDescription": "The post you're looking for doesn't exist or you don't have access to it.",
     "createSuccess": "Post created successfully",
     "updateSuccess": "Post updated successfully",
-    "deleteSuccess": "Post deleted successfully"
+    "deleteSuccess": "Post deleted successfully",
+    "contentInheritedFromPublication": "Post content is inherited from publication",
+    "editPublication": "Edit Publication",
+    "tagsOverrideHint": "Leave empty to use tags from publication"
   },
   "publication": {
     "titlePlural": "Publications",
@@ -331,7 +334,9 @@
     "changeLanguage": "Change Language",
     "changeLanguageWarning": "Warning! This will change the language for all linked posts. The content will not be automatically translated, but the language tag will be updated.",
     "changeType": "Change Post Type",
-    "changeTypeWarning": "Warning! This will change the post type for all linked posts."
+    "changeTypeWarning": "Warning! This will change the post type for all linked posts.",
+    "linkedPostsInfo": "Linked Posts",
+    "linkedPostsInfoDescription": "Changes to this publication will automatically apply to {count} linked posts"
   },
   "postType": {
     "post": "Post",

@@ -2,8 +2,16 @@
 import type { PostWithRelations } from '~/composables/usePosts'
 import type { PublicationWithRelations } from '~/composables/usePublications'
 import type { ChannelWithProject } from '~/composables/useChannels'
-import { usePosts } from '~/composables/usePosts'
-import SocialIcon from '~/components/common/SocialIcon.vue' // Ensure this path is correct
+import { 
+    usePosts, 
+    getPostTitle, 
+    getPostContent, 
+    getPostTags, 
+    getPostDescription,
+    getPostType,
+    getPostLanguage 
+} from '~/composables/usePosts'
+import SocialIcon from '~/components/common/SocialIcon.vue'
 
 interface Props {
   post?: PostWithRelations
@@ -16,12 +24,11 @@ const props = defineProps<Props>()
 const emit = defineEmits(['deleted', 'cancel', 'success'])
 
 const { t } = useI18n()
-const { updatePost, deletePost, createPost, isLoading } = usePosts()
+const { updatePost, deletePost, createPost, isLoading, statusOptions: postStatusOptions } = usePosts()
+const { getStatusColor, getStatusDisplayName } = usePosts()
 
 const isCollapsed = ref(!props.isCreating)
 const isDeleting = ref(false)
-const showAdvancedFields = ref(false)
-
 
 // Formatting date helper
 const toDatetimeLocal = (dateStr?: string | null) => {
@@ -44,33 +51,12 @@ const formatPublishedAt = (dateStr?: string | null) => {
     return d.toLocaleString()
 }
 
-const safePost = computed(() => props.post || {} as Partial<PostWithRelations>)
-
-// Initial state helpers
-const hasTitle = !!safePost.value.title
-const hasTags = !!safePost.value.tags
-const hasScheduledAt = !!safePost.value.scheduledAt
-const hasContent = !!safePost.value.content && safePost.value.content.length > 0
-
-// Toggles for optional fields
-// If creating, default showTitle/Content/Tags to true for better UX, or follow preference
-const showTitle = ref(props.isCreating ? false : hasTitle)
-const showContent = ref(props.isCreating ? false : hasContent)
-const showTags = ref(props.isCreating ? false : hasTags)
-const showScheduledAt = ref(hasScheduledAt)
-
-// Form Data
+// Form Data - Only post-specific fields
 const formData = reactive({
   channelId: '', 
-  content: safePost.value.content || '',
-  title: safePost.value.title || '',
-  tags: safePost.value.tags || '',
-  scheduledAt: toDatetimeLocal(safePost.value.scheduledAt),
-  description: safePost.value.description || '',
-  postDate: toDatetimeLocal(safePost.value.postDate),
-  meta: safePost.value.meta || '{}',
-  language: safePost.value.language || props.publication?.language || 'en-US',
-  postType: safePost.value.postType || props.publication?.postType || 'POST',
+  tags: props.post?.tags || '', // Null or empty means use publication tags
+  scheduledAt: toDatetimeLocal(props.post?.scheduledAt),
+  status: props.post?.status || 'DRAFT'
 })
 
 const channelOptions = computed(() => {
@@ -89,21 +75,8 @@ const selectedChannel = computed(() => {
     return props.post?.channel
 })
 
-// Watchers for creation channel selection
-watch(() => formData.channelId, (newId) => {
-    if (!props.isCreating || !newId || !props.availableChannels) return
-    const channel = props.availableChannels.find(c => c.id === newId)
-    if (channel) {
-        formData.language = channel.language
-    }
-})
-
 function toggleCollapse() {
   isCollapsed.value = !isCollapsed.value
-}
-
-function toggleAdvancedFields() {
-  showAdvancedFields.value = !showAdvancedFields.value
 }
 
 async function handleSave() {
@@ -113,17 +86,9 @@ async function handleSave() {
       const newPost = await createPost({
           channelId: formData.channelId,
           publicationId: props.publication.id,
-          content: showContent.value ? formData.content : null,
-          title: showTitle.value ? formData.title : null,
-          tags: showTags.value ? formData.tags : null,
-          postType: formData.postType as any,
-          scheduledAt: showScheduledAt.value && formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : null,
-          language: formData.language,
-          description: formData.description || null,
-          postDate: formData.postDate ? new Date(formData.postDate).toISOString() : null,
-          meta: formData.meta,
+          tags: formData.tags || null,
+          scheduledAt: formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : null,
           status: 'DRAFT',
-          socialMedia: selectedChannel.value?.socialMedia
       })
 
       if (newPost) {
@@ -133,13 +98,9 @@ async function handleSave() {
   } else {
       if (!props.post) return
       await updatePost(props.post.id, {
-        content: showContent.value ? formData.content : null,
-        title: showTitle.value ? formData.title : null,
-        tags: showTags.value ? formData.tags : null,
-        scheduledAt: showScheduledAt.value && formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : (showScheduledAt.value ? undefined : null), 
-        description: formData.description || null,
-        postDate: formData.postDate ? new Date(formData.postDate).toISOString() : null,
-        meta: formData.meta,
+        tags: formData.tags || null,
+        scheduledAt: formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : null,
+        status: formData.status as any
       })
       emit('success')
   }
@@ -163,22 +124,19 @@ async function confirmDelete() {
   }
 }
 
-// Watchers for external updates (only if editing)
+// Accessors for inherited content
+const displayTitle = computed(() => props.post ? getPostTitle(props.post) : props.publication?.title)
+const displayContent = computed(() => props.post ? getPostContent(props.post) : props.publication?.content)
+const displayDescription = computed(() => props.post ? getPostDescription(props.post) : props.publication?.description)
+const displayLanguage = computed(() => props.post ? getPostLanguage(props.post) : props.publication?.language)
+const displayType = computed(() => props.post ? getPostType(props.post) : props.publication?.postType)
+
+// Watchers for external updates
 watch(() => props.post, (newPost) => {
     if (!newPost) return
-    formData.content = newPost.content || ''
-    formData.title = newPost.title || ''
     formData.tags = newPost.tags || ''
     formData.scheduledAt = toDatetimeLocal(newPost.scheduledAt)
-    formData.description = newPost.description || ''
-    formData.postDate = toDatetimeLocal(newPost.postDate)
-    formData.meta = newPost.meta || '{}'
-    
-    // Update visibility if new data comes in and has value
-    if (newPost.title) showTitle.value = true
-    if (newPost.content) showContent.value = true
-    if (newPost.tags) showTags.value = true
-    if (newPost.scheduledAt) showScheduledAt.value = true
+    formData.status = newPost.status
 }, { deep: true })
 
 onMounted(() => {
@@ -187,13 +145,9 @@ onMounted(() => {
         if (channels && channels.length === 1 && channels[0]) {
             formData.channelId = channels[0].id
         }
-    } else if (props.post) {
-        formData.scheduledAt = toDatetimeLocal(props.post.scheduledAt)
-        formData.postDate = toDatetimeLocal(props.post.postDate)
     }
 })
 
-// Validation for creation
 const isValid = computed(() => {
     if (props.isCreating) return !!formData.channelId
     return true
@@ -263,13 +217,24 @@ const isValid = computed(() => {
 
         <!-- Language Code -->
         <UBadge 
-          v-if="!isCreating && props.post?.language" 
+          v-if="!isCreating && displayLanguage" 
           variant="subtle" 
           color="neutral" 
           size="xs"
           class="ml-1 font-mono shrink-0 rounded-md"
         >
-          {{ props.post.language }}
+          {{ displayLanguage }}
+        </UBadge>
+
+        <!-- Status Display -->
+        <UBadge 
+          v-if="!isCreating && props.post?.status" 
+          variant="subtle" 
+          :color="getStatusColor(props.post.status)" 
+          size="xs"
+          class="ml-1"
+        >
+          {{ getStatusDisplayName(props.post.status) }}
         </UBadge>
 
         <!-- Published At Display -->
@@ -295,7 +260,7 @@ const isValid = computed(() => {
     </div>
 
     <!-- Collapsible Content -->
-    <div v-show="!isCollapsed" class="border-t border-gray-200 dark:border-gray-700/50 p-6 space-y-4 bg-gray-50/50 dark:bg-gray-900/20">
+    <div v-show="!isCollapsed" class="border-t border-gray-200 dark:border-gray-700/50 p-6 space-y-6 bg-gray-50/50 dark:bg-gray-900/20">
        
        <!-- Channel Selector (Only if Creating) -->
        <div v-if="isCreating" class="space-y-1">
@@ -321,91 +286,73 @@ const isValid = computed(() => {
             </USelectMenu>
        </div>
 
-       <!-- Content Fields with Checkboxes -->
-       
-       <!-- Title -->
-       <div class="space-y-2">
-             <UCheckbox v-model="showTitle" :label="t('post.postTitle')" :ui="{ label: 'font-medium text-gray-700 dark:text-gray-200' }" />
-             <div v-if="showTitle" class="pl-6 animate-fade-in">
-                <UInput v-model="formData.title" :placeholder="t('post.titlePlaceholder')" class="w-full" />
-             </div>
+       <!-- Inherited Content Preview (Read-only) -->
+       <div class="space-y-4 bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+           <div class="flex items-center justify-between mb-2">
+               <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
+                   <UIcon name="i-heroicons-information-circle" class="w-4 h-4 text-primary-500" />
+                   {{ t('post.contentInheritedFromPublication') }}
+               </h4>
+               <UButton 
+                 v-if="props.post?.publicationId"
+                 :to="`/projects/${selectedChannel?.projectId}/publications/${props.post.publicationId}`"
+                 variant="ghost"
+                 color="primary"
+                 size="xs"
+                 icon="i-heroicons-pencil-square"
+                >
+                  {{ t('post.editPublication') }}
+               </UButton>
+           </div>
+
+           <div class="space-y-3 opacity-80">
+                <div v-if="displayTitle">
+                    <label class="text-xs font-medium text-gray-500 uppercase">{{ t('post.postTitle') }}</label>
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ displayTitle }}</p>
+                </div>
+
+                <div>
+                    <label class="text-xs font-medium text-gray-500 uppercase">{{ t('post.content') }}</label>
+                    <div class="text-sm text-gray-700 dark:text-gray-300 prose prose-sm dark:prose-invert max-w-none line-clamp-5" v-html="displayContent"></div>
+                </div>
+
+                <div v-if="displayDescription">
+                    <label class="text-xs font-medium text-gray-500 uppercase">{{ t('post.description') }}</label>
+                    <p class="text-sm text-gray-700 dark:text-gray-300 italic">{{ displayDescription }}</p>
+                </div>
+           </div>
        </div>
 
-       <!-- Content -->
-       <div class="space-y-2">
-             <UCheckbox v-model="showContent" :label="t('post.content')" :ui="{ label: 'font-medium text-gray-700 dark:text-gray-200' }" />
-             <div v-if="showContent" class="pl-6 animate-fade-in"> 
-                <EditorTiptapEditor
-                  v-model="formData.content"
-                  :placeholder="t('post.contentPlaceholder')"
-                  :min-height="200"
+       <!-- Post-specific settings (Editable) -->
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Tags (Override) -->
+            <UFormField :label="t('post.tags')" :help="t('post.tagsOverrideHint')">
+                <UInput 
+                  v-model="formData.tags" 
+                  :placeholder="t('post.tagsPlaceholder')" 
+                  icon="i-heroicons-hashtag" 
                 />
-             </div>
+            </UFormField>
+
+            <!-- Scheduled At -->
+            <UFormField :label="t('post.scheduledAt')" :disabled="!!props.post?.publishedAt">
+                <UInput 
+                  v-model="formData.scheduledAt" 
+                  type="datetime-local" 
+                  icon="i-heroicons-clock" 
+                />
+            </UFormField>
+
+            <!-- Status (Only if editing) -->
+            <UFormField v-if="!isCreating" :label="t('post.status')">
+                <USelectMenu
+                   v-model="formData.status"
+                   :items="postStatusOptions"
+                   value-key="value"
+                   label-key="label"
+                />
+            </UFormField>
        </div>
-
-        <!-- Tags -->
-        <div class="space-y-2">
-            <UCheckbox v-model="showTags" :label="t('post.tags')" :ui="{ label: 'font-medium text-gray-700 dark:text-gray-200' }" />
-            <div v-if="showTags" class="pl-6 animate-fade-in">
-                 <UInput v-model="formData.tags" :placeholder="t('post.tagsPlaceholder')" icon="i-heroicons-hashtag" />
-            </div>
-        </div>
-
-        <!-- Scheduled At -->
-        <div v-if="!safePost.publishedAt" class="space-y-2">
-            <UCheckbox v-model="showScheduledAt" :label="t('post.scheduledAt')" :ui="{ label: 'font-medium text-gray-700 dark:text-gray-200' }" />
-            <div v-if="showScheduledAt" class="pl-6 animate-fade-in">
-                 <UInput v-model="formData.scheduledAt" type="datetime-local" icon="i-heroicons-clock" />
-            </div>
-        </div>
-
-       <!-- Advanced fields toggle -->
-      <div class="flex justify-center pt-2">
-        <UButton
-          variant="outline"
-          color="neutral"
-          size="sm"
-          :icon="showAdvancedFields ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'"
-          class="rounded-full"
-          @click="toggleAdvancedFields"
-        >
-          {{
-            showAdvancedFields
-              ? t('post.hideAdvanced', 'Hide advanced options')
-              : t('post.showAdvanced', 'Show advanced options')
-          }}
-        </UButton>
-      </div>
-
-       <!-- Advanced fields -->
-      <Transition
-        enter-active-class="transition duration-100 ease-out"
-        enter-from-class="transform scale-95 opacity-0"
-        enter-to-class="transform scale-100 opacity-100"
-        leave-active-class="transition duration-75 ease-in"
-        leave-from-class="transform scale-100 opacity-100"
-        leave-to-class="transform scale-95 opacity-0"
-      >
-        <div
-          v-if="showAdvancedFields"
-          class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700/50"
-        >
-             <!-- Post Date -->
-          <UFormField label="Post Date" help="Date of the article (optional)">
-            <UInput v-model="formData.postDate" type="datetime-local" class="w-full" icon="i-heroicons-calendar" />
-          </UFormField>
-
-          <!-- Description -->
-          <UFormField label="Description" help="Short description">
-             <UTextarea v-model="formData.description" :rows="3" />
-          </UFormField>
-
-          <!-- Meta -->
-          <UFormField label="Meta (JSON)" help="Additional metadata in JSON format">
-             <UTextarea v-model="formData.meta" :rows="4" font-family="mono" />
-          </UFormField>
-        </div>
-      </Transition>
 
       <!-- Actions -->
       <div class="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700/50 mt-4">
@@ -421,8 +368,7 @@ const isValid = computed(() => {
           {{ t('common.delete') }}
         </UButton>
 
-        <!-- Cancel Content (If Creating, show Cancel button on left for symmetry or just right? PostCreate had it on right. PostEdit doesn't have cancel except to collapse. User removed Cancel from PublicationForm. Let's put Cancel on right for Create) -->
-         <UButton
+        <UButton
           v-if="isCreating"
           color="neutral"
           variant="ghost"

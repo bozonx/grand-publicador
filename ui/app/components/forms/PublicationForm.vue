@@ -231,6 +231,17 @@ function toggleChannel(channelId: string) {
 <template>
     <form class="space-y-6" @submit.prevent="handleSubmit">
       
+      <!-- Linked Posts Info Alert -->
+      <div v-if="publication && publication.posts && publication.posts.length > 0" class="mb-6">
+        <UAlert 
+          icon="i-heroicons-information-circle"
+          color="info"
+          variant="subtle"
+          :title="t('publication.linkedPostsInfo')"
+          :description="t('publication.linkedPostsInfoDescription', { count: publication.posts.length })"
+        />
+      </div>
+
       <!-- Channels (Multi-select) -->
       <div v-if="!isEditMode">
         <UFormField :label="t('channel.titlePlural', 'Channels')" :help="t('publication.channelsHelp', 'Select channels to create posts immediately')">

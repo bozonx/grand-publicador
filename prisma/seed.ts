@@ -243,35 +243,27 @@ async function main() {
             publicationId: publications[0].id,
             channelId: channelData[0].id,
             socialMedia: 'TELEGRAM',
-            postType: PostType.ARTICLE,
-            title: publications[0].title,
-            description: publications[0].description,
+            tags: null, // Using publication tags
             status: PostStatus.PUBLISHED,
             publishedAt: new Date(Date.now() - 3600000), // 1 hour ago
-            postDate: publications[0].postDate,
-            language: 'ru-RU',
         },
         {
             id: '33333333-3333-3333-3333-333333333337',
             publicationId: publications[1].id,
             channelId: channelData[1].id,
             socialMedia: 'YOUTUBE',
-            postType: PostType.ARTICLE,
-            title: publications[1].title,
+            tags: 'nuxt,vue,javascript', // Overriding publication tags for this channel
             status: PostStatus.PUBLISHED,
             publishedAt: new Date(Date.now() - 3500000),
-            language: 'en-US',
         },
         {
             id: '33333333-3333-3333-3333-333333333332',
             publicationId: publications[2].id,
             channelId: channelData[3].id,
             socialMedia: 'TELEGRAM',
-            postType: PostType.POST,
-            title: publications[2].title,
+            tags: null,
             status: PostStatus.PUBLISHED,
             publishedAt: new Date(Date.now() - 7200000), // 2 hours ago
-            language: 'ru-RU',
         },
         // Scheduled post
         {
@@ -279,11 +271,9 @@ async function main() {
             publicationId: publications[3].id,
             channelId: channelData[4].id,
             socialMedia: 'X',
-            postType: PostType.NEWS,
-            title: publications[3].title,
+            tags: 'crypto,bitcoin,trading', // Overriding for X platform
             status: PostStatus.SCHEDULED,
             scheduledAt: new Date(Date.now() + 86400000), // In 24 hours
-            language: 'en-US',
         },
         // Failed post
         {
@@ -291,11 +281,8 @@ async function main() {
             publicationId: publications[0].id,
             channelId: channelData[1].id,
             socialMedia: 'YOUTUBE',
-            postType: PostType.VIDEO,
-            title: `${publications[0].title} (Video Upgrade)`,
+            tags: null,
             status: PostStatus.FAILED,
-            authorComment: 'Превышено время ожидания загрузки видео. Размер файла: 4ГБ.',
-            language: 'en-US',
         },
         // Post previously known as independent
         {
@@ -303,22 +290,17 @@ async function main() {
             publicationId: publications[5].id,
             channelId: channelData[0].id,
             socialMedia: 'TELEGRAM',
-            postType: PostType.POST,
-            title: 'Быстрый Привет!',
-            content: 'Просто хотел поздороваться со всеми нашими подписчиками! Сегодня без больших постов.',
+            tags: null,
             status: PostStatus.PUBLISHED,
             publishedAt: new Date(Date.now() - 1800000),
-            language: 'ru-RU',
         },
         {
             id: '33333333-3333-3333-3333-333333333336',
             publicationId: publications[4].id,
             channelId: channelData[0].id,
             socialMedia: 'TELEGRAM',
-            postType: PostType.POST,
-            title: publications[4].title,
+            tags: null,
             status: PostStatus.DRAFT,
-            language: 'ru-RU',
         }
     ];
 
