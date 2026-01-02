@@ -289,46 +289,46 @@ function formatDate(dateString: string | null | undefined): string {
             </UButton>
           </div>
         </div>
+
+        <!-- Delete Confirmation Modal (Moved inside conditional block) -->
+        <UModal v-model="isDeleteModalOpen">
+          <UCard>
+            <template #header>
+              <div class="flex items-center gap-3 text-red-600 dark:text-red-400">
+                <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6" />
+                <h3 class="text-lg font-medium">
+                  {{ t('publication.deleteConfirm') }}
+                </h3>
+              </div>
+            </template>
+
+            <p class="text-gray-500 dark:text-gray-400">
+              {{ t('publication.deleteCascadeWarning') }}
+            </p>
+
+            <template #footer>
+              <div class="flex justify-end gap-3">
+                <UButton
+                  color="neutral"
+                  variant="ghost"
+                  :label="t('common.cancel')"
+                  @click="isDeleteModalOpen = false"
+                />
+                <UButton
+                  color="error"
+                  :label="t('common.delete')"
+                  :loading="isDeleting"
+                  @click="handleDelete"
+                />
+              </div>
+            </template>
+          </UCard>
+        </UModal>
     </div>
     
     <!-- Error/Not Found -->
     <div v-else class="text-center py-12">
         <p class="text-gray-500">{{ t('errors.notFound') }}</p>
     </div>
-
-    <!-- Delete Confirmation Modal -->
-    <UModal v-model="isDeleteModalOpen">
-      <UCard>
-        <template #header>
-          <div class="flex items-center gap-3 text-red-600 dark:text-red-400">
-            <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6" />
-            <h3 class="text-lg font-medium">
-              {{ t('publication.deleteConfirm') }}
-            </h3>
-          </div>
-        </template>
-
-        <p class="text-gray-500 dark:text-gray-400">
-          {{ t('publication.deleteCascadeWarning') }}
-        </p>
-
-        <template #footer>
-          <div class="flex justify-end gap-3">
-            <UButton
-              color="neutral"
-              variant="ghost"
-              :label="t('common.cancel')"
-              @click="isDeleteModalOpen = false"
-            />
-            <UButton
-              color="error"
-              :label="t('common.delete')"
-              :loading="isDeleting"
-              @click="handleDelete"
-            />
-          </div>
-        </template>
-      </UCard>
-    </UModal>
   </div>
 </template>
