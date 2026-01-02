@@ -108,22 +108,20 @@ function formatDate(dateString: string | null | undefined): string {
 <template>
   <div class="max-w-4xl mx-auto">
     <!-- Delete Confirmation Modal (Moved to top level for better portal handling) -->
-    <UModal v-model="isDeleteModalOpen">
-      <UCard>
-        <template #header>
-          <div class="flex items-center gap-3 text-red-600 dark:text-red-400">
+    <UModal v-model:open="isDeleteModalOpen">
+      <template #content>
+        <div class="p-6">
+          <div class="flex items-center gap-3 text-red-600 dark:text-red-400 mb-4">
             <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6"></UIcon>
             <h3 class="text-lg font-medium">
               {{ t('publication.deleteConfirm') }}
             </h3>
           </div>
-        </template>
 
-        <p class="text-gray-500 dark:text-gray-400">
-          {{ t('publication.deleteCascadeWarning') }}
-        </p>
+          <p class="text-gray-500 dark:text-gray-400 mb-6">
+            {{ t('publication.deleteCascadeWarning') }}
+          </p>
 
-        <template #footer>
           <div class="flex justify-end gap-3">
             <UButton
               color="neutral"
@@ -138,8 +136,8 @@ function formatDate(dateString: string | null | undefined): string {
               @click="handleDelete"
             ></UButton>
           </div>
-        </template>
-      </UCard>
+        </div>
+      </template>
     </UModal>
 
     <!-- Back button -->
