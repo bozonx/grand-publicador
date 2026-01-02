@@ -31,7 +31,6 @@ model User {
 
   ownedProjects  Project[]       @relation("ProjectOwner")
   projectMembers ProjectMember[]
-  posts              Post[]        @relation("PostCreator")
   publications       Publication[] @relation("PublicationCreator")
   apiTokens      ApiToken[]
 
@@ -179,8 +178,6 @@ model Post {
   // Actual timestamp when post was published to platform
   publishedAt   DateTime? @map("published_at")
 
-  // User who created the post (nullable for system-generated)
-  createdBy String?  @map("created_by")
   createdAt DateTime @default(now()) @map("created_at")
   // Archive flag (cascaded from publication)
   archived  Boolean  @default(false)
@@ -209,7 +206,6 @@ model Post {
 
   publication Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
   channel     Channel     @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  creator     User?       @relation("PostCreator", fields: [createdBy], references: [id], onDelete: SetNull)
 
   @@index([status, scheduledAt])
   @@index([channelId, createdAt])

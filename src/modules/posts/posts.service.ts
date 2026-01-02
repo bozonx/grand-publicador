@@ -74,7 +74,6 @@ export class PostsService {
       data: {
         channelId,
         publicationId,
-        createdBy: userId,
         content: data.content,
         socialMedia: data.socialMedia ?? channel.socialMedia,
         postType: data.postType,
@@ -143,12 +142,10 @@ export class PostsService {
             socialMedia: true,
           },
         },
-        creator: {
+        publication: {
           select: {
             id: true,
-            fullName: true,
-            telegramUsername: true,
-            avatarUrl: true,
+            createdBy: true,
           },
         },
       },
@@ -204,12 +201,10 @@ export class PostsService {
             socialMedia: true,
           },
         },
-        creator: {
+        publication: {
           select: {
             id: true,
-            fullName: true,
-            telegramUsername: true,
-            avatarUrl: true,
+            createdBy: true,
           },
         },
       },
@@ -265,12 +260,10 @@ export class PostsService {
             socialMedia: true,
           },
         },
-        creator: {
+        publication: {
           select: {
             id: true,
-            fullName: true,
-            telegramUsername: true,
-            avatarUrl: true,
+            createdBy: true,
           },
         },
       },
@@ -306,15 +299,15 @@ export class PostsService {
             socialMedia: true,
           },
         },
-        creator: {
+        publication: {
           select: {
             id: true,
-            fullName: true,
-            telegramUsername: true,
-            avatarUrl: true,
+            title: true,
+            content: true,
+            status: true,
+            createdBy: true,
           },
         },
-        publication: true,
       },
     });
 
@@ -328,7 +321,7 @@ export class PostsService {
 
   /**
    * Update an existing post.
-   * Allowed for the post author or project OWNER/ADMIN.
+   * Allowed for the publication author or project OWNER/ADMIN.
    *
    * @param id - The ID of the post.
    * @param userId - The ID of the user.
@@ -352,8 +345,8 @@ export class PostsService {
   ) {
     const post = await this.findOne(id, userId);
 
-    // Permission: Only author or admin/owner of the project can update
-    if (post.createdBy !== userId) {
+    // Permission: Only publication author or admin/owner of the project can update
+    if (post.publication?.createdBy !== userId) {
       const channel = await this.prisma.channel.findUnique({ where: { id: post.channelId } });
       if (channel) {
         await this.permissions.checkProjectPermission(channel.projectId, userId, [
@@ -383,7 +376,7 @@ export class PostsService {
 
   /**
    * Remove a post.
-   * Allowed for the post author or project OWNER/ADMIN.
+   * Allowed for the publication author or project OWNER/ADMIN.
    *
    * @param id - The ID of the post to remove.
    * @param userId - The ID of the user.
@@ -391,8 +384,8 @@ export class PostsService {
   public async remove(id: string, userId: string) {
     const post = await this.findOne(id, userId);
 
-    // Permission: Only author or admin/owner of the project can delete
-    if (post.createdBy !== userId) {
+    // Permission: Only publication author or admin/owner of the project can delete
+    if (post.publication?.createdBy !== userId) {
       const channel = await this.prisma.channel.findUnique({ where: { id: post.channelId } });
       if (channel) {
         await this.permissions.checkProjectPermission(channel.projectId, userId, [

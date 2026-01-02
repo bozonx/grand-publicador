@@ -15,7 +15,6 @@ export interface Post {
     id: string
     channelId: string
     publicationId: string
-    createdBy: string | null
     content: string | null
     socialMedia: string
     postType: PostType
@@ -41,17 +40,12 @@ export interface PostWithRelations extends Post {
         socialMedia: string
         language: string
     } | null
-    creator?: {
-        id: string
-        fullName: string | null
-        username: string | null
-        avatarUrl: string | null
-    } | null
     publication?: {
         id: string
         title: string | null
         content: string
         status: string
+        createdBy: string | null
     } | null
 }
 
@@ -300,8 +294,8 @@ export function usePosts() {
 
     function canDelete(post: PostWithRelations): boolean {
         if (!user.value) return false
-        // Allow deleting if user is author or if user is owner/admin of the project (logic can be refined)
-        return post.createdBy === user.value.id
+        // Allow deleting if user is author of the parent publication or if user is owner/admin of the project (logic can be refined)
+        return post.publication?.createdBy === user.value.id
     }
 
     function canEdit(post: PostWithRelations): boolean {
