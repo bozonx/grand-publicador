@@ -48,7 +48,7 @@ describe('ProjectsService (unit)', () => {
     service = moduleRef.get<ProjectsService>(ProjectsService);
 
     // Silence logger for tests
-    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
+    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => { });
   });
 
   afterAll(async () => {
@@ -107,21 +107,16 @@ describe('ProjectsService (unit)', () => {
         {
           id: 'project-1',
           name: 'Project 1',
-          members: [{ userId, role: 'OWNER' }],
-          _count: { channels: 5 },
-          channels: [
-            {
-              _count: { posts: 1 },
-              posts: [{ createdAt: new Date('2024-01-01') }],
-            },
-          ],
+          members: [{ role: 'OWNER' }],
+          _count: { channels: 5, publications: 3 },
+          publications: [{ createdAt: new Date('2024-01-01') }],
         },
         {
           id: 'project-2',
           name: 'Project 2',
-          members: [{ userId, role: 'EDITOR' }],
-          _count: { channels: 2 },
-          channels: [],
+          members: [{ role: 'EDITOR' }],
+          _count: { channels: 2, publications: 0 },
+          publications: [],
         },
       ];
 
@@ -134,17 +129,15 @@ describe('ProjectsService (unit)', () => {
         id: 'project-1',
         role: 'owner',
         channelCount: 5,
-        memberCount: 1,
-        postCount: 1,
+        publicationsCount: 3,
       });
-      expect(result[0].lastPostAt).toBeInstanceOf(Date);
+      expect(result[0].lastPublicationAt).toBeInstanceOf(Date);
       expect(result[1]).toMatchObject({
         id: 'project-2',
         role: 'editor',
         channelCount: 2,
-        memberCount: 1,
-        postCount: 0,
-        lastPostAt: null,
+        publicationsCount: 0,
+        lastPublicationAt: null,
       });
     });
   });
@@ -159,6 +152,8 @@ describe('ProjectsService (unit)', () => {
         name: 'Test Project',
         channels: [],
         members: [],
+        _count: { channels: 0, publications: 0 },
+        publications: [],
       };
 
       mockPermissionsService.getUserProjectRole.mockResolvedValue('EDITOR');
@@ -170,9 +165,9 @@ describe('ProjectsService (unit)', () => {
         ...mockProject,
         role: 'editor',
         channelCount: 0,
+        publicationsCount: 0,
         memberCount: 0,
-        postCount: 0,
-        lastPostAt: null,
+        lastPublicationAt: null,
       });
     });
 

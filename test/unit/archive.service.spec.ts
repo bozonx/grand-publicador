@@ -1,6 +1,7 @@
 import { Test, type TestingModule } from '@nestjs/testing';
 import { ArchiveService } from '../../src/modules/archive/archive.service.js';
 import { PrismaService } from '../../src/modules/prisma/prisma.service.js';
+import { PermissionsService } from '../../src/common/services/permissions.service.js';
 import { ArchiveEntityType } from '../../src/modules/archive/dto/archive.dto.js';
 import { jest } from '@jest/globals';
 
@@ -38,6 +39,12 @@ describe('ArchiveService', () => {
     },
   };
 
+  const mockPermissionsService = {
+    checkProjectAccess: jest.fn() as any,
+    checkProjectPermission: jest.fn() as any,
+    getUserProjectRole: jest.fn() as any,
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -45,6 +52,10 @@ describe('ArchiveService', () => {
         {
           provide: PrismaService,
           useValue: mockPrismaService,
+        },
+        {
+          provide: PermissionsService,
+          useValue: mockPermissionsService,
         },
       ],
     }).compile();
@@ -67,6 +78,7 @@ describe('ArchiveService', () => {
         archivedBy: userId,
       };
 
+      mockPermissionsService.checkProjectPermission.mockResolvedValue(undefined);
       mockPrismaService.project.update.mockResolvedValue(mockProject);
 
       const result = await service.archiveEntity(ArchiveEntityType.PROJECT, projectId, userId);
@@ -85,6 +97,7 @@ describe('ArchiveService', () => {
   describe('restoreEntity', () => {
     it('should restore an archived project', async () => {
       const projectId = 'project-1';
+      const userId = 'user-1';
       const mockProject = {
         id: projectId,
         name: 'Test Project',
@@ -92,9 +105,10 @@ describe('ArchiveService', () => {
         archivedBy: null,
       };
 
+      mockPermissionsService.checkProjectPermission.mockResolvedValue(undefined);
       mockPrismaService.project.update.mockResolvedValue(mockProject);
 
-      const result = await service.restoreEntity(ArchiveEntityType.PROJECT, projectId);
+      const result = await service.restoreEntity(ArchiveEntityType.PROJECT, projectId, userId);
 
       expect(mockPrismaService.project.update).toHaveBeenCalledWith({
         where: { id: projectId },
@@ -110,14 +124,16 @@ describe('ArchiveService', () => {
   describe('deleteEntityPermanently', () => {
     it('should permanently delete a project', async () => {
       const projectId = 'project-1';
+      const userId = 'user-1';
       const mockProject = {
         id: projectId,
         name: 'Test Project',
       };
 
+      mockPermissionsService.checkProjectPermission.mockResolvedValue(undefined);
       mockPrismaService.project.delete.mockResolvedValue(mockProject);
 
-      const result = await service.deleteEntityPermanently(ArchiveEntityType.PROJECT, projectId);
+      const result = await service.deleteEntityPermanently(ArchiveEntityType.PROJECT, projectId, userId);
 
       expect(mockPrismaService.project.delete).toHaveBeenCalledWith({
         where: { id: projectId },
