@@ -21,6 +21,7 @@ export interface ChannelWithProject extends Channel {
     role?: string
     postsCount?: number
     lastPostAt?: string
+    lastPostId?: string | null
 }
 
 export interface ChannelCreateInput {

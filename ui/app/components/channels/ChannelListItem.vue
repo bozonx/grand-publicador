@@ -17,10 +17,10 @@ function formatDate(date: string | null | undefined): string {
 </script>
 
 <template>
-  <NuxtLink
-    :to="`/projects/${channel.projectId}/channels/${channel.id}`"
-    class="block app-card app-card-hover p-4 sm:p-5"
+  <div
+    class="block app-card app-card-hover p-4 sm:p-5 cursor-pointer relative"
     :class="{ 'opacity-60 grayscale': isArchived }"
+    @click="navigateTo(`/projects/${channel.projectId}/channels/${channel.id}`)"
   >
     <div class="flex items-start justify-between gap-4">
       <div class="flex-1 min-w-0">
@@ -30,12 +30,19 @@ function formatDate(date: string | null | undefined): string {
             :platform="channel.socialMedia" 
             show-background 
           />
+          
           <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
             {{ channel.name }}
           </h3>
-          <span class="text-sm text-gray-500 dark:text-gray-400">
-            {{ getSocialMediaDisplayName(channel.socialMedia, t) }}
-          </span>
+
+          <!-- Language -->
+          <div class="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400" :title="t('channel.language')">
+            <UIcon name="i-heroicons-language" class="w-4 h-4" />
+            <span class="font-medium uppercase">
+              {{ channel.language }}
+            </span>
+          </div>
+          
           <UBadge 
             v-if="!channel.isActive" 
             color="warning" 
@@ -63,18 +70,22 @@ function formatDate(date: string | null | undefined): string {
           <div class="flex items-center gap-1.5" :title="t('common.lastPublishedPost')">
             <UIcon name="i-heroicons-clock" class="w-4 h-4" />
             <span>
-              {{ t('common.lastPost') }}: {{ formatDate(channel.lastPostAt) }}
-            </span>
-          </div>
-
-          <div class="flex items-center gap-1.5" :title="t('channel.language')">
-            <UIcon name="i-heroicons-language" class="w-4 h-4" />
-            <span>
-              {{ channel.language }}
+              {{ t('common.lastPost') }}: 
+              <NuxtLink 
+                v-if="channel.lastPostId"
+                :to="`/projects/${channel.projectId}/posts/${channel.lastPostId}`"
+                class="hover:underline hover:text-primary-500 font-medium relative z-10"
+                @click.stop
+              >
+                {{ formatDate(channel.lastPostAt) }}
+              </NuxtLink>
+              <span v-else>
+                {{ formatDate(channel.lastPostAt) }}
+              </span>
             </span>
           </div>
         </div>
       </div>
     </div>
-  </NuxtLink>
+  </div>
 </template>

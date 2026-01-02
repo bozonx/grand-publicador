@@ -75,7 +75,7 @@ export class ChannelsService {
           where: { archivedAt: null, status: 'PUBLISHED' },
           take: 1,
           orderBy: { createdAt: 'desc' },
-          select: { createdAt: true },
+          select: { createdAt: true, id: true },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -87,6 +87,7 @@ export class ChannelsService {
         ...channelData,
         postsCount: _count.posts,
         lastPostAt: posts[0]?.createdAt || null,
+        lastPostId: posts[0]?.id || null,
       };
     });
   }
@@ -130,7 +131,7 @@ export class ChannelsService {
           where: { archivedAt: null },
           take: 1,
           orderBy: { createdAt: 'desc' },
-          select: { createdAt: true },
+          select: { createdAt: true, id: true },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -142,6 +143,7 @@ export class ChannelsService {
         ...channelData,
         postsCount: _count.posts,
         lastPostAt: posts[0]?.createdAt || null,
+        lastPostId: posts[0]?.id || null,
       };
     });
   }
@@ -175,7 +177,7 @@ export class ChannelsService {
           where: { archivedAt: null },
           take: 1,
           orderBy: { createdAt: 'desc' },
-          select: { createdAt: true },
+          select: { createdAt: true, id: true },
         },
       },
       orderBy: { archivedAt: 'desc' },
@@ -187,6 +189,7 @@ export class ChannelsService {
         ...channelData,
         postsCount: _count.posts,
         lastPostAt: posts[0]?.createdAt || null,
+        lastPostId: posts[0]?.id || null,
       };
     });
   }
@@ -221,7 +224,7 @@ export class ChannelsService {
           where: { archivedAt: null },
           take: 1,
           orderBy: { createdAt: 'desc' },
-          select: { createdAt: true },
+          select: { createdAt: true, id: true },
         },
       },
       orderBy: { archivedAt: 'desc' },
@@ -233,6 +236,7 @@ export class ChannelsService {
         ...channelData,
         postsCount: _count.posts,
         lastPostAt: posts[0]?.createdAt || null,
+        lastPostId: posts[0]?.id || null,
       };
     });
   }
@@ -263,7 +267,7 @@ export class ChannelsService {
           where: { archivedAt: null },
           take: 1,
           orderBy: { createdAt: 'desc' },
-          select: { createdAt: true },
+          select: { createdAt: true, id: true },
         },
       },
     });
@@ -280,6 +284,7 @@ export class ChannelsService {
       role: role?.toLowerCase(),
       postsCount: _count.posts,
       lastPostAt: posts[0]?.createdAt || null,
+      lastPostId: posts[0]?.id || null,
     };
   }
 
