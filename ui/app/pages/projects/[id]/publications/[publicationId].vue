@@ -17,7 +17,8 @@ const {
   currentPublication, 
   isLoading: isPublicationLoading, 
   deletePublication, 
-  toggleArchive 
+  toggleArchive,
+  updatePublication 
 } = usePublications()
 const { fetchChannels, channels } = useChannels()
 const { canGoBack, goBack } = useNavigation()
@@ -175,7 +176,12 @@ async function handleBulkSchedule() {
             }, { silent: true })
         )
         
-        await Promise.all(promises)
+        // Update publication status as well
+        const publicationPromise = updatePublication(currentPublication.value.id, {
+            status: 'SCHEDULED'
+        })
+        
+        await Promise.all([...promises, publicationPromise])
         
         toast.add({
             title: t('common.success'),
