@@ -9,6 +9,7 @@ export interface Publication {
     projectId: string
     authorId: string | null
     title: string | null
+    description: string | null
     content: string
     mediaFiles: string
     tags: string | null
@@ -17,8 +18,10 @@ export interface Publication {
     language: string
     postType: string
     translationGroupId?: string | null
+    postDate: string | null
     createdAt: string
     updatedAt: string
+    archivedBy: string | null
     archivedAt?: string | null
 }
 

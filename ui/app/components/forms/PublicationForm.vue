@@ -51,7 +51,9 @@ const formData = reactive({
   language: props.publication?.language || languageParam.value || 'en-US',
   channelIds: props.publication?.posts?.map((p: any) => p.channelId) || [] as string[],
   translationGroupId: props.publication?.translationGroupId || undefined as string | undefined,
-  meta: props.publication?.meta ? JSON.parse(props.publication.meta) : {},
+  meta: props.publication?.meta || '{}',
+  description: props.publication?.description || '',
+  postDate: props.publication?.postDate ? new Date(props.publication.postDate).toISOString().slice(0, 16) : '',
 })
 
 const linkedPublicationId = ref<string | undefined>(undefined)
@@ -127,13 +129,15 @@ async function handleSubmit() {
     // Update existing publication
     const updateData: any = {
         title: formData.title || undefined,
+        description: formData.description || undefined,
         content: formData.content,
         tags: formData.tags || undefined,
         status: formData.status,
         language: formData.language,
         linkToPublicationId: linkedPublicationId.value || undefined, // Send linkToPublicationId
         postType: formData.postType,
-        meta: formData.meta,
+        meta: JSON.parse(formData.meta),
+        postDate: formData.postDate ? new Date(formData.postDate).toISOString() : undefined,
     }
     
     // Update the publication itself
@@ -158,13 +162,15 @@ async function handleSubmit() {
     const createData: any = {
       projectId: props.projectId,
       title: formData.title || undefined,
+      description: formData.description || undefined,
       content: formData.content,
       tags: formData.tags || undefined,
       status: formData.status === 'SCHEDULED' && formData.channelIds.length > 0 ? 'SCHEDULED' : 'DRAFT', // Master status
       language: formData.language,
       linkToPublicationId: linkedPublicationId.value || undefined,
       postType: formData.postType,
-      meta: formData.meta,
+      meta: JSON.parse(formData.meta),
+      postDate: formData.postDate ? new Date(formData.postDate).toISOString() : undefined,
     }
 
     const publication = await createPublication(createData)
@@ -200,6 +206,14 @@ const isContentValid = computed(() => {
 const isFormValid = computed(() => {
   if (!isContentValid.value) return false
   if (formData.status === 'SCHEDULED' && !formData.scheduledAt) return false
+  
+  // Validate JSON meta
+  try {
+      JSON.parse(formData.meta)
+  } catch (e) {
+      return false
+  }
+
   return true
 })
 
@@ -343,6 +357,16 @@ function toggleChannel(channelId: string) {
         />
       </UFormField>
 
+      <!-- Tags (Moved from Advanced) -->
+       <UFormField :label="t('post.tags')" :help="t('post.tagsHint')">
+        <UInput
+            v-model="formData.tags"
+            :placeholder="t('post.tagsPlaceholder', 'tag1, tag2, tag3')"
+            icon="i-heroicons-hashtag"
+            @keydown.enter.prevent
+        />
+      </UFormField>
+
       <!-- Content (required) - Tiptap Editor -->
       <UFormField :label="t('post.content')" required>
         <EditorTiptapEditor
@@ -386,14 +410,53 @@ function toggleChannel(channelId: string) {
           v-if="showAdvancedFields"
           class="space-y-6 pt-6 mt-2 border-t border-gray-100 dark:border-gray-700"
         >
-          <UFormField :label="t('post.tags')" :help="t('post.tagsHint')">
-            <UInput
-                v-model="formData.tags"
-                :placeholder="t('post.tagsPlaceholder', 'tag1, tag2, tag3')"
-                icon="i-heroicons-hashtag"
-                @keydown.enter.prevent
-            />
+
+          <!-- Post Date -->
+          <UFormField label="Post Date" help="Date of the article (optional)">
+            <UInput v-model="formData.postDate" type="datetime-local" class="w-full" icon="i-heroicons-calendar" />
           </UFormField>
+
+          <!-- Description -->
+          <UFormField label="Description" help="Short description">
+             <UTextarea v-model="formData.description" :rows="3" />
+          </UFormField>
+
+          <!-- Meta -->
+          <UFormField label="Meta (JSON)" help="Additional metadata in JSON format">
+             <UTextarea v-model="formData.meta" :rows="4" font-family="mono" />
+          </UFormField>
+          
+          <!-- System Info (Read-only) -->
+          <div v-if="publication" class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg text-sm">
+             <div v-if="publication.author">
+                 <span class="text-gray-500 block text-xs uppercase font-bold">Author</span>
+                 <div class="flex items-center gap-2 mt-1">
+                     <img v-if="publication.author.avatarUrl" :src="publication.author.avatarUrl" class="w-6 h-6 rounded-full" />
+                     <span>{{ publication.author.fullName || publication.author.telegramUsername || 'Unknown' }}</span>
+                 </div>
+             </div>
+             
+             <div>
+                <span class="text-gray-500 block text-xs uppercase font-bold">Created At</span>
+                <span class="block mt-1">{{ new Date(publication.createdAt).toLocaleString() }}</span>
+             </div>
+
+             <div>
+                <span class="text-gray-500 block text-xs uppercase font-bold">Updated At</span>
+                <span class="block mt-1">{{ new Date(publication.updatedAt).toLocaleString() }}</span>
+             </div>
+             
+             <div v-if="publication.archivedBy">
+                <span class="text-gray-500 block text-xs uppercase font-bold">Archived By</span>
+                <span class="block mt-1">{{ publication.archivedBy }}</span>
+             </div>
+
+             <div v-if="publication.archivedAt">
+                <span class="text-gray-500 block text-xs uppercase font-bold">Archived At</span>
+                <span class="block mt-1">{{ new Date(publication.archivedAt).toLocaleString() }}</span>
+             </div>
+          </div>
+
         </div>
       </Transition>
 
