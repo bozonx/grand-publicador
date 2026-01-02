@@ -82,9 +82,10 @@ export class ChannelsService {
     });
 
     return channels.map(channel => {
-      const { posts, _count, ...channelData } = channel;
+      const { posts, _count, credentials, ...channelData } = channel;
       return {
         ...channelData,
+        credentials: credentials ? JSON.parse(credentials) : {},
         postsCount: _count.posts,
         lastPostAt: posts[0]?.createdAt || null,
         lastPostId: posts[0]?.id || null,
@@ -138,9 +139,10 @@ export class ChannelsService {
     });
 
     return channels.map(channel => {
-      const { posts, _count, ...channelData } = channel;
+      const { posts, _count, credentials, ...channelData } = channel;
       return {
         ...channelData,
+        credentials: credentials ? JSON.parse(credentials) : {},
         postsCount: _count.posts,
         lastPostAt: posts[0]?.createdAt || null,
         lastPostId: posts[0]?.id || null,
@@ -184,9 +186,10 @@ export class ChannelsService {
     });
 
     return channels.map(channel => {
-      const { posts, _count, ...channelData } = channel;
+      const { posts, _count, credentials, ...channelData } = channel;
       return {
         ...channelData,
+        credentials: credentials ? JSON.parse(credentials) : {},
         postsCount: _count.posts,
         lastPostAt: posts[0]?.createdAt || null,
         lastPostId: posts[0]?.id || null,
@@ -231,9 +234,10 @@ export class ChannelsService {
     });
 
     return channels.map(channel => {
-      const { posts, _count, ...channelData } = channel;
+      const { posts, _count, credentials, ...channelData } = channel;
       return {
         ...channelData,
+        credentials: credentials ? JSON.parse(credentials) : {},
         postsCount: _count.posts,
         lastPostAt: posts[0]?.createdAt || null,
         lastPostId: posts[0]?.id || null,
@@ -277,10 +281,12 @@ export class ChannelsService {
     }
 
     const role = await this.permissions.getUserProjectRole(channel.projectId, userId);
-    const { posts, _count, ...channelData } = channel;
+    const { posts, _count, credentials, ...channelData } = channel;
+    const creds = credentials ? JSON.parse(credentials) : {};
 
     return {
       ...channelData,
+      credentials: creds,
       role: role?.toLowerCase(),
       postsCount: _count.posts,
       lastPostAt: posts[0]?.createdAt || null,

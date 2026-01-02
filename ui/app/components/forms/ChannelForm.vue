@@ -66,6 +66,7 @@ const state = reactive({
   credentials: {
     telegramChannelId: props.channel?.credentials?.telegramChannelId || '',
     telegramBotToken: props.channel?.credentials?.telegramBotToken || '',
+    vkAccessToken: props.channel?.credentials?.vkAccessToken || '',
   }
 })
 
@@ -83,11 +84,15 @@ async function handleSubmit() {
       projectId: state.projectId,
     }
 
-    // Add credentials for Telegram channels
+    // Add credentials for supported channels
     if (props.channel.socialMedia === 'TELEGRAM') {
       updateData.credentials = {
         telegramChannelId: state.credentials.telegramChannelId,
         telegramBotToken: state.credentials.telegramBotToken,
+      }
+    } else if (props.channel.socialMedia === 'VK') {
+      updateData.credentials = {
+        vkAccessToken: state.credentials.vkAccessToken,
       }
     }
 
@@ -106,11 +111,15 @@ async function handleSubmit() {
       isActive: state.isActive,
     }
 
-    // Add credentials for Telegram channels
+    // Add credentials for supported channels
     if (state.socialMedia === 'TELEGRAM') {
       createData.credentials = {
         telegramChannelId: state.credentials.telegramChannelId,
         telegramBotToken: state.credentials.telegramBotToken,
+      }
+    } else if (state.socialMedia === 'VK') {
+      createData.credentials = {
+        vkAccessToken: state.credentials.vkAccessToken,
       }
     }
 
@@ -339,7 +348,7 @@ const projectOptions = computed(() =>
         />
       </UFormField>
 
-      <!-- Telegram credentials (only for Telegram channels) -->
+      <!-- Telegram credentials -->
       <div v-if="currentSocialMedia === 'TELEGRAM'" class="space-y-4">
         <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
           <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">
@@ -366,6 +375,29 @@ const projectOptions = computed(() =>
                 v-model="state.credentials.telegramBotToken"
                 type="password"
                 :placeholder="t('channel.telegramBotTokenPlaceholder', '110201543:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw')"
+                class="w-full"
+              />
+            </UFormField>
+          </div>
+        </div>
+      </div>
+
+      <!-- VK credentials -->
+      <div v-if="currentSocialMedia === 'VK'" class="space-y-4">
+        <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">
+            {{ t('channel.vkCredentials', 'VK Credentials') }}
+          </h3>
+          
+          <div class="space-y-4">
+            <UFormField
+              :label="t('channel.vkAccessToken', 'Access Token')"
+              :help="t('channel.vkAccessTokenHelp', 'Service or user access token for VK API')"
+            >
+              <UInput
+                v-model="state.credentials.vkAccessToken"
+                type="password"
+                :placeholder="t('channel.vkAccessTokenPlaceholder', 'vk1.a.abc...')"
                 class="w-full"
               />
             </UFormField>
