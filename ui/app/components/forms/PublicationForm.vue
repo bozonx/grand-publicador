@@ -285,7 +285,7 @@ function toggleChannel(channelId: string) {
          </UFormField>
 
          <!-- Scheduling -->
-        <UFormField v-if="formData.status === 'SCHEDULED'" :label="t('post.scheduledAt')" required>
+        <UFormField v-if="!isEditMode && formData.status === 'SCHEDULED'" :label="t('post.scheduledAt')" required>
             <UInput v-model="formData.scheduledAt" type="datetime-local" class="w-full" icon="i-heroicons-clock" />
         </UFormField>
 

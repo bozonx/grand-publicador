@@ -321,7 +321,13 @@
     "noPosts": "Нет связанных постов",
     "deleteConfirm": "Вы уверены, что хотите удалить эту публикацию?",
     "deleteCascadeWarning": "Это действие каскадное и повлечет за собой удаление всех связанных постов.",
-    "publicationsBlock": "Публикации"
+    "publicationsBlock": "Публикации",
+    "changeSchedule": "Изменить время",
+    "changeScheduleTitle": "Изменить время публикации",
+    "changeScheduleWarning": "Внимание! Это изменит время публикации для всех связанных постов. Предыдущее значение будет перезаписано.",
+    "newScheduleTime": "Новое время",
+    "scheduleUpdated": "Время публикации обновлено для всех постов",
+    "multipleDatesWarning": "Есть и другие даты"
   },
   "postType": {
     "post": "Пост",

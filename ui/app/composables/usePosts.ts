@@ -211,7 +211,7 @@ export function usePosts() {
         }
     }
 
-    async function updatePost(postId: string, data: PostUpdateInput): Promise<Post | null> {
+    async function updatePost(postId: string, data: PostUpdateInput, options?: { silent?: boolean }): Promise<Post | null> {
         isLoading.value = true
         error.value = null
 
@@ -223,19 +223,24 @@ export function usePosts() {
             }
 
             const post = await api.patch<Post>(`/posts/${postId}`, payload)
-            toast.add({
-                title: t('common.success'),
-                description: t('post.updateSuccess'),
-                color: 'success',
-            })
+            
+            if (!options?.silent) {
+                toast.add({
+                    title: t('common.success'),
+                    description: t('post.updateSuccess'),
+                    color: 'success',
+                })
+            }
             return post
         } catch (err: any) {
             const message = err.message || 'Failed to update post'
-            toast.add({
-                title: t('common.error'),
-                description: message,
-                color: 'error',
-            })
+            if (!options?.silent) {
+                toast.add({
+                    title: t('common.error'),
+                    description: message,
+                    color: 'error',
+                })
+            }
             return null
         } finally {
             isLoading.value = false

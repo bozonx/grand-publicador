@@ -321,7 +321,13 @@
     "noPosts": "No linked posts",
     "deleteConfirm": "Are you sure you want to delete this publication?",
     "deleteCascadeWarning": "This action is cascading and will permanently delete all associated posts.",
-    "publicationsBlock": "Publications"
+    "publicationsBlock": "Publications",
+    "changeSchedule": "Change Schedule",
+    "changeScheduleTitle": "Change Publication Schedule",
+    "changeScheduleWarning": "Warning! This will change the scheduled time for all linked posts. The previous value will be overwritten.",
+    "newScheduleTime": "New Time",
+    "scheduleUpdated": "Schedule updated for all posts",
+    "multipleDatesWarning": "There are other dates"
   },
   "postType": {
     "post": "Post",

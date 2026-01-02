@@ -2,6 +2,7 @@
 import { useProjects } from '~/composables/useProjects'
 import { usePublications } from '~/composables/usePublications'
 import { useChannels } from '~/composables/useChannels'
+import { usePosts } from '~/composables/usePosts'
 
 definePageMeta({
   middleware: 'auth',
@@ -29,11 +30,53 @@ const isFormCollapsed = ref(true)
 const isDeleteModalOpen = ref(false)
 const isDeleting = ref(false)
 
+const { updatePost } = usePosts()
+const toast = useToast()
+const isScheduleModalOpen = ref(false)
+const newScheduledDate = ref('')
+const isBulkScheduling = ref(false)
+
 // Determine available channels (in project but not yet in publication)
 const availableChannels = computed(() => {
     if (!channels.value || !currentPublication.value) return []
     const usedChannelIds = currentPublication.value.posts?.map((p: any) => p.channelId) || []
     return channels.value.filter(ch => !usedChannelIds.includes(ch.id))
+})
+
+const allPostsPublished = computed(() => {
+    if (!currentPublication.value?.posts?.length) return false
+    return currentPublication.value.posts.every((p: any) => !!p.publishedAt)
+})
+
+const majoritySchedule = computed(() => {
+    if (!currentPublication.value?.posts?.length) return { date: null, conflict: false }
+    
+    // Collect dates: prefer scheduledAt, then publishedAt
+    const dates = currentPublication.value.posts
+        .map((p: any) => p.scheduledAt || p.publishedAt)
+        .filter((d: string | null) => !!d) as string[]
+
+    if (dates.length === 0) return { date: null, conflict: false }
+
+    const counts: Record<string, number> = {}
+    dates.forEach(d => {
+        counts[d] = (counts[d] || 0) + 1
+    })
+
+    let maxCount = 0
+    let majorityDate = null
+    
+    for (const [date, count] of Object.entries(counts)) {
+        if (count > maxCount) {
+            maxCount = count
+            majorityDate = date
+        }
+    }
+
+    const uniqueDates = Object.keys(counts)
+    const conflict = uniqueDates.length > 1
+    
+    return { date: majorityDate, conflict }
 })
 
 onMounted(async () => {
@@ -105,6 +148,51 @@ async function handleDelete() {
     }
 }
 
+function openScheduleModal() {
+    const now = new Date()
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset()) // Adjust for local input
+    newScheduledDate.value = now.toISOString().slice(0, 16)
+    isScheduleModalOpen.value = true
+}
+
+async function handleBulkSchedule() {
+    if (!currentPublication.value?.posts?.length) return
+    if (!newScheduledDate.value) return
+
+    isBulkScheduling.value = true
+    try {
+        const postsToUpdate = currentPublication.value.posts.filter((post: any) => !post.publishedAt)
+        
+        if (postsToUpdate.length === 0) {
+            isBulkScheduling.value = false
+            return
+        }
+
+        const promises = postsToUpdate.map((post: any) => 
+            updatePost(post.id, { 
+                scheduledAt: new Date(newScheduledDate.value).toISOString(),
+                status: 'SCHEDULED' 
+            }, { silent: true })
+        )
+        
+        await Promise.all(promises)
+        
+        toast.add({
+            title: t('common.success'),
+            description: t('publication.scheduleUpdated'),
+            color: 'success'
+        })
+
+        isScheduleModalOpen.value = false
+        // Refresh publication
+        if (currentPublication.value) {
+            await fetchPublication(currentPublication.value.id)
+        }
+    } finally {
+        isBulkScheduling.value = false
+    }
+}
+
 function toggleFormCollapse() {
   isFormCollapsed.value = !isFormCollapsed.value
 }
@@ -144,6 +232,43 @@ function formatDate(dateString: string | null | undefined): string {
               :label="t('common.delete')"
               :loading="isDeleting"
               @click="handleDelete"
+            ></UButton>
+          </div>
+        </div>
+      </template>
+    </UModal>
+
+    <!-- Schedule Modal -->
+    <UModal v-model:open="isScheduleModalOpen">
+      <template #content>
+        <div class="p-6">
+          <div class="flex items-center gap-3 text-gray-900 dark:text-white mb-4">
+            <UIcon name="i-heroicons-clock" class="w-6 h-6 text-primary-500"></UIcon>
+            <h3 class="text-lg font-medium">
+              {{ t('publication.changeScheduleTitle') }}
+            </h3>
+          </div>
+
+          <p class="text-gray-500 dark:text-gray-400 mb-4">
+            {{ t('publication.changeScheduleWarning') }}
+          </p>
+
+          <UFormField :label="t('publication.newScheduleTime')" required class="mb-6">
+            <UInput v-model="newScheduledDate" type="datetime-local" class="w-full" icon="i-heroicons-clock" />
+          </UFormField>
+
+          <div class="flex justify-end gap-3">
+            <UButton
+              color="neutral"
+              variant="ghost"
+              :label="t('common.cancel')"
+              @click="isScheduleModalOpen = false"
+            ></UButton>
+            <UButton
+              color="primary"
+              :label="t('common.save')"
+              :loading="isBulkScheduling"
+              @click="handleBulkSchedule"
             ></UButton>
           </div>
         </div>
@@ -195,6 +320,17 @@ function formatDate(dateString: string | null | undefined): string {
                             :color="currentPublication.archivedAt ? 'warning' : 'neutral'"
                             @click="handleToggleArchive"
                         ></UButton>
+
+                        <UButton
+                            :label="t('publication.changeSchedule')"
+                            icon="i-heroicons-clock"
+                            variant="soft"
+                            size="sm"
+                            color="primary"
+                            :disabled="allPostsPublished"
+                            @click="openScheduleModal"
+                        ></UButton>
+
                         <UButton
                             :label="t('common.delete')"
                             icon="i-heroicons-trash"
@@ -216,6 +352,20 @@ function formatDate(dateString: string | null | undefined): string {
                         </div>
                         <div v-if="currentPublication.creator" class="text-gray-600 dark:text-gray-400 text-xs mt-0.5">
                             {{ currentPublication.creator.fullName || currentPublication.creator.telegramUsername || t('common.unknown') }}
+                        </div>
+                        
+                        <div v-if="majoritySchedule.date" class="mt-2 border-t border-gray-100 dark:border-gray-700/50 pt-2">
+                             <div class="text-gray-500 dark:text-gray-400 text-xs mb-0.5">
+                                {{ t('post.scheduledAt') }}
+                             </div>
+                             <div class="flex items-center gap-2">
+                                 <span class="text-gray-900 dark:text-white font-medium">
+                                      {{ formatDate(majoritySchedule.date) }}
+                                 </span>
+                                 <UTooltip v-if="majoritySchedule.conflict" :text="t('publication.multipleDatesWarning')">
+                                     <UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 text-orange-500 cursor-help" />
+                                 </UTooltip>
+                             </div>
                         </div>
                     </div>
 

@@ -204,7 +204,7 @@ onMounted(() => {
         </div>
 
         <!-- Scheduled At -->
-        <div class="space-y-2">
+        <div v-if="!post.publishedAt" class="space-y-2">
             <UCheckbox v-model="showScheduledAt" :label="t('post.scheduledAt')" :ui="{ label: 'font-medium text-gray-700 dark:text-gray-200' }" />
             <div v-if="showScheduledAt" class="pl-6 animate-fade-in">
                  <UInput v-model="formData.scheduledAt" type="datetime-local" icon="i-heroicons-clock" />
