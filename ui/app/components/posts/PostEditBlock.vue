@@ -8,17 +8,53 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits(['deleted'])
 
 const { t } = useI18n()
-const { updatePost, isLoading } = usePosts()
+const { updatePost, deletePost, isLoading } = usePosts()
 
 const isCollapsed = ref(true)
+const isDeleting = ref(false)
 
+// Formatting date helper
+const toDatetimeLocal = (dateStr?: string | null) => {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return ''
+  
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  const hours = String(d.getHours()).padStart(2, '0')
+  const minutes = String(d.getMinutes()).padStart(2, '0')
+  
+  return `${year}-${month}-${day}T${hours}:${minutes}`
+}
+
+// Initial state helpers. Content defaults to true if string is present or if empty?
+// User said "Checkmark change content". I'll assume it behaves like others.
+const hasTitle = !!props.post.title
+const hasTags = !!props.post.tags
+const hasScheduledAt = !!props.post.scheduledAt
+const hasPublishedAt = !!props.post.publishedAt
+// For content, since it's the main thing, we usually want it. But let's respect the "empty fields hidden" rule. 
+// If content is empty string, we hide it.
+const hasContent = !!props.post.content && props.post.content.length > 0
+
+// Toggles for optional fields
+const showTitle = ref(hasTitle)
+const showContent = ref(hasContent)
+const showTags = ref(hasTags)
+const showScheduledAt = ref(hasScheduledAt)
+const showPublishedAt = ref(hasPublishedAt)
+
+// Form Data
 const formData = reactive({
   content: props.post.content || '',
   title: props.post.title || '',
   tags: props.post.tags || '',
-  // Add other fields as necessary, e.g. status, scheduledAt
+  scheduledAt: toDatetimeLocal(props.post.scheduledAt),
+  publishedAt: toDatetimeLocal(props.post.publishedAt),
 })
 
 function toggleCollapse() {
@@ -27,17 +63,45 @@ function toggleCollapse() {
 
 async function handleSave() {
   await updatePost(props.post.id, {
-    content: formData.content,
-    title: formData.title || undefined,
-    tags: formData.tags || undefined,
+    content: showContent.value ? formData.content : '', // If hidden/unchecked, maybe send empty string or null?
+    title: showTitle.value ? formData.title : null,
+    tags: showTags.value ? formData.tags : null,
+    scheduledAt: showScheduledAt.value && formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : (showScheduledAt.value ? undefined : null), 
+    publishedAt: showPublishedAt.value && formData.publishedAt ? new Date(formData.publishedAt).toISOString() : (showPublishedAt.value ? undefined : null),
   })
 }
 
-// Reset form when post prop changes
+async function handleDelete() {
+  if (!confirm(t('post.deleteConfirm'))) return
+  
+  isDeleting.value = true
+  const success = await deletePost(props.post.id)
+  isDeleting.value = false
+  
+  if (success) {
+    emit('deleted', props.post.id)
+  }
+}
+
+// Watchers
 watch(() => props.post, (newPost) => {
-  formData.content = newPost.content || ''
-  formData.title = newPost.title || ''
-  formData.tags = newPost.tags || ''
+    formData.content = newPost.content || ''
+    formData.title = newPost.title || ''
+    formData.tags = newPost.tags || ''
+    formData.scheduledAt = toDatetimeLocal(newPost.scheduledAt)
+    formData.publishedAt = toDatetimeLocal(newPost.publishedAt)
+    
+    // Update visibility if new data comes in and has value
+    if (newPost.title) showTitle.value = true
+    if (newPost.content) showContent.value = true
+    if (newPost.tags) showTags.value = true
+    if (newPost.scheduledAt) showScheduledAt.value = true
+    if (newPost.publishedAt) showPublishedAt.value = true
+}, { deep: true })
+
+onMounted(() => {
+    formData.scheduledAt = toDatetimeLocal(props.post.scheduledAt)
+    formData.publishedAt = toDatetimeLocal(props.post.publishedAt)
 })
 </script>
 
@@ -48,7 +112,7 @@ watch(() => props.post, (newPost) => {
       class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-colors select-none"
       @click="toggleCollapse"
     >
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3 overflow-hidden">
         <!-- Icon -->
         <SocialIcon 
           v-if="post.channel?.socialMedia" 
@@ -58,64 +122,100 @@ watch(() => props.post, (newPost) => {
         <UIcon v-else name="i-heroicons-document-text" class="w-5 h-5 text-gray-400" />
         
         <!-- Channel Name -->
-        <span class="font-medium text-gray-900 dark:text-white">
+        <span class="font-medium text-gray-900 dark:text-white truncate">
           {{ post.channel?.name || t('common.unknownChannel') }}
         </span>
 
-        <!-- Language Code (only when collapsed) -->
+        <!-- Language Code (Always visible, no uppercase) -->
         <UBadge 
-          v-if="isCollapsed && post.language" 
+          v-if="post.language" 
           variant="subtle" 
           color="neutral" 
           size="xs"
-          class="ml-2 font-mono uppercase"
+          class="ml-1 font-mono shrink-0 rounded-md"
         >
           {{ post.language }}
         </UBadge>
       </div>
 
       <!-- Expand/Collapse Button -->
-      <UButton
-        variant="ghost"
-        color="neutral"
-        size="sm"
-        :icon="isCollapsed ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-up'"
-        class="ml-2"
-      />
+      <div class="flex items-center gap-2">
+          <!-- Icons to show what's set when collapsed? Optional -->
+           <span v-if="isCollapsed" class="text-xs text-gray-500 hidden sm:flex gap-1">
+               <UIcon v-if="post.scheduledAt" name="i-heroicons-clock" class="w-4 h-4" />
+               <UIcon v-if="post.publishedAt" name="i-heroicons-check-circle" class="w-4 h-4 text-green-500" />
+           </span>
+          <UButton
+            variant="ghost"
+            color="neutral"
+            size="sm"
+            :icon="isCollapsed ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-up'"
+            class="ml-2"
+          />
+      </div>
     </div>
 
     <!-- Collapsible Content -->
-    <div v-show="!isCollapsed" class="border-t border-gray-200 dark:border-gray-700/50 p-6 space-y-6 bg-gray-50/50 dark:bg-gray-900/20">
+    <div v-show="!isCollapsed" class="border-t border-gray-200 dark:border-gray-700/50 p-6 space-y-4 bg-gray-50/50 dark:bg-gray-900/20">
       
-      <!-- Title -->
-      <UFormField :label="t('post.postTitle')" :help="t('common.optional')">
-        <UInput
-          v-model="formData.title"
-          :placeholder="t('post.titlePlaceholder')"
-          class="w-full"
-        />
-      </UFormField>
+       <!-- Content Fields with Checkboxes -->
+       
+       <!-- Title -->
+       <div class="space-y-2">
+             <UCheckbox v-model="showTitle" :label="t('post.postTitle')" :ui="{ label: 'font-medium text-gray-700 dark:text-gray-200' }" />
+             <div v-if="showTitle" class="pl-6 animate-fade-in">
+                <UInput v-model="formData.title" :placeholder="t('post.titlePlaceholder')" class="w-full" />
+             </div>
+       </div>
 
-      <!-- Content -->
-      <UFormField :label="t('post.content')" required>
-        <EditorTiptapEditor
-          v-model="formData.content"
-          :placeholder="t('post.contentPlaceholder')"
-          :min-height="200"
-        />
-      </UFormField>
+       <!-- Content -->
+       <div class="space-y-2">
+             <UCheckbox v-model="showContent" :label="t('post.content')" :ui="{ label: 'font-medium text-gray-700 dark:text-gray-200' }" />
+             <div v-if="showContent" class="pl-6 animate-fade-in"> 
+                <EditorTiptapEditor
+                  v-model="formData.content"
+                  :placeholder="t('post.contentPlaceholder')"
+                  :min-height="200"
+                />
+             </div>
+       </div>
 
-       <!-- Tags -->
-      <UFormField :label="t('post.tags')" :help="t('post.tagsHint')">
-        <UInput
-            v-model="formData.tags"
-            :placeholder="t('post.tagsPlaceholder')"
-            icon="i-heroicons-hashtag"
-        />
-      </UFormField>
+        <!-- Tags -->
+        <div class="space-y-2">
+            <UCheckbox v-model="showTags" :label="t('post.tags')" :ui="{ label: 'font-medium text-gray-700 dark:text-gray-200' }" />
+            <div v-if="showTags" class="pl-6 animate-fade-in">
+                 <UInput v-model="formData.tags" :placeholder="t('post.tagsPlaceholder')" icon="i-heroicons-hashtag" />
+            </div>
+        </div>
+
+        <!-- Scheduled At -->
+        <div class="space-y-2">
+            <UCheckbox v-model="showScheduledAt" :label="t('post.scheduledAt')" :ui="{ label: 'font-medium text-gray-700 dark:text-gray-200' }" />
+            <div v-if="showScheduledAt" class="pl-6 animate-fade-in">
+                 <UInput v-model="formData.scheduledAt" type="datetime-local" icon="i-heroicons-clock" />
+            </div>
+        </div>
+
+        <!-- Published At -->
+        <div class="space-y-2">
+            <UCheckbox v-model="showPublishedAt" :label="t('post.publishedAt')" :ui="{ label: 'font-medium text-gray-700 dark:text-gray-200' }" />
+            <div v-if="showPublishedAt" class="pl-6 animate-fade-in">
+                 <UInput v-model="formData.publishedAt" type="datetime-local" icon="i-heroicons-calendar" />
+            </div>
+        </div>
 
       <!-- Actions -->
-      <div class="flex justify-end pt-2">
+      <div class="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700/50 mt-4">
+        <UButton
+          color="error"
+          variant="ghost"
+          :loading="isDeleting"
+          icon="i-heroicons-trash"
+          @click="handleDelete"
+        >
+          {{ t('common.delete') }}
+        </UButton>
+
         <UButton
           color="primary"
           :loading="isLoading"
@@ -128,3 +228,13 @@ watch(() => props.post, (newPost) => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-in-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>

@@ -73,17 +73,18 @@ export interface PostCreateInput {
 }
 
 export interface PostUpdateInput {
-    content?: string
+    content?: string | null
     postType?: PostType
-    socialMedia?: string
-    title?: string
-    description?: string
-    authorComment?: string
-    tags?: string | string[]
-    postDate?: string
+    socialMedia?: string | null
+    title?: string | null
+    description?: string | null
+    authorComment?: string | null
+    tags?: string | string[] | null
+    postDate?: string | null
     status?: PostStatus
-    scheduledAt?: string
-    language?: string
+    scheduledAt?: string | null
+    publishedAt?: string | null
+    language?: string | null
 }
 
 export interface PostsFilter {

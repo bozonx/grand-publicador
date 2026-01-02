@@ -72,6 +72,16 @@ async function handlePostCreated() {
 }
 
 /**
+ * Handle post deletion
+ */
+async function handlePostDeleted() {
+    // Refresh publication to remove deleted post
+    if (publicationId.value) {
+        await fetchPublication(publicationId.value)
+    }
+}
+
+/**
  * Handle cancel
  */
 function handleCancel() {
@@ -288,6 +298,7 @@ function formatDate(dateString: string | null | undefined): string {
                   v-for="post in currentPublication.posts"
                   :key="post.id"
                   :post="post"
+                  @deleted="handlePostDeleted"
                 ></PostsPostEditBlock>
 
                 <PostsPostCreateBlock 
