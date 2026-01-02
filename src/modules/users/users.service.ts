@@ -113,7 +113,7 @@ export class UsersService {
         _count: {
           select: {
             ownedProjects: true,
-            posts: true,
+            publications: true,
           },
         },
       },
@@ -132,7 +132,7 @@ export class UsersService {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       projectsCount: user._count.ownedProjects,
-      postsCount: user._count.posts,
+      publicationsCount: user._count.publications,
     }));
 
     return {

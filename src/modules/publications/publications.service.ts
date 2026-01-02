@@ -399,7 +399,6 @@ export class PublicationsService {
           data: {
             publicationId: publication.id,
             channelId: channel.id,
-            createdBy: userId ?? null,
             content: publication.content,
             socialMedia: channel.socialMedia,
             postType: publication.postType, // Use master publication type

@@ -110,6 +110,7 @@ describe('ProjectsService (unit)', () => {
           members: [{ role: 'OWNER' }],
           _count: { channels: 5, publications: 3 },
           publications: [{ createdAt: new Date('2024-01-01') }],
+          channels: [],
         },
         {
           id: 'project-2',
@@ -117,6 +118,7 @@ describe('ProjectsService (unit)', () => {
           members: [{ role: 'EDITOR' }],
           _count: { channels: 2, publications: 0 },
           publications: [],
+          channels: [],
         },
       ];
 
@@ -168,6 +170,7 @@ describe('ProjectsService (unit)', () => {
         publicationsCount: 0,
         memberCount: 0,
         lastPublicationAt: null,
+        lastPublicationId: null,
       });
     });
 
@@ -236,7 +239,7 @@ describe('ProjectsService (unit)', () => {
       expect(mockPermissionsService.checkProjectPermission).toHaveBeenCalledWith(
         projectId,
         userId,
-        ['OWNER'],
+        ['OWNER', 'ADMIN'],
       );
     });
 

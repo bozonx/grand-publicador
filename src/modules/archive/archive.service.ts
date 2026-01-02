@@ -53,10 +53,13 @@ export class ArchiveService {
         return updatedPublication;
       }
       case ArchiveEntityType.POST: {
-        const post = await this.prisma.post.findUnique({ where: { id } });
+        const post = await this.prisma.post.findUnique({ 
+          where: { id },
+          include: { publication: true }
+        });
         if (!post) throw new NotFoundException('Post not found');
         // Author or Admin/Owner
-        if (post.createdBy !== userId) {
+        if (post.publication?.createdBy !== userId) {
           const channel = await this.prisma.channel.findUnique({ where: { id: post.channelId } });
           if (channel) {
             await this.permissions.checkProjectPermission(channel.projectId, userId, ['OWNER', 'ADMIN']);
@@ -104,9 +107,12 @@ export class ArchiveService {
         return updatedPublication;
       }
       case ArchiveEntityType.POST: {
-        const post = await this.prisma.post.findUnique({ where: { id } });
+        const post = await this.prisma.post.findUnique({ 
+          where: { id },
+          include: { publication: true }
+        });
         if (!post) throw new NotFoundException('Post not found');
-        if (post.createdBy !== userId) {
+        if (post.publication?.createdBy !== userId) {
           const channel = await this.prisma.channel.findUnique({ where: { id: post.channelId } });
           if (channel) {
             await this.permissions.checkProjectPermission(channel.projectId, userId, ['OWNER', 'ADMIN']);
@@ -145,9 +151,12 @@ export class ArchiveService {
         return this.prisma.publication.delete({ where: { id } });
       }
       case ArchiveEntityType.POST: {
-        const post = await this.prisma.post.findUnique({ where: { id } });
+        const post = await this.prisma.post.findUnique({ 
+          where: { id },
+          include: { publication: true }
+        });
         if (!post) throw new NotFoundException('Post not found');
-        if (post.createdBy !== userId) {
+        if (post.publication?.createdBy !== userId) {
           const channel = await this.prisma.channel.findUnique({ where: { id: post.channelId } });
           if (channel) {
             await this.permissions.checkProjectPermission(channel.projectId, userId, ['OWNER', 'ADMIN']);
