@@ -271,6 +271,7 @@
     "updatedAt": "Last updated",
     "author": "Author",
     "createPost": "Create post",
+    "addPost": "Add Post",
     "createDescription": "Create a new post for your channel",
     "editPost": "Edit post",
     "editDescription": "Update your post content and settings",

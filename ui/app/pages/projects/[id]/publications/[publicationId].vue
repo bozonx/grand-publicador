@@ -107,6 +107,41 @@ function formatDate(dateString: string | null | undefined): string {
 
 <template>
   <div class="max-w-4xl mx-auto">
+    <!-- Delete Confirmation Modal (Moved to top level for better portal handling) -->
+    <UModal v-model="isDeleteModalOpen">
+      <UCard>
+        <template #header>
+          <div class="flex items-center gap-3 text-red-600 dark:text-red-400">
+            <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6"></UIcon>
+            <h3 class="text-lg font-medium">
+              {{ t('publication.deleteConfirm') }}
+            </h3>
+          </div>
+        </template>
+
+        <p class="text-gray-500 dark:text-gray-400">
+          {{ t('publication.deleteCascadeWarning') }}
+        </p>
+
+        <template #footer>
+          <div class="flex justify-end gap-3">
+            <UButton
+              color="neutral"
+              variant="ghost"
+              :label="t('common.cancel')"
+              @click="isDeleteModalOpen = false"
+            ></UButton>
+            <UButton
+              color="error"
+              :label="t('common.delete')"
+              :loading="isDeleting"
+              @click="handleDelete"
+            ></UButton>
+          </div>
+        </template>
+      </UCard>
+    </UModal>
+
     <!-- Back button -->
     <div class="mb-6">
       <UButton
@@ -128,7 +163,7 @@ function formatDate(dateString: string | null | undefined): string {
 
     <!-- Loading state -->
     <div v-if="isPublicationLoading" class="flex items-center justify-center py-12">
-        <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-gray-400 animate-spin" />
+        <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-gray-400 animate-spin"></UIcon>
     </div>
 
     <div v-else-if="currentPublication" class="space-y-6 pb-12">
@@ -138,7 +173,7 @@ function formatDate(dateString: string | null | undefined): string {
                 <!-- Header with title and actions -->
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                        <UIcon name="i-heroicons-document-text" class="w-5 h-5 text-gray-500" />
+                        <UIcon name="i-heroicons-document-text" class="w-5 h-5 text-gray-500"></UIcon>
                         {{ t('publication.edit') }}
                     </h2>
                     
@@ -151,7 +186,7 @@ function formatDate(dateString: string | null | undefined): string {
                             size="sm"
                             :color="currentPublication.archivedAt ? 'warning' : 'neutral'"
                             @click="handleToggleArchive"
-                        />
+                        ></UButton>
                         <UButton
                             :label="t('common.delete')"
                             icon="i-heroicons-trash"
@@ -159,7 +194,7 @@ function formatDate(dateString: string | null | undefined): string {
                             size="sm"
                             color="error"
                             @click="isDeleteModalOpen = true"
-                        />
+                        ></UButton>
                     </div>
                 </div>
 
@@ -188,7 +223,7 @@ function formatDate(dateString: string | null | undefined): string {
                     <div v-if="currentPublication.archivedAt" class="md:col-span-2">
                         <div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
                             <div class="flex items-center gap-2 mb-1">
-                                <UIcon name="i-heroicons-archive-box" class="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+                                <UIcon name="i-heroicons-archive-box" class="w-4 h-4 text-yellow-600 dark:text-yellow-400"></UIcon>
                                 <span class="text-yellow-800 dark:text-yellow-200 font-medium text-sm">{{ t('common.archived') }}</span>
                             </div>
                             <div class="text-yellow-700 dark:text-yellow-300 text-xs">
@@ -208,7 +243,7 @@ function formatDate(dateString: string | null | undefined): string {
                 @click="toggleFormCollapse"
             >
                 <div class="flex items-center gap-3">
-                    <UIcon name="i-heroicons-pencil-square" class="w-5 h-5 text-gray-500" />
+                    <UIcon name="i-heroicons-pencil-square" class="w-5 h-5 text-gray-500"></UIcon>
                     <span class="font-medium text-gray-900 dark:text-white">
                         {{ t('publication.editDescription') }}
                     </span>
@@ -221,7 +256,7 @@ function formatDate(dateString: string | null | undefined): string {
                     size="sm"
                     :icon="isFormCollapsed ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-up'"
                     class="ml-2"
-                />
+                ></UButton>
             </div>
 
             <!-- Collapsible Content -->
@@ -234,7 +269,7 @@ function formatDate(dateString: string | null | undefined): string {
                   :publication="currentPublication"
                   @success="handleSuccess"
                   @cancel="handleCancel"
-                />
+                ></FormsPublicationForm>
             </div>
         </div>
 
@@ -255,7 +290,7 @@ function formatDate(dateString: string | null | undefined): string {
                   v-for="post in currentPublication.posts"
                   :key="post.id"
                   :post="post"
-                />
+                ></PostsPostEditBlock>
 
                 <PostsPostCreateBlock 
                     v-if="isCreatingPost"
@@ -263,7 +298,7 @@ function formatDate(dateString: string | null | undefined): string {
                     :available-channels="availableChannels"
                     @success="handlePostCreated"
                     @cancel="isCreatingPost = false"
-                />
+                ></PostsPostCreateBlock>
               </div>
           </div>
           <div v-else class="text-center py-6 text-gray-500">
@@ -275,7 +310,7 @@ function formatDate(dateString: string | null | undefined): string {
                     class="mt-4"
                     @success="handlePostCreated"
                     @cancel="isCreatingPost = false"
-                />
+                ></PostsPostCreateBlock>
           </div>
 
           <div v-if="!isCreatingPost && availableChannels.length > 0" class="mt-4 flex justify-center">
@@ -285,45 +320,10 @@ function formatDate(dateString: string | null | undefined): string {
                 icon="i-heroicons-plus"
                 @click="isCreatingPost = true"
             >
-                {{ t('post.addPost', 'Add Post') }}
+                {{ t('post.addPost') }}
             </UButton>
           </div>
         </div>
-
-        <!-- Delete Confirmation Modal (Moved inside conditional block) -->
-        <UModal v-model="isDeleteModalOpen">
-          <UCard>
-            <template #header>
-              <div class="flex items-center gap-3 text-red-600 dark:text-red-400">
-                <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6" />
-                <h3 class="text-lg font-medium">
-                  {{ t('publication.deleteConfirm') }}
-                </h3>
-              </div>
-            </template>
-
-            <p class="text-gray-500 dark:text-gray-400">
-              {{ t('publication.deleteCascadeWarning') }}
-            </p>
-
-            <template #footer>
-              <div class="flex justify-end gap-3">
-                <UButton
-                  color="neutral"
-                  variant="ghost"
-                  :label="t('common.cancel')"
-                  @click="isDeleteModalOpen = false"
-                />
-                <UButton
-                  color="error"
-                  :label="t('common.delete')"
-                  :loading="isDeleting"
-                  @click="handleDelete"
-                />
-              </div>
-            </template>
-          </UCard>
-        </UModal>
     </div>
     
     <!-- Error/Not Found -->

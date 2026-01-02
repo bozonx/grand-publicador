@@ -35,28 +35,31 @@ const emit = defineEmits<Emits>()
 
 const { t } = useI18n()
 
+// Extensions defined outside to avoid duplication issues during ref initialization
+const extensions = [
+  StarterKit.configure({
+    heading: {
+      levels: [1, 2, 3],
+    },
+  }),
+  Link.configure({
+    openOnClick: false,
+    HTMLAttributes: {
+      class: 'text-primary-600 dark:text-primary-400 underline',
+    },
+  }),
+  Placeholder.configure({
+    placeholder: props.placeholder,
+  }),
+  props.maxLength
+    ? CharacterCount.configure({ limit: props.maxLength })
+    : CharacterCount,
+]
+
 const editor = useEditor({
   content: props.modelValue,
   editable: !props.disabled,
-  extensions: [
-    StarterKit.configure({
-      heading: {
-        levels: [1, 2, 3],
-      },
-    }),
-    Link.configure({
-      openOnClick: false,
-      HTMLAttributes: {
-        class: 'text-primary-600 dark:text-primary-400 underline',
-      },
-    }),
-    Placeholder.configure({
-      placeholder: props.placeholder,
-    }),
-    ...(props.maxLength
-      ? [CharacterCount.configure({ limit: props.maxLength })]
-      : [CharacterCount]),
-  ],
+  extensions: extensions,
   onUpdate: ({ editor }) => {
     emit('update:modelValue', editor.getHTML())
   },
@@ -131,7 +134,7 @@ const isMaxLengthReached = computed(() => {
 </script>
 
 <template>
-  <div class="tiptap-editor border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+  <div class="tiptap-editor border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden flex flex-col">
     <!-- Toolbar -->
     <div
       v-if="editor && !disabled"
@@ -146,7 +149,7 @@ const isMaxLengthReached = computed(() => {
           icon="i-heroicons-bold"
           :disabled="!editor.can().chain().focus().toggleBold().run()"
           @click="editor.chain().focus().toggleBold().run()"
-        />
+        ></UButton>
         <UButton
           :color="editor.isActive('italic') ? 'primary' : 'neutral'"
           :variant="editor.isActive('italic') ? 'solid' : 'ghost'"
@@ -154,7 +157,7 @@ const isMaxLengthReached = computed(() => {
           icon="i-heroicons-italic"
           :disabled="!editor.can().chain().focus().toggleItalic().run()"
           @click="editor.chain().focus().toggleItalic().run()"
-        />
+        ></UButton>
         <UButton
           :color="editor.isActive('strike') ? 'primary' : 'neutral'"
           :variant="editor.isActive('strike') ? 'solid' : 'ghost'"
@@ -162,7 +165,7 @@ const isMaxLengthReached = computed(() => {
           icon="i-heroicons-strikethrough"
           :disabled="!editor.can().chain().focus().toggleStrike().run()"
           @click="editor.chain().focus().toggleStrike().run()"
-        />
+        ></UButton>
         <UButton
           :color="editor.isActive('code') ? 'primary' : 'neutral'"
           :variant="editor.isActive('code') ? 'solid' : 'ghost'"
@@ -170,10 +173,10 @@ const isMaxLengthReached = computed(() => {
           icon="i-heroicons-code-bracket"
           :disabled="!editor.can().chain().focus().toggleCode().run()"
           @click="editor.chain().focus().toggleCode().run()"
-        />
+        ></UButton>
       </div>
 
-      <div class="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1" />
+      <div class="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1"></div>
 
       <!-- Headings -->
       <div class="flex items-center gap-0.5">
@@ -203,7 +206,7 @@ const isMaxLengthReached = computed(() => {
         </UButton>
       </div>
 
-      <div class="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1" />
+      <div class="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1"></div>
 
       <!-- Lists -->
       <div class="flex items-center gap-0.5">
@@ -213,17 +216,17 @@ const isMaxLengthReached = computed(() => {
           size="xs"
           icon="i-heroicons-list-bullet"
           @click="editor.chain().focus().toggleBulletList().run()"
-        />
+        ></UButton>
         <UButton
           :color="editor.isActive('orderedList') ? 'primary' : 'neutral'"
           :variant="editor.isActive('orderedList') ? 'solid' : 'ghost'"
           size="xs"
           icon="i-heroicons-numbered-list"
           @click="editor.chain().focus().toggleOrderedList().run()"
-        />
+        ></UButton>
       </div>
 
-      <div class="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1" />
+      <div class="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1"></div>
 
       <!-- Block elements -->
       <div class="flex items-center gap-0.5">
@@ -233,24 +236,24 @@ const isMaxLengthReached = computed(() => {
           size="xs"
           icon="i-heroicons-chat-bubble-bottom-center-text"
           @click="editor.chain().focus().toggleBlockquote().run()"
-        />
+        ></UButton>
         <UButton
           :color="editor.isActive('codeBlock') ? 'primary' : 'neutral'"
           :variant="editor.isActive('codeBlock') ? 'solid' : 'ghost'"
           size="xs"
           icon="i-heroicons-command-line"
           @click="editor.chain().focus().toggleCodeBlock().run()"
-        />
+        ></UButton>
         <UButton
           color="neutral"
           variant="ghost"
           size="xs"
           icon="i-heroicons-minus"
           @click="editor.chain().focus().setHorizontalRule().run()"
-        />
+        ></UButton>
       </div>
 
-      <div class="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1" />
+      <div class="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1"></div>
 
       <!-- Link -->
       <UButton
@@ -259,9 +262,9 @@ const isMaxLengthReached = computed(() => {
         size="xs"
         icon="i-heroicons-link"
         @click="setLink"
-      />
+      ></UButton>
 
-      <div class="flex-1" />
+      <div class="flex-1"></div>
 
       <!-- Undo/Redo -->
       <div class="flex items-center gap-0.5">
@@ -272,7 +275,7 @@ const isMaxLengthReached = computed(() => {
           icon="i-heroicons-arrow-uturn-left"
           :disabled="!editor.can().chain().focus().undo().run()"
           @click="editor.chain().focus().undo().run()"
-        />
+        ></UButton>
         <UButton
           color="neutral"
           variant="ghost"
@@ -280,16 +283,16 @@ const isMaxLengthReached = computed(() => {
           icon="i-heroicons-arrow-uturn-right"
           :disabled="!editor.can().chain().focus().redo().run()"
           @click="editor.chain().focus().redo().run()"
-        />
+        ></UButton>
       </div>
     </div>
 
     <!-- Editor content -->
     <EditorContent
       :editor="editor"
-      class="prose prose-sm dark:prose-invert max-w-none p-4"
+      class="prose prose-sm dark:prose-invert max-w-none p-4 focus:outline-none overflow-y-auto"
       :style="{ minHeight: `${minHeight}px` }"
-    />
+    ></EditorContent>
 
     <!-- Footer with character count -->
     <div
