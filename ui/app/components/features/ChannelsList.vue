@@ -129,13 +129,7 @@ async function toggleArchivedChannels() {
           :title="sortOrder === 'asc' ? t('common.sortOrder.asc') : t('common.sortOrder.desc')"
         />
 
-        <UButton 
-            icon="i-heroicons-plus" 
-            color="primary" 
-            :to="`/projects/${projectId}/channels/new`"
-        >
-            {{ t('channel.createChannel') }}
-        </UButton>
+
       </div>
     </div>
 
@@ -165,12 +159,7 @@ async function toggleArchivedChannels() {
       <p class="text-gray-500 dark:text-gray-400 mb-6">
         {{ t('channel.noChannelsDescription') }}
       </p>
-      <UButton
-        icon="i-heroicons-plus"
-        :to="`/projects/${projectId}/channels/new`"
-      >
-        {{ t('channel.createChannel') }}
-      </UButton>
+
     </div>
 
     <!-- Channels List -->

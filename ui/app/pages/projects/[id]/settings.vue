@@ -177,6 +177,26 @@ function cancelDelete() {
           />
         </UCard>
 
+        <!-- Channels Management -->
+        <UCard v-if="canEdit(currentProject)">
+          <template #header>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+              {{ t('channel.titlePlural', 'Channels') }}
+            </h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+               {{ t('channel.settings_desc', 'Manage project channels') }}
+            </p>
+          </template>
+
+          <UButton 
+            icon="i-heroicons-plus" 
+            color="primary" 
+            :to="`/projects/${projectId}/channels/new`"
+          >
+            {{ t('channel.createChannel', 'Create channel') }}
+          </UButton>
+        </UCard>
+
         <!-- Members Management -->
         <UCard v-if="canManageMembers(currentProject)">
           <template #header>

@@ -110,7 +110,7 @@ export class ProjectsService {
 
       const lastPublicationAt = project.publications[0]?.createdAt || null;
       const lastPublicationId = project.publications[0]?.id || null;
-      const languages = project.channels.map(c => c.language);
+      const languages = project.channels.map(c => c.language).sort();
 
       const { publications: _, channels: _channels, ...projectData } = project;
 
@@ -184,7 +184,7 @@ export class ProjectsService {
 
       const lastPublicationAt = project.publications[0]?.createdAt || null;
       const lastPublicationId = project.publications[0]?.id || null;
-      const languages = project.channels.map(c => c.language);
+      const languages = project.channels.map(c => c.language).sort();
 
       const { publications: _, channels: _channels, ...projectData } = project;
 
