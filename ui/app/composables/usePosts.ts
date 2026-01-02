@@ -63,6 +63,7 @@ export interface PostCreateInput {
     status?: PostStatus
     scheduledAt?: string
     language?: string
+    meta?: string
 }
 
 export interface PostUpdateInput {

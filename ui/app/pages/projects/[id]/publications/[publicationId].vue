@@ -634,25 +634,27 @@ function formatDate(dateString: string | null | undefined): string {
                   @deleted="handlePostDeleted"
                 ></PostsPostEditBlock>
 
-                <PostsPostCreateBlock 
+                <PostsPostEditBlock 
                     v-if="isCreatingPost"
+                    is-creating
                     :publication="currentPublication"
                     :available-channels="availableChannels"
                     @success="handlePostCreated"
                     @cancel="isCreatingPost = false"
-                ></PostsPostCreateBlock>
+                ></PostsPostEditBlock>
               </div>
           </div>
           <div v-else class="text-center py-6 text-gray-500">
               <p>{{ t('publication.noPosts') }}</p>
-               <PostsPostCreateBlock 
+               <PostsPostEditBlock 
                     v-if="isCreatingPost"
+                    is-creating
                     :publication="currentPublication"
                     :available-channels="availableChannels"
                     class="mt-4"
                     @success="handlePostCreated"
                     @cancel="isCreatingPost = false"
-                ></PostsPostCreateBlock>
+                ></PostsPostEditBlock>
           </div>
 
           <div v-if="!isCreatingPost && availableChannels.length > 0" class="mt-4 flex justify-center">
