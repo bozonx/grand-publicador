@@ -189,25 +189,27 @@ model Post {
   // User ID who archived the post
   archivedBy String?   @map("archived_by")
 
-  title       String?
-  description String?
+  title         String?
+  description   String?
+  // Comment from author for post with type NEWS
+  authorComment String?    @map("author_comment")
   // Post content (can differ from publication for platform-specific formatting)
-  content     String?
+  content       String?
   // Tags stored as comma-separated
-  tags        String?
+  tags          String?
   // Array of media file URLs stored as JSON string
-  mediaFiles  String     @default("[]") @map("media_files")
+  mediaFiles    String     @default("[]") @map("media_files")
   // Custom display date (can differ from actual publish date)
   // Additional metadata stored as JSON string
-  meta        String     @default("{}")
+  meta          String     @default("{}")
   // Type of post (POST, ARTICLE, VIDEO, etc.)
-  postType    PostType   @map("post_type")
+  postType      PostType   @map("post_type")
   // Date of the article which the author specified
-  postDate    DateTime?  @map("post_date")
+  postDate      DateTime?  @map("post_date")
   // Post status (DRAFT, SCHEDULED, PUBLISHED, FAILED, EXPIRED)
-  status      PostStatus @default(DRAFT)
+  status        PostStatus @default(DRAFT)
   // Language of the post (inherited from publication)
-  language    String     @default("ru-RU")
+  language      String     @default("ru-RU")
 
   publication Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
   channel     Channel     @relation(fields: [channelId], references: [id], onDelete: Cascade)

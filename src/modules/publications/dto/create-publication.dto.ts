@@ -1,4 +1,5 @@
-import { IsArray, IsEnum, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsDate, IsEnum, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
 import { PostStatus, PostType } from '@prisma/client';
 
 /**
@@ -14,8 +15,16 @@ export class CreatePublicationDto {
   public title?: string;
 
   @IsString()
+  @IsOptional()
+  public description?: string;
+
+  @IsString()
   @IsNotEmpty()
   public content!: string;
+
+  @IsString()
+  @IsOptional()
+  public authorComment?: string;
 
   @IsArray()
   @IsOptional()
@@ -24,6 +33,11 @@ export class CreatePublicationDto {
   @IsString()
   @IsOptional()
   public tags?: string;
+
+  @Type(() => Date)
+  @IsDate()
+  @IsOptional()
+  public postDate?: Date;
 
   @IsEnum(PostStatus)
   @IsOptional()
