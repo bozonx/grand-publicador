@@ -197,31 +197,44 @@ const projectOptions = computed(() =>
         </p>
       </div>
 
-      <!-- Channel name -->
-      <UFormField :label="t('channel.name')" required>
-        <UInput
-          v-model="state.name"
-          :placeholder="t('channel.namePlaceholder')"
-          class="w-full"
-          size="lg"
-        />
-      </UFormField>
-
-      <!-- Project selector (edit mode only) -->
-      <div v-if="isEditMode">
-        <UFormField 
-          :label="t('channel.project', 'Project')" 
+      <!-- Channel language -->
+      <div v-if="!isEditMode">
+        <UFormField
+          :label="t('channel.language')"
           required
-          :help="t('channel.projectHelp', 'You can move this channel to another project')"
+          :help="t('channel.languageHelp')"
         >
           <USelectMenu
-            v-model="state.projectId"
-            :items="projectOptions"
+            v-model="state.language"
+            :items="languageOptions"
             value-key="value"
             label-key="label"
             class="w-full"
-          />
+          >
+            <template #leading>
+              <span v-if="state.language" class="flex items-center gap-2">
+                <UIcon name="i-heroicons-language" class="w-4 h-4" />
+                {{ languageOptions.find(o => o.value === state.language)?.label }}
+              </span>
+              <span v-else>Select language</span>
+            </template>
+          </USelectMenu>
         </UFormField>
+      </div>
+      <!-- Display current language for edit mode (read-only) -->
+      <div v-else class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          {{ t('channel.language') }}
+        </label>
+        <div class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+          <UIcon name="i-heroicons-language" class="w-5 h-5 text-gray-500" />
+          <span class="font-medium text-gray-900 dark:text-white">
+            {{ languageOptions.find(o => o.value === channel?.language)?.label || channel?.language }}
+          </span>
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400">
+          {{ t('channel.languageCannotChange', 'Language cannot be changed after channel creation') }}
+        </p>
       </div>
 
       <!-- Social media type (only for create mode) -->
@@ -286,6 +299,33 @@ const projectOptions = computed(() =>
         </p>
       </div>
 
+      <!-- Project selector (edit mode only) -->
+      <div v-if="isEditMode">
+        <UFormField 
+          :label="t('channel.project', 'Project')" 
+          required
+          :help="t('channel.projectHelp', 'You can move this channel to another project')"
+        >
+          <USelectMenu
+            v-model="state.projectId"
+            :items="projectOptions"
+            value-key="value"
+            label-key="label"
+            class="w-full"
+          />
+        </UFormField>
+      </div>
+
+      <!-- Channel name -->
+      <UFormField :label="t('channel.name')" required>
+        <UInput
+          v-model="state.name"
+          :placeholder="t('channel.namePlaceholder')"
+          class="w-full"
+          size="lg"
+        />
+      </UFormField>
+
       <!-- Channel identifier -->
       <UFormField
         :label="t('channel.identifier')"
@@ -298,47 +338,6 @@ const projectOptions = computed(() =>
           class="w-full"
         />
       </UFormField>
-
-      <!-- Channel language -->
-      <div v-if="!isEditMode">
-        <UFormField
-          :label="t('channel.language')"
-          required
-          :help="t('channel.languageHelp')"
-        >
-          <USelectMenu
-            v-model="state.language"
-            :items="languageOptions"
-            value-key="value"
-            label-key="label"
-            class="w-full"
-          >
-            <template #leading>
-              <span v-if="state.language" class="flex items-center gap-2">
-                <UIcon name="i-heroicons-language" class="w-4 h-4" />
-                {{ languageOptions.find(o => o.value === state.language)?.label }}
-              </span>
-              <span v-else>Select language</span>
-            </template>
-          </USelectMenu>
-        </UFormField>
-      </div>
-
-      <!-- Display current language for edit mode (read-only) -->
-      <div v-else class="space-y-2">
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          {{ t('channel.language') }}
-        </label>
-        <div class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
-          <UIcon name="i-heroicons-language" class="w-5 h-5 text-gray-500" />
-          <span class="font-medium text-gray-900 dark:text-white">
-            {{ languageOptions.find(o => o.value === channel?.language)?.label || channel?.language }}
-          </span>
-        </div>
-        <p class="text-xs text-gray-500 dark:text-gray-400">
-          {{ t('channel.languageCannotChange', 'Language cannot be changed after channel creation') }}
-        </p>
-      </div>
 
       <!-- Telegram credentials (only for Telegram channels) -->
       <div v-if="currentSocialMedia === 'TELEGRAM'" class="space-y-4">
