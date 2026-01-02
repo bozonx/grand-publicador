@@ -9,6 +9,7 @@ definePageMeta({
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
+const { canGoBack, goBack: navigateBack } = useNavigation()
 
 const projectId = computed(() => route.params.id as string)
 const channelId = computed(() => route.params.channelId as string)
@@ -106,7 +107,7 @@ function goToPost(postId: string) {
 }
 
 function goBack() {
-  router.push(`/projects/${projectId.value}`)
+  navigateBack()
 }
 
 /**
@@ -199,7 +200,13 @@ function getStatusBadgeColor(isActive: boolean): 'success' | 'neutral' {
     <div>
         <!-- Back Button -->
         <div class="mb-6">
-            <UButton variant="ghost" color="neutral" icon="i-heroicons-arrow-left" @click="goBack">
+            <UButton 
+              variant="ghost" 
+              color="neutral" 
+              icon="i-heroicons-arrow-left" 
+              :disabled="!canGoBack"
+              @click="goBack"
+            >
                 {{ t('common.back') }}
             </UButton>
         </div>

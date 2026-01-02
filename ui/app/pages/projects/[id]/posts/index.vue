@@ -8,6 +8,7 @@ definePageMeta({
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
+const { canGoBack, goBack: navigateBack } = useNavigation()
 
 const projectId = computed(() => route.params.id as string)
 
@@ -127,7 +128,7 @@ function goToPost(postId: string) {
  * Navigate back to project
  */
 function goBack() {
-  router.push(`/projects/${projectId.value}`)
+  navigateBack()
 }
 
 /**
@@ -214,7 +215,13 @@ const hasActiveFilters = computed(() => {
   <div>
     <!-- Back button -->
     <div class="mb-6">
-      <UButton variant="ghost" color="neutral" icon="i-heroicons-arrow-left" @click="goBack">
+      <UButton 
+        variant="ghost" 
+        color="neutral" 
+        icon="i-heroicons-arrow-left" 
+        :disabled="!canGoBack"
+        @click="goBack"
+      >
         {{ t('common.back') }}
       </UButton>
     </div>

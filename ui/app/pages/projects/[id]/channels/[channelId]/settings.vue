@@ -11,6 +11,7 @@ definePageMeta({
 const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
+const { canGoBack, goBack: navigateBack } = useNavigation()
 
 const {
   fetchChannel,
@@ -51,7 +52,7 @@ const isChannelEmpty = computed(() => {
  * Navigate back to channel details
  */
 function goBack() {
-  router.push(`/projects/${projectId.value}/channels/${channelId.value}`)
+  navigateBack()
 }
 
 /**
@@ -125,7 +126,13 @@ async function handleDelete() {
   <div>
     <!-- Back button -->
     <div class="mb-6">
-      <UButton variant="ghost" color="neutral" icon="i-heroicons-arrow-left" @click="goBack">
+      <UButton 
+        variant="ghost" 
+        color="neutral" 
+        icon="i-heroicons-arrow-left" 
+        :disabled="!canGoBack"
+        @click="goBack"
+      >
         {{ t('common.back_to_channel', 'Back to Channel') }}
       </UButton>
     </div>

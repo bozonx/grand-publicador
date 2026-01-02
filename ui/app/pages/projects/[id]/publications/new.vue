@@ -9,6 +9,7 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const { fetchProject, currentProject } = useProjects()
+const { canGoBack, goBack } = useNavigation()
 
 const projectId = computed(() => route.params.id as string)
 
@@ -22,16 +23,15 @@ onMounted(() => {
  * Handle successful publication creation
  */
 function handleSuccess(publicationId: string) {
-  // Redirect to the project dashboard or publication details?
-  // Current dashboard lists draft publications.
-  router.push(`/projects/${projectId.value}`)
+  // Go back to where user came from
+  goBack()
 }
 
 /**
  * Handle cancel
  */
 function handleCancel() {
-  router.push(`/projects/${projectId.value}`)
+  goBack()
 }
 </script>
 
@@ -44,6 +44,7 @@ function handleCancel() {
         color="neutral"
         icon="i-heroicons-arrow-left"
         class="-ml-2.5"
+        :disabled="!canGoBack"
         @click="handleCancel"
       >
         <span class="flex items-center gap-1">

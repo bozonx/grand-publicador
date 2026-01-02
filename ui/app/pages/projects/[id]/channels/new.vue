@@ -8,6 +8,7 @@ definePageMeta({
 const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
+const { canGoBack, goBack } = useNavigation()
 const projectId = computed(() => route.params.id as string)
 
 /**
@@ -21,10 +22,10 @@ function handleSuccess(channel: Channel) {
 }
 
 /**
- * Cancel and go back to project page
+ * Cancel and go back
  */
 function handleCancel() {
-  router.push(`/projects/${projectId.value}`)
+  goBack()
 }
 </script>
 
@@ -37,6 +38,7 @@ function handleCancel() {
         color="neutral"
         icon="i-heroicons-arrow-left"
         class="-ml-2.5"
+        :disabled="!canGoBack"
         @click="handleCancel"
       >
         {{ t('common.back') }}

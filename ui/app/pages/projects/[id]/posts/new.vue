@@ -10,6 +10,7 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const { fetchProject, currentProject } = useProjects()
+const { canGoBack, goBack } = useNavigation()
 
 const projectId = computed(() => route.params.id as string)
 
@@ -30,7 +31,7 @@ function handleSuccess(postId: string) {
  * Handle cancel
  */
 function handleCancel() {
-  router.push(`/projects/${projectId.value}/posts`)
+  goBack()
 }
 </script>
 
@@ -43,6 +44,7 @@ function handleCancel() {
         color="neutral"
         icon="i-heroicons-arrow-left"
         class="-ml-2.5"
+        :disabled="!canGoBack"
         @click="handleCancel"
       >
         <span class="flex items-center gap-1">

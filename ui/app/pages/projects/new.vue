@@ -6,6 +6,7 @@ definePageMeta({
 const { t } = useI18n()
 const router = useRouter()
 const { createProject, isLoading } = useProjects()
+const { canGoBack, goBack } = useNavigation()
 
 /**
  * Handle project creation
@@ -23,10 +24,10 @@ async function handleCreate(data: { name: string; description: string }) {
 }
 
 /**
- * Cancel and go back to projects list
+ * Cancel and go back
  */
 function handleCancel() {
-  router.push('/projects')
+  goBack()
 }
 </script>
 
@@ -39,6 +40,7 @@ function handleCancel() {
         color="neutral"
         icon="i-heroicons-arrow-left"
         class="-ml-2.5"
+        :disabled="!canGoBack"
         @click="handleCancel"
       >
         {{ t('common.back') }}

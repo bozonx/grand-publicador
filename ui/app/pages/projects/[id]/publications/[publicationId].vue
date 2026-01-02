@@ -11,6 +11,7 @@ const route = useRoute()
 const router = useRouter()
 const { fetchProject, currentProject } = useProjects()
 const { fetchPublication, currentPublication, isLoading: isPublicationLoading } = usePublications()
+const { canGoBack, goBack } = useNavigation()
 
 const projectId = computed(() => route.params.id as string)
 const publicationId = computed(() => route.params.publicationId as string)
@@ -31,15 +32,15 @@ onMounted(async () => {
  * Handle successful publication update
  */
 function handleSuccess(id: string) {
-    // Redirect to list
-  router.push(`/projects/${projectId.value}/publications`)
+  // Go back to where user came from
+  goBack()
 }
 
 /**
  * Handle cancel
  */
 function handleCancel() {
-  router.push(`/projects/${projectId.value}/publications`)
+  goBack()
 }
 </script>
 
@@ -52,6 +53,7 @@ function handleCancel() {
         color="neutral"
         icon="i-heroicons-arrow-left"
         class="-ml-2.5"
+        :disabled="!canGoBack"
         @click="handleCancel"
       >
         <span class="flex items-center gap-1">
