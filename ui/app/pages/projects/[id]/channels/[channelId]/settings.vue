@@ -20,6 +20,8 @@ const {
   archiveChannel,
   unarchiveChannel,
   deleteChannel,
+  canEdit,
+  canDelete,
 } = useChannels()
 
 const projectId = computed(() => route.params.id as string)
@@ -38,6 +40,11 @@ onMounted(async () => {
   if (channelId.value) {
     await fetchChannel(channelId.value)
   }
+})
+
+const isChannelEmpty = computed(() => {
+  if (!channel.value) return true
+  return (channel.value.postsCount || 0) === 0
 })
 
 /**
@@ -88,6 +95,10 @@ async function handleArchiveToggle() {
  * Open delete confirmation modal
  */
 function confirmDelete() {
+  if (isChannelEmpty.value) {
+    handleDelete()
+    return
+  }
   deleteConfirmationInput.value = ''
   showDeleteModal.value = true
 }
@@ -144,7 +155,7 @@ async function handleDelete() {
 
       <div class="grid grid-cols-1 gap-8">
         <!-- General Settings -->
-        <UCard>
+        <UCard v-if="canEdit(channel)">
           <template #header>
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{ t('channel.general_settings', 'General Settings') }}
@@ -164,7 +175,7 @@ async function handleDelete() {
         </UCard>
  
         <!-- Channel Control -->
-        <UCard>
+        <UCard v-if="canEdit(channel)">
           <template #header>
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{ t('channel.control', 'Channel Control') }}
@@ -199,7 +210,7 @@ async function handleDelete() {
         </UCard>
 
         <!-- Archive Channel -->
-        <UCard>
+        <UCard v-if="canEdit(channel)">
           <template #header>
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{ channel.archivedAt ? t('channel.unarchiveChannel', 'Unarchive Channel') : t('channel.archiveChannel', 'Archive Channel') }}
@@ -228,7 +239,7 @@ async function handleDelete() {
         </UCard>
 
         <!-- Danger Zone -->
-        <UCard class="border-red-200 dark:border-red-900">
+        <UCard v-if="canDelete(channel)" class="border-red-200 dark:border-red-900">
           <template #header>
             <h2 class="text-lg font-semibold text-red-600 dark:text-red-400">
               {{ t('common.danger_zone', 'Danger Zone') }}
@@ -248,6 +259,7 @@ async function handleDelete() {
               color="error"
               variant="solid"
               icon="i-heroicons-trash"
+              :loading="isDeleting"
               @click="confirmDelete"
             >
               {{ t('channel.deleteChannel', 'Delete Channel') }}
@@ -273,10 +285,15 @@ async function handleDelete() {
             </h3>
           </div>
 
-          <p v-if="channel" class="text-gray-600 dark:text-gray-400 mb-6">
-            {{ t('channel.deleteConfirmWithInput', 'To confirm deletion, please type the channel name: ') }}
-            <span class="font-bold text-gray-900 dark:text-white">{{ channel.name }}</span>
-          </p>
+          <div v-if="channel" class="mb-6">
+            <p class="text-gray-600 dark:text-gray-400 mb-2">
+              {{ t('channel.deleteConfirmWithInput') }}
+              <span class="font-bold text-gray-900 dark:text-white">{{ channel.name }}</span>
+            </p>
+            <p class="text-sm text-red-500 font-medium">
+              {{ t('channel.deleteCascadeInfo') }}
+            </p>
+          </div>
 
           <UInput
             v-if="channel"
@@ -284,6 +301,7 @@ async function handleDelete() {
             :placeholder="channel.name"
             class="mb-6"
             autofocus
+            @keyup.enter="deleteConfirmationInput === channel.name ? handleDelete() : null"
           />
 
           <div class="flex justify-end gap-3">

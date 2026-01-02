@@ -251,6 +251,16 @@ export function useChannels() {
         return t(`socialMedia.${socialMedia.toLowerCase()}`)
     }
 
+    function canEdit(channelObj: ChannelWithProject | null): boolean {
+        if (!channelObj) return false
+        return channelObj.role === 'owner' || channelObj.role === 'admin' || channelObj.role === 'editor'
+    }
+
+    function canDelete(channelObj: ChannelWithProject | null): boolean {
+        if (!channelObj) return false
+        return channelObj.role === 'owner' || channelObj.role === 'admin'
+    }
+
     return {
         channels,
         currentChannel,
@@ -269,6 +279,8 @@ export function useChannels() {
         toggleChannelActive,
         setFilter,
         clearFilter,
+        canEdit,
+        canDelete,
         getSocialMediaDisplayName,
         getSocialMediaIcon,
         getSocialMediaColor,

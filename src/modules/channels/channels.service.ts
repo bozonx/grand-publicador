@@ -272,11 +272,12 @@ export class ChannelsService {
       throw new NotFoundException('Channel not found');
     }
 
-    await this.permissions.checkProjectAccess(channel.projectId, userId);
-
+    const role = await this.permissions.getUserProjectRole(channel.projectId, userId);
     const { posts, _count, ...channelData } = channel;
+
     return {
       ...channelData,
+      role: role?.toLowerCase(),
       postsCount: _count.posts,
       lastPostAt: posts[0]?.createdAt || null,
     };
@@ -299,7 +300,7 @@ export class ChannelsService {
     ]);
 
     return this.prisma.channel.update({
-      where: { id },
+      where: { id: id },
       data: {
         name: data.name,
         channelIdentifier: data.channelIdentifier,
@@ -322,7 +323,6 @@ export class ChannelsService {
     await this.permissions.checkProjectPermission(channel.projectId, userId, [
       ProjectRole.OWNER,
       ProjectRole.ADMIN,
-      ProjectRole.EDITOR, // Allowing EDITOR to delete channels? Usually OWNER/ADMIN. Logic said OWNER/ADMIN.
     ]);
 
     // Check again, logic said Owner/Admin in doc comment. Code had checkProjectPermission.

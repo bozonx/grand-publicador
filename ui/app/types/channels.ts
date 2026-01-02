@@ -18,6 +18,7 @@ export interface ChannelWithProject extends Channel {
         id: string
         name: string
     } | null
+    role?: string
     postsCount?: number
     lastPostAt?: string
 }
