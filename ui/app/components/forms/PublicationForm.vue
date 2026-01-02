@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Forced rebuild touch to resolve stale HMR state
 import type { PublicationWithRelations } from '~/composables/usePublications'
 import type { ChannelWithProject } from '~/composables/useChannels'
 import { usePublications } from '~/composables/usePublications'

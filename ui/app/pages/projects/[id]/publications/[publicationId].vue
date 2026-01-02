@@ -131,9 +131,9 @@ function formatDate(dateString: string | null | undefined): string {
         <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-gray-400 animate-spin" />
     </div>
 
-    <template v-else-if="currentPublication">
+    <div v-else-if="currentPublication" class="space-y-6 pb-12">
         <!-- Block 1: Publication Info & Actions (Non-collapsible) -->
-        <div class="mb-6 border border-gray-200 dark:border-gray-700/50 rounded-lg bg-white dark:bg-gray-800/50 overflow-hidden shadow-sm">
+        <div class="border border-gray-200 dark:border-gray-700/50 rounded-lg bg-white dark:bg-gray-800/50 overflow-hidden shadow-sm">
             <div class="p-6">
                 <!-- Header with title and actions -->
                 <div class="flex items-center justify-between mb-6">
@@ -201,7 +201,7 @@ function formatDate(dateString: string | null | undefined): string {
         </div>
 
         <!-- Block 2: Collapsible Publication Form (styled like PostEditBlock) -->
-        <div class="mb-8 border border-gray-200 dark:border-gray-700/50 rounded-lg bg-white dark:bg-gray-800/50 overflow-hidden shadow-sm">
+        <div class="border border-gray-200 dark:border-gray-700/50 rounded-lg bg-white dark:bg-gray-800/50 overflow-hidden shadow-sm">
             <!-- Header -->
             <div 
                 class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-colors select-none"
@@ -239,7 +239,7 @@ function formatDate(dateString: string | null | undefined): string {
         </div>
 
         <!-- Linked Posts Section -->
-        <div class="pb-12">
+        <div>
           <div v-if="currentPublication.posts && currentPublication.posts.length > 0">
               <div class="flex items-center gap-2 mb-4">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
@@ -289,7 +289,7 @@ function formatDate(dateString: string | null | undefined): string {
             </UButton>
           </div>
         </div>
-    </template>
+    </div>
     
     <!-- Error/Not Found -->
     <div v-else class="text-center py-12">
@@ -297,15 +297,15 @@ function formatDate(dateString: string | null | undefined): string {
     </div>
 
     <!-- Delete Confirmation Modal -->
-     <UModal v-model="isDeleteModalOpen">
+    <UModal v-model="isDeleteModalOpen">
       <UCard>
         <template #header>
-            <div class="flex items-center gap-3 text-error-600 dark:text-error-400">
-                <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6" />
-                <h3 class="text-lg font-medium">
-                    {{ t('publication.deleteConfirm') }}
-                </h3>
-            </div>
+          <div class="flex items-center gap-3 text-red-600 dark:text-red-400">
+            <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6" />
+            <h3 class="text-lg font-medium">
+              {{ t('publication.deleteConfirm') }}
+            </h3>
+          </div>
         </template>
 
         <p class="text-gray-500 dark:text-gray-400">
@@ -313,20 +313,20 @@ function formatDate(dateString: string | null | undefined): string {
         </p>
 
         <template #footer>
-            <div class="flex justify-end gap-3">
-                <UButton
-                    color="neutral"
-                    variant="ghost"
-                    :label="t('common.cancel')"
-                    @click="isDeleteModalOpen = false"
-                />
-                <UButton
-                    color="error"
-                    :label="t('common.delete')"
-                    :loading="isDeleting"
-                    @click="handleDelete"
-                />
-            </div>
+          <div class="flex justify-end gap-3">
+            <UButton
+              color="neutral"
+              variant="ghost"
+              :label="t('common.cancel')"
+              @click="isDeleteModalOpen = false"
+            />
+            <UButton
+              color="error"
+              :label="t('common.delete')"
+              :loading="isDeleting"
+              @click="handleDelete"
+            />
+          </div>
         </template>
       </UCard>
     </UModal>
