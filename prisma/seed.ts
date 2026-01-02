@@ -45,7 +45,8 @@ async function main() {
         },
         {
             id: '00000000-0000-0000-0000-000000000002',
-
+            telegramId: 111111111n,
+            telegramUsername: 'anna_editor',
             fullName: 'Анна Редактор',
             isAdmin: false,
         },
@@ -58,7 +59,8 @@ async function main() {
         },
         {
             id: '00000000-0000-0000-0000-000000000004',
-
+            telegramId: 222222222n,
+            telegramUsername: 'alex_admin',
             fullName: 'Алексей Админ',
             isAdmin: true,
         },
@@ -134,11 +136,12 @@ async function main() {
 
     // 5. CHANNELS
     const channelData = [
-        { id: '22222222-2222-2222-2222-222222222221', projectId: projectData[0].id, socialMedia: SocialMedia.TELEGRAM, name: 'Основной Техно-канал', channelIdentifier: '@tech_main', isActive: true },
-        { id: '22222222-2222-2222-2222-222222222222', projectId: projectData[0].id, socialMedia: SocialMedia.YOUTUBE, name: 'Техно-Туториалы YT', channelIdentifier: 'UC_TechTuts', isActive: true },
-        { id: '22222222-2222-2222-2222-222222222223', projectId: projectData[1].id, socialMedia: SocialMedia.VK, name: 'Wanderlust VK', channelIdentifier: 'wander_vk_page', isActive: true },
-        { id: '22222222-2222-2222-2222-222222222224', projectId: projectData[1].id, socialMedia: SocialMedia.TELEGRAM, name: 'Путешествия Ежедневно', channelIdentifier: '@travel_daily', isActive: true },
-        { id: '22222222-2222-2222-2222-222222222225', projectId: projectData[2].id, socialMedia: SocialMedia.X, name: 'Финансовые Алертс', channelIdentifier: 'finance_guru', isActive: true },
+        { id: '22222222-2222-2222-2222-222222222221', projectId: projectData[0].id, socialMedia: SocialMedia.TELEGRAM, name: 'Основной Техно-канал', channelIdentifier: '@tech_main', language: 'ru-RU', isActive: true },
+        { id: '22222222-2222-2222-2222-222222222222', projectId: projectData[0].id, socialMedia: SocialMedia.YOUTUBE, name: 'Техно-Туториалы YT', channelIdentifier: 'UC_TechTuts', language: 'en-US', isActive: true },
+        { id: '22222222-2222-2222-2222-222222222223', projectId: projectData[1].id, socialMedia: SocialMedia.VK, name: 'Wanderlust VK', channelIdentifier: 'wander_vk_page', language: 'ru-RU', isActive: true },
+        { id: '22222222-2222-2222-2222-222222222224', projectId: projectData[1].id, socialMedia: SocialMedia.TELEGRAM, name: 'Путешествия Ежедневно', channelIdentifier: '@travel_daily', language: 'ru-RU', isActive: true },
+        { id: '22222222-2222-2222-2222-222222222225', projectId: projectData[2].id, socialMedia: SocialMedia.X, name: 'Финансовые Алертс', channelIdentifier: 'finance_guru', language: 'en-US', isActive: true },
+        { id: '22222222-2222-2222-2222-222222222226', projectId: projectData[0].id, socialMedia: SocialMedia.TIKTOK, name: 'Tech Shorts', channelIdentifier: '@tech_shorts', language: 'en-US', isActive: true },
     ];
 
     for (const c of channelData) {
@@ -150,6 +153,8 @@ async function main() {
     }
 
     // 6. PUBLICATIONS (Master Content)
+    const translationGroup1 = '55555555-5555-5555-5555-555555555551';
+
     const publications = [
         {
             id: '44444444-4444-4444-4444-444444444441',
@@ -159,6 +164,21 @@ async function main() {
             content: '<h1>Освоение Nuxt 4</h1><p>Nuxt 4 приносит удивительные новые функции для создания современных веб-приложений. Давайте изучим новую архитектуру приложений...</p>',
             tags: 'nuxt,vue,frontend',
             status: PostStatus.PUBLISHED,
+            postType: PostType.ARTICLE,
+            language: 'ru-RU',
+            translationGroupId: translationGroup1,
+        },
+        {
+            id: '44444444-4444-4444-4444-444444444445',
+            projectId: projectData[0].id,
+            authorId: devUser.id,
+            title: 'Introduction to Nuxt 4',
+            content: '<h1>Mastering Nuxt 4</h1><p>Nuxt 4 brings amazing new features for building modern web applications. Let\'s explore the new app architecture...</p>',
+            tags: 'nuxt,vue,frontend',
+            status: PostStatus.PUBLISHED,
+            postType: PostType.ARTICLE,
+            language: 'en-US',
+            translationGroupId: translationGroup1,
         },
         {
             id: '44444444-4444-4444-4444-444444444442',
@@ -168,6 +188,8 @@ async function main() {
             content: '<p>Киото — это больше, чем просто Кинкаку-дзи. Ознакомьтесь с этими 5 секретными местами, которые обычно пропускают туристы...</p>',
             tags: 'киото,япония,гид',
             status: PostStatus.PUBLISHED,
+            postType: PostType.POST,
+            language: 'ru-RU',
         },
         {
             id: '44444444-4444-4444-4444-444444444443',
@@ -177,6 +199,8 @@ async function main() {
             content: '<p>Анализ исторических данных, чтобы понять, куда BTC может направиться в следующем году...</p>',
             tags: 'крипто,биткоин,финансы',
             status: PostStatus.SCHEDULED,
+            postType: PostType.NEWS,
+            language: 'ru-RU',
         },
         {
             id: '44444444-4444-4444-4444-444444444444',
@@ -185,6 +209,8 @@ async function main() {
             title: 'Тест пустой публикации',
             content: '', // Test empty content
             status: PostStatus.DRAFT,
+            postType: PostType.POST,
+            language: 'ru-RU',
         }
     ];
 
@@ -205,33 +231,48 @@ async function main() {
             channelId: channelData[0].id,
             authorId: devUser.id,
             socialMedia: 'TELEGRAM',
-            postType: PostType.POST,
+            postType: PostType.ARTICLE,
             title: publications[0].title,
             status: PostStatus.PUBLISHED,
             publishedAt: new Date(Date.now() - 3600000), // 1 hour ago
+            language: 'ru-RU',
+        },
+        {
+            id: '33333333-3333-3333-3333-333333333337',
+            publicationId: publications[1].id,
+            channelId: channelData[1].id,
+            authorId: devUser.id,
+            socialMedia: 'YOUTUBE',
+            postType: PostType.ARTICLE,
+            title: publications[1].title,
+            status: PostStatus.PUBLISHED,
+            publishedAt: new Date(Date.now() - 3500000),
+            language: 'en-US',
         },
         {
             id: '33333333-3333-3333-3333-333333333332',
-            publicationId: publications[1].id,
+            publicationId: publications[2].id,
             channelId: channelData[3].id,
             authorId: devUser.id,
             socialMedia: 'TELEGRAM',
             postType: PostType.POST,
-            title: publications[1].title,
+            title: publications[2].title,
             status: PostStatus.PUBLISHED,
             publishedAt: new Date(Date.now() - 7200000), // 2 hours ago
+            language: 'ru-RU',
         },
         // Scheduled post
         {
             id: '33333333-3333-3333-3333-333333333333',
-            publicationId: publications[2].id,
+            publicationId: publications[3].id,
             channelId: channelData[4].id,
             authorId: adminUser.id,
             socialMedia: 'X',
             postType: PostType.NEWS,
-            title: publications[2].title,
+            title: publications[3].title,
             status: PostStatus.SCHEDULED,
             scheduledAt: new Date(Date.now() + 86400000), // In 24 hours
+            language: 'en-US',
         },
         // Failed post
         {
@@ -244,6 +285,7 @@ async function main() {
             title: `${publications[0].title} (Video Upgrade)`,
             status: PostStatus.FAILED,
             authorComment: 'Превышено время ожидания загрузки видео. Размер файла: 4ГБ.',
+            language: 'en-US',
         },
         // Independent Post (no master publication)
         {
@@ -256,16 +298,18 @@ async function main() {
             content: 'Просто хотел поздороваться со всеми нашими подписчиками! Сегодня без больших постов.',
             status: PostStatus.PUBLISHED,
             publishedAt: new Date(Date.now() - 1800000),
+            language: 'ru-RU',
         },
         {
             id: '33333333-3333-3333-3333-333333333336',
-            publicationId: publications[3].id,
+            publicationId: publications[4].id,
             channelId: channelData[0].id,
             authorId: devUser.id,
             socialMedia: 'TELEGRAM',
             postType: PostType.POST,
-            title: publications[3].title,
+            title: publications[4].title,
             status: PostStatus.DRAFT,
+            language: 'ru-RU',
         }
     ];
 
