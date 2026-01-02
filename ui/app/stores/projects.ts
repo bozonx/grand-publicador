@@ -36,6 +36,7 @@ export interface ProjectWithRole extends ProjectWithOwner {
   publicationsCount?: number
   lastPublicationAt?: string | null
   lastPublicationId?: string | null
+  languages?: string[]
 }
 
 export interface ProjectMemberWithUser extends ProjectMember {

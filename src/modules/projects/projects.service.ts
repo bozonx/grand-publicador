@@ -96,6 +96,11 @@ export class ProjectsService {
           orderBy: { createdAt: 'desc' },
           select: { id: true, createdAt: true },
         },
+        channels: {
+          where: { archivedAt: null },
+          select: { language: true },
+          distinct: ['language'],
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -105,8 +110,9 @@ export class ProjectsService {
 
       const lastPublicationAt = project.publications[0]?.createdAt || null;
       const lastPublicationId = project.publications[0]?.id || null;
+      const languages = project.channels.map(c => c.language);
 
-      const { publications: _, ...projectData } = project;
+      const { publications: _, channels: _channels, ...projectData } = project;
 
       return {
         ...projectData,
@@ -121,6 +127,7 @@ export class ProjectsService {
         // Let's add members to _count.
         lastPublicationAt,
         lastPublicationId,
+        languages,
       };
     });
   }
@@ -163,6 +170,11 @@ export class ProjectsService {
           orderBy: { createdAt: 'desc' },
           select: { id: true, createdAt: true },
         },
+        channels: {
+          where: { archivedAt: null },
+          select: { language: true },
+          distinct: ['language'],
+        },
       },
       orderBy: { archivedAt: 'desc' },
     });
@@ -172,8 +184,9 @@ export class ProjectsService {
 
       const lastPublicationAt = project.publications[0]?.createdAt || null;
       const lastPublicationId = project.publications[0]?.id || null;
+      const languages = project.channels.map(c => c.language);
 
-      const { publications: _, ...projectData } = project;
+      const { publications: _, channels: _channels, ...projectData } = project;
 
       return {
         ...projectData,
@@ -182,6 +195,7 @@ export class ProjectsService {
         publicationsCount: project._count.publications,
         lastPublicationAt,
         lastPublicationId,
+        languages,
       };
     });
   }

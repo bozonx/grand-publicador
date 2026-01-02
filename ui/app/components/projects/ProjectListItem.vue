@@ -77,6 +77,16 @@ function formatDateWithTime(date: string | null | undefined): string {
               </span>
             </div>
 
+            <template v-if="project.languages?.length">
+              <div class="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+              <div class="flex items-center gap-1.5">
+                <UIcon name="i-heroicons-globe-alt" class="w-4 h-4 shrink-0" />
+                <span class="uppercase">
+                  {{ project.languages.map(l => l.split('-')[0]).join(', ') }}
+                </span>
+              </div>
+            </template>
+
             <template v-if="project.lastPublicationAt">
               <div class="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
 
