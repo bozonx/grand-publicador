@@ -111,7 +111,7 @@ export class PostsService {
     }
 
     const where: any = {
-      ...(filters?.includeArchived ? {} : { archivedAt: null }),
+      ...(filters?.includeArchived ? {} : { archived: false }),
       channel: {
         projectId,
         ...(filters?.includeArchived ? {} : { archivedAt: null }),
@@ -177,7 +177,7 @@ export class PostsService {
         },
         ...(filters?.includeArchived ? {} : { archivedAt: null }),
       },
-      ...(filters?.includeArchived ? {} : { archivedAt: null }),
+      ...(filters?.includeArchived ? {} : { archived: false }),
     };
 
     if (filters?.status && typeof filters.status === 'string') {
@@ -234,7 +234,7 @@ export class PostsService {
 
     const where: any = {
       channelId,
-      ...(filters?.includeArchived ? {} : { archivedAt: null }),
+      ...(filters?.includeArchived ? {} : { archived: false }),
       channel: {
         ...(filters?.includeArchived ? {} : { archivedAt: null }),
         project: { archivedAt: null },
@@ -291,7 +291,7 @@ export class PostsService {
     const post = await this.prisma.post.findUnique({
       where: {
         id,
-        archivedAt: null,
+        archived: false,
         channel: {
           archivedAt: null,
           project: { archivedAt: null },

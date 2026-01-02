@@ -72,7 +72,7 @@ export class ChannelsService {
           select: { posts: true },
         },
         posts: {
-          where: { archivedAt: null, status: 'PUBLISHED' },
+          where: { archived: false, status: 'PUBLISHED' },
           take: 1,
           orderBy: { createdAt: 'desc' },
           select: { createdAt: true, id: true, publicationId: true },
@@ -130,7 +130,7 @@ export class ChannelsService {
           select: { posts: true },
         },
         posts: {
-          where: { archivedAt: null },
+          where: { archived: false },
           take: 1,
           orderBy: { createdAt: 'desc' },
           select: { createdAt: true, id: true, publicationId: true },
@@ -178,7 +178,7 @@ export class ChannelsService {
           select: { posts: true },
         },
         posts: {
-          where: { archivedAt: null },
+          where: { archived: false },
           take: 1,
           orderBy: { createdAt: 'desc' },
           select: { createdAt: true, id: true, publicationId: true },
@@ -227,7 +227,7 @@ export class ChannelsService {
           select: { posts: true },
         },
         posts: {
-          where: { archivedAt: null },
+          where: { archived: false },
           take: 1,
           orderBy: { createdAt: 'desc' },
           select: { createdAt: true, id: true, publicationId: true },
@@ -272,7 +272,7 @@ export class ChannelsService {
           select: { posts: true },
         },
         posts: {
-          where: { archivedAt: null },
+          where: { archived: false },
           take: 1,
           orderBy: { createdAt: 'desc' },
           select: { createdAt: true, id: true, publicationId: true },

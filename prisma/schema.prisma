@@ -181,13 +181,11 @@ model Post {
   publishedAt   DateTime? @map("published_at")
 
   // User who created the post (nullable for system-generated)
-  createdBy  String?   @map("created_by")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @updatedAt @map("updated_at")
-  // Timestamp when post was archived
-  archivedAt DateTime? @map("archived_at")
-  // User ID who archived the post
-  archivedBy String?   @map("archived_by")
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  // Archive flag (cascaded from publication)
+  archived  Boolean  @default(false)
 
   title         String?
   description   String?

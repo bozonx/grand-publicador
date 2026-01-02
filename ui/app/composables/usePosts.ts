@@ -29,7 +29,7 @@ export interface Post {
     publishedAt: string | null
     createdAt: string
     updatedAt: string
-    archivedAt: string | null
+    archived: boolean
     language: string
     meta: string
 }
@@ -345,7 +345,7 @@ export function usePosts() {
 
             isLoading.value = true
             try {
-                if (currentPost.value.archivedAt) {
+                if (currentPost.value.archived) {
                     await restoreEntity(ArchiveEntityType.POST, postId)
                 } else {
                     await archiveEntity(ArchiveEntityType.POST, postId)
