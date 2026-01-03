@@ -354,16 +354,6 @@ function toggleChannel(channelId: string) {
         />
       </UFormField>
 
-      <!-- Tags (Moved from Advanced) -->
-       <UFormField :label="t('post.tags')" :help="t('post.tagsHint')">
-        <UInput
-            v-model="formData.tags"
-            :placeholder="t('post.tagsPlaceholder', 'tag1, tag2, tag3')"
-            icon="i-heroicons-hashtag"
-            @keydown.enter.prevent
-        />
-      </UFormField>
-
       <!-- Content (required) - Tiptap Editor -->
       <UFormField :label="t('post.content')" required>
         <EditorTiptapEditor
@@ -376,6 +366,16 @@ function toggleChannel(channelId: string) {
         </template>
       </UFormField>
       
+      <!-- Tags -->
+       <UFormField :label="t('post.tags')" :help="t('post.tagsHint')">
+        <UInput
+            v-model="formData.tags"
+            :placeholder="t('post.tagsPlaceholder', 'tag1, tag2, tag3')"
+            icon="i-heroicons-hashtag"
+            @keydown.enter.prevent
+        />
+      </UFormField>
+
        <!-- Advanced fields toggle -->
       <div class="flex justify-center">
         <UButton
