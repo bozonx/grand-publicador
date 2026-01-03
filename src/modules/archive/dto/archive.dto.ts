@@ -4,7 +4,6 @@ export enum ArchiveEntityType {
   PROJECT = 'project',
   CHANNEL = 'channel',
   PUBLICATION = 'publication',
-  POST = 'post',
 }
 
 export class MoveEntityDto {

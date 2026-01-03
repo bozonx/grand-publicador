@@ -24,20 +24,12 @@ const targetOptions = computed(() => {
             .filter(p => p.id !== props.currentParentId)
             .map(p => ({ label: p.name, value: p.id }));
     }
-    if (props.entityType === ArchiveEntityType.POST) {
-        return channels.value
-            .filter(c => c.id !== props.currentParentId)
-            .map(c => ({ label: c.name, value: c.id }));
-    }
     return [];
 });
 
 onMounted(async () => {
     if (props.entityType === ArchiveEntityType.CHANNEL || props.entityType === ArchiveEntityType.PUBLICATION) {
         await fetchProjects();
-    } else if (props.entityType === ArchiveEntityType.POST) {
-        // Assuming we need channels for current context project
-        // This might need refinement based on exact context
     }
 });
 

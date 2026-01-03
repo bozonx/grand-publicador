@@ -89,12 +89,12 @@ export class PostsService {
     }
 
     const where: any = {
-      ...(filters?.includeArchived ? {} : { archived: false }),
       channel: {
         projectId,
         ...(filters?.includeArchived ? {} : { archivedAt: null }),
         project: { archivedAt: null },
       },
+      ...(filters?.includeArchived ? {} : { publication: { archivedAt: null } }),
     };
 
     if (filters?.status && typeof filters.status === 'string') {
@@ -155,7 +155,7 @@ export class PostsService {
         },
         ...(filters?.includeArchived ? {} : { archivedAt: null }),
       },
-      ...(filters?.includeArchived ? {} : { archived: false }),
+      ...(filters?.includeArchived ? {} : { publication: { archivedAt: null } }),
     };
 
     if (filters?.status && typeof filters.status === 'string') {
@@ -212,11 +212,11 @@ export class PostsService {
 
     const where: any = {
       channelId,
-      ...(filters?.includeArchived ? {} : { archived: false }),
       channel: {
         ...(filters?.includeArchived ? {} : { archivedAt: null }),
         project: { archivedAt: null },
       },
+      ...(filters?.includeArchived ? {} : { publication: { archivedAt: null } }),
     };
 
     if (filters?.status && typeof filters.status === 'string') {
@@ -269,10 +269,12 @@ export class PostsService {
     const post = await this.prisma.post.findUnique({
       where: {
         id,
-        archived: false,
         channel: {
           archivedAt: null,
           project: { archivedAt: null },
+        },
+        publication: {
+          archivedAt: null,
         },
       },
       include: {

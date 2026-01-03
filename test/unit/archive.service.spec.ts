@@ -174,26 +174,6 @@ describe('ArchiveService', () => {
       expect(result).toBe(true);
     });
 
-    it('should return true if post is archived via channel (virtual cascading)', async () => {
-      const postId = 'post-1';
-      const mockPost = {
-        id: postId,
-        archivedAt: null,
-        channel: {
-          archivedAt: new Date(),
-          project: {
-            archivedAt: null,
-          },
-        },
-      };
-
-      mockPrismaService.post.findUnique.mockResolvedValue(mockPost);
-
-      const result = await service.isEntityArchived(ArchiveEntityType.POST, postId);
-
-      expect(result).toBe(true);
-    });
-
     it('should return false if entity is not archived', async () => {
       const projectId = 'project-1';
       const mockProject = {
@@ -214,7 +194,6 @@ describe('ArchiveService', () => {
       mockPrismaService.project.count.mockResolvedValue(5);
       mockPrismaService.channel.count.mockResolvedValue(10);
       mockPrismaService.publication.count.mockResolvedValue(3);
-      mockPrismaService.post.count.mockResolvedValue(20);
 
       const stats = await service.getArchiveStats();
 
@@ -222,8 +201,8 @@ describe('ArchiveService', () => {
         projects: 5,
         channels: 10,
         publications: 3,
-        posts: 20,
-        total: 38,
+        posts: 0,
+        total: 18,
       });
     });
   });

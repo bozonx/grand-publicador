@@ -239,7 +239,7 @@ export class ProjectsService {
     }
 
     const publishedPublicationFilter = { status: 'PUBLISHED' as const, archivedAt: null };
-    const publishedPostFilter = { status: 'PUBLISHED' as const, archived: false };
+    const publishedPostFilter = { status: 'PUBLISHED' as const, publication: { archivedAt: null } };
 
     const project = await this.prisma.project.findUnique({
       where: { id: projectId, ...(allowArchived ? {} : { archivedAt: null }) },

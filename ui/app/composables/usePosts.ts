@@ -22,7 +22,6 @@ export interface Post {
   publishedAt: string | null
   createdAt: string
   updatedAt: string
-  archived: boolean
 }
 
 export interface PostWithRelations extends Post {
@@ -325,24 +324,6 @@ export function usePosts() {
         getStatusColor: getPostStatusColor,
         canDelete,
         canEdit,
-        async toggleArchive(postId: string) {
-            if (!currentPost.value) return
-
-            isLoading.value = true
-            try {
-                if (currentPost.value.archived) {
-                    await restoreEntity(ArchiveEntityType.POST, postId)
-                } else {
-                    await archiveEntity(ArchiveEntityType.POST, postId)
-                }
-                // Refresh post data
-                await fetchPost(postId)
-            } catch (err) {
-                // Error handled by useArchive's toast
-            } finally {
-                isLoading.value = false
-            }
-        },
         clearCurrentPost,
     }
 }

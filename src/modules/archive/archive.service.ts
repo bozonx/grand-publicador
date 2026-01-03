@@ -3,7 +3,7 @@ import type { Project, Channel, Publication, Post } from '../../generated/prisma
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ArchiveEntityType, ArchiveStatsDto } from './dto/archive.dto.js';
 
-type ArchivableEntity = Project | Channel | Publication | Post;
+type ArchivableEntity = Project | Channel | Publication;
 
 import { PermissionsService } from '../../common/services/permissions.service.js';
 
@@ -42,30 +42,7 @@ export class ArchiveService {
         if (publication.createdBy !== userId) {
           await this.permissions.checkProjectPermission(publication.projectId, userId, ['OWNER', 'ADMIN']);
         }
-        // Archive publication and cascade to all related posts
-        const [updatedPublication] = await this.prisma.$transaction([
-          this.prisma.publication.update({ where: { id }, data }),
-          this.prisma.post.updateMany({
-            where: { publicationId: id },
-            data: { archived: true },
-          }),
-        ]);
-        return updatedPublication;
-      }
-      case ArchiveEntityType.POST: {
-        const post = await this.prisma.post.findUnique({ 
-          where: { id },
-          include: { publication: true }
-        });
-        if (!post) throw new NotFoundException('Post not found');
-        // Author or Admin/Owner
-        if (post.publication?.createdBy !== userId) {
-          const channel = await this.prisma.channel.findUnique({ where: { id: post.channelId } });
-          if (channel) {
-            await this.permissions.checkProjectPermission(channel.projectId, userId, ['OWNER', 'ADMIN']);
-          }
-        }
-        return this.prisma.post.update({ where: { id }, data: { archived: true } });
+        return this.prisma.publication.update({ where: { id }, data });
       }
       default: {
         throw new BadRequestException('Invalid entity type');
@@ -96,29 +73,7 @@ export class ArchiveService {
         if (publication.createdBy !== userId) {
           await this.permissions.checkProjectPermission(publication.projectId, userId, ['OWNER', 'ADMIN']);
         }
-        // Restore publication and cascade to all related posts
-        const [updatedPublication] = await this.prisma.$transaction([
-          this.prisma.publication.update({ where: { id }, data }),
-          this.prisma.post.updateMany({
-            where: { publicationId: id },
-            data: { archived: false },
-          }),
-        ]);
-        return updatedPublication;
-      }
-      case ArchiveEntityType.POST: {
-        const post = await this.prisma.post.findUnique({ 
-          where: { id },
-          include: { publication: true }
-        });
-        if (!post) throw new NotFoundException('Post not found');
-        if (post.publication?.createdBy !== userId) {
-          const channel = await this.prisma.channel.findUnique({ where: { id: post.channelId } });
-          if (channel) {
-            await this.permissions.checkProjectPermission(channel.projectId, userId, ['OWNER', 'ADMIN']);
-          }
-        }
-        return this.prisma.post.update({ where: { id }, data: { archived: false } });
+        return this.prisma.publication.update({ where: { id }, data });
       }
       default: {
         throw new BadRequestException('Invalid entity type');
@@ -150,20 +105,6 @@ export class ArchiveService {
         }
         return this.prisma.publication.delete({ where: { id } });
       }
-      case ArchiveEntityType.POST: {
-        const post = await this.prisma.post.findUnique({ 
-          where: { id },
-          include: { publication: true }
-        });
-        if (!post) throw new NotFoundException('Post not found');
-        if (post.publication?.createdBy !== userId) {
-          const channel = await this.prisma.channel.findUnique({ where: { id: post.channelId } });
-          if (channel) {
-            await this.permissions.checkProjectPermission(channel.projectId, userId, ['OWNER', 'ADMIN']);
-          }
-        }
-        return this.prisma.post.delete({ where: { id } });
-      }
       default: {
         throw new BadRequestException('Invalid entity type');
       }
@@ -184,28 +125,6 @@ export class ArchiveService {
         });
       }
 
-      case ArchiveEntityType.POST: {
-        // Check if target is a channel or publication
-        const channel = await this.prisma.channel.findUnique({ where: { id: targetParentId } });
-        if (channel) {
-          return this.prisma.post.update({
-            where: { id },
-            data: { channelId: targetParentId },
-          });
-        }
-
-        const publication = await this.prisma.publication.findUnique({
-          where: { id: targetParentId },
-        });
-        if (publication) {
-          return this.prisma.post.update({
-            where: { id },
-            data: { publicationId: targetParentId },
-          });
-        }
-        throw new NotFoundException('Target parent not found');
-      }
-
       case ArchiveEntityType.PUBLICATION: {
         // Move publication to another project
         return this.prisma.publication.update({
@@ -222,25 +141,6 @@ export class ArchiveService {
 
   public async isEntityArchived(type: ArchiveEntityType, id: string): Promise<boolean> {
     switch (type) {
-      case ArchiveEntityType.POST: {
-        const post = await this.prisma.post.findUnique({
-          where: { id },
-          include: {
-            channel: { include: { project: true } },
-            publication: { include: { project: true } },
-          },
-        });
-        if (!post) {
-          return false;
-        }
-        return !!(
-          post.archived ||
-          post.channel.archivedAt ||
-          post.channel.project.archivedAt ||
-          (post.publication && (post.publication.archivedAt || post.publication.project.archivedAt))
-        );
-      }
-
       case ArchiveEntityType.CHANNEL: {
         const channel = await this.prisma.channel.findUnique({
           where: { id },
@@ -275,19 +175,18 @@ export class ArchiveService {
   }
 
   public async getArchiveStats(): Promise<ArchiveStatsDto> {
-    const [projects, channels, publications, posts] = await Promise.all([
+    const [projects, channels, publications] = await Promise.all([
       this.prisma.project.count({ where: { archivedAt: { not: null } } }),
       this.prisma.channel.count({ where: { archivedAt: { not: null } } }),
       this.prisma.publication.count({ where: { archivedAt: { not: null } } }),
-      this.prisma.post.count({ where: { archived: true } }),
     ]);
 
     return {
       projects,
       channels,
       publications,
-      posts,
-      total: projects + channels + publications + posts,
+      posts: 0,
+      total: projects + channels + publications,
     };
   }
 
@@ -303,9 +202,6 @@ export class ArchiveService {
       }
       case ArchiveEntityType.PUBLICATION: {
         return this.prisma.publication.findMany({ where: { archivedAt: { not: null } } });
-      }
-      case ArchiveEntityType.POST: {
-        return this.prisma.post.findMany({ where: { archived: true } });
       }
       default: {
         throw new BadRequestException('Invalid entity type');

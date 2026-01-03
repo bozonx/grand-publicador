@@ -61,7 +61,7 @@ export class ChannelsService {
   ) {
     await this.permissions.checkProjectAccess(projectId, userId);
 
-    const publishedPostFilter = { status: 'PUBLISHED' as const, archived: false };
+    const publishedPostFilter = { status: 'PUBLISHED' as const, publication: { archivedAt: null } };
 
     const channels = await this.prisma.channel.findMany({
       where: {
@@ -126,7 +126,7 @@ export class ChannelsService {
       where.projectId = { in: options.projectIds };
     }
 
-    const publishedPostFilter = { status: 'PUBLISHED' as const, archived: false };
+    const publishedPostFilter = { status: 'PUBLISHED' as const, publication: { archivedAt: null } };
 
     const channels = await this.prisma.channel.findMany({
       where,
@@ -175,7 +175,7 @@ export class ChannelsService {
   ) {
     await this.permissions.checkProjectAccess(projectId, userId);
 
-    const publishedPostFilter = { status: 'PUBLISHED' as const, archived: false };
+    const publishedPostFilter = { status: 'PUBLISHED' as const, publication: { archivedAt: null } };
 
     const channels = await this.prisma.channel.findMany({
       where: {
@@ -222,7 +222,7 @@ export class ChannelsService {
   public async findArchivedForUser(
     userId: string,
   ) {
-    const publishedPostFilter = { status: 'PUBLISHED' as const, archived: false };
+    const publishedPostFilter = { status: 'PUBLISHED' as const, publication: { archivedAt: null } };
 
     const channels = await this.prisma.channel.findMany({
       where: {
@@ -276,7 +276,7 @@ export class ChannelsService {
    * @throws NotFoundException if the channel does not exist.
    */
   public async findOne(id: string, userId: string, allowArchived = false) {
-    const publishedPostFilter = { status: 'PUBLISHED' as const, archived: false };
+    const publishedPostFilter = { status: 'PUBLISHED' as const, publication: { archivedAt: null } };
 
     const channel = await this.prisma.channel.findUnique({
       where: {

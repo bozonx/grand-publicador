@@ -15,7 +15,6 @@ const tabs = computed(() => [
     { label: t('archive.projects'), value: ArchiveEntityType.PROJECT, count: stats.value?.projects || 0 },
     { label: t('archive.channels'), value: ArchiveEntityType.CHANNEL, count: stats.value?.channels || 0 },
     { label: t('archive.publications'), value: ArchiveEntityType.PUBLICATION, count: stats.value?.publications || 0 },
-    { label: t('archive.posts'), value: ArchiveEntityType.POST, count: stats.value?.posts || 0 },
 ]);
 
 const loadEntities = async () => {
