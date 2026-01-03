@@ -63,5 +63,8 @@ function closeSidebar() {
         </div>
       </main>
     </div>
+
+    <!-- Global Modals -->
+    <UiConfirmUnsavedChanges />
   </div>
 </template>

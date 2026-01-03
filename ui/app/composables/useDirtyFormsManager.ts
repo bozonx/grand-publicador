@@ -35,11 +35,21 @@ export function hasAnyDirtyForm(): DirtyForm | null {
   return null
 }
 
+// Global state for confirmation modal
+export const confirmModalState = ref({
+  isOpen: false,
+  title: '',
+  description: '',
+  confirmLabel: '',
+  cancelLabel: '',
+  resolve: null as ((value: boolean) => void) | null,
+})
+
 /**
  * Show confirmation dialog for dirty forms
- * Returns true if user wants to proceed, false otherwise
+ * Returns Promise<boolean>
  */
-export function confirmLeaveDirtyForm(message?: string): boolean {
+export async function confirmLeaveDirtyForm(message?: string): Promise<boolean> {
   if (isConfirming) {
     return true // Prevent nested confirms
   }
@@ -50,8 +60,20 @@ export function confirmLeaveDirtyForm(message?: string): boolean {
   }
   
   isConfirming = true
-  const result = window.confirm(message || dirtyForm.message)
-  isConfirming = false
   
-  return result
+  return new Promise<boolean>((resolve) => {
+    confirmModalState.value = {
+      isOpen: true,
+      title: 'Unsaved Changes', // Will be localized in component
+      description: message || dirtyForm.message,
+      confirmLabel: 'Leave', // Will be localized
+      cancelLabel: 'Stay', // Will be localized
+      resolve: (result: boolean) => {
+        isConfirming = false
+        confirmModalState.value.isOpen = false
+        confirmModalState.value.resolve = null
+        resolve(result)
+      }
+    }
+  })
 }

@@ -46,7 +46,9 @@
     "language": "Язык",
     "showArchived": "Показать архивные",
     "hideArchived": "Скрыть архивные",
-    "saveError": "Ошибка сохранения"
+    "saveError": "Ошибка сохранения",
+    "stay": "Остаться",
+    "leave": "Уйти без сохранения"
   },
   "navigation": {
     "home": "Главная",

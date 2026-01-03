@@ -109,8 +109,9 @@ export function useFormDirtyState<T extends Record<string, any>>(
     if (!navigationGuardRegistered && router) {
       navigationGuardRegistered = true
       
-      router.beforeEach((to, from, next) => {
-        if (confirmLeaveDirtyForm()) {
+      router.beforeEach(async (to, from, next) => {
+        const canLeave = await confirmLeaveDirtyForm()
+        if (canLeave) {
           next()
         } else {
           next(false)

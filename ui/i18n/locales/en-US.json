@@ -46,7 +46,9 @@
     "language": "Language",
     "showArchived": "Show Archived",
     "hideArchived": "Hide Archived",
-    "saveError": "Failed to save"
+    "saveError": "Failed to save",
+    "stay": "Stay",
+    "leave": "Leave without saving"
   },
   "navigation": {
     "home": "Home",
