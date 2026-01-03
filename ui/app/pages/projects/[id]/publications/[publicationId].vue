@@ -4,6 +4,7 @@ import { usePublications } from '~/composables/usePublications'
 import { useChannels } from '~/composables/useChannels'
 import { usePosts } from '~/composables/usePosts'
 import type { PublicationStatus, PostType } from '~/types/posts'
+import { ArchiveEntityType } from '~/types/archive.types'
 
 definePageMeta({
   middleware: 'auth',
@@ -18,7 +19,6 @@ const {
   currentPublication, 
   isLoading: isPublicationLoading, 
   deletePublication, 
-  toggleArchive,
   updatePublication,
   statusOptions 
 } = usePublications()
@@ -142,11 +142,6 @@ async function handlePostDeleted() {
  */
 function handleCancel() {
   goBack()
-}
-
-async function handleToggleArchive() {
-    if (!currentPublication.value) return
-    await toggleArchive(currentPublication.value.id, !!currentPublication.value.archivedAt)
 }
 
 async function handleDelete() {
@@ -512,14 +507,12 @@ function formatDate(dateString: string | null | undefined): string {
                     
                     <!-- Action Buttons -->
                     <div class="flex items-center gap-2">
-                        <UButton
-                            :label="currentPublication.archivedAt ? t('common.restore') : t('common.archive')"
-                            :icon="currentPublication.archivedAt ? 'i-heroicons-arrow-uturn-left' : 'i-heroicons-archive-box'"
-                            variant="soft"
-                            size="sm"
-                            :color="currentPublication.archivedAt ? 'warning' : 'neutral'"
-                            @click="handleToggleArchive"
-                        ></UButton>
+                        <UiArchiveButton
+                            :entity-type="ArchiveEntityType.PUBLICATION"
+                            :entity-id="currentPublication.id"
+                            :is-archived="!!currentPublication.archivedAt"
+                            @toggle="() => fetchPublication(publicationId)"
+                        />
 
                         <UButton
                             :label="t('publication.changeSchedule')"

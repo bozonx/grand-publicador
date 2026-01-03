@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useProjects } from '~/composables/useProjects'
+import { ArchiveEntityType } from '~/types/archive.types'
 
 definePageMeta({
   middleware: 'auth',
@@ -19,8 +20,6 @@ const {
   fetchProject,
   updateProject,
   deleteProject,
-  archiveProject,
-  unarchiveProject,
   clearCurrentProject,
   canEdit,
   canDelete,
@@ -34,7 +33,6 @@ const showDeleteModal = ref(false)
 const deleteConfirmationInput = ref('')
 const isDeleting = ref(false)
 const isSaving = ref(false)
-const isArchiving = ref(false)
 
 // Fetch project on mount
 onMounted(async () => {
@@ -88,21 +86,6 @@ function confirmDelete() {
   }
   deleteConfirmationInput.value = ''
   showDeleteModal.value = true
-}
-
-/**
- * Handle project archive toggle
- */
-async function handleArchiveToggle() {
-  if (!projectId.value || !currentProject.value) return
-
-  isArchiving.value = true
-  if (currentProject.value.archivedAt) {
-    await unarchiveProject(projectId.value)
-  } else {
-    await archiveProject(projectId.value)
-  }
-  isArchiving.value = false
 }
 
 /**
@@ -240,15 +223,13 @@ function cancelDelete() {
                 {{ currentProject.archivedAt ? t('project.unarchive_info', 'Restoring the project will make it visible again.') : t('project.archive_info', 'Archive this project if you no longer need it but want to keep the data.') }}
               </p>
             </div>
-            <UButton
-              :color="currentProject.archivedAt ? 'primary' : 'neutral'"
+            <UiArchiveButton
+              :entity-type="ArchiveEntityType.PROJECT"
+              :entity-id="currentProject.id"
+              :is-archived="!!currentProject.archivedAt"
               variant="solid"
-              :icon="currentProject.archivedAt ? 'i-heroicons-archive-box-arrow-down' : 'i-heroicons-archive-box'"
-              :loading="isArchiving"
-              @click="handleArchiveToggle"
-            >
-              {{ currentProject.archivedAt ? t('project.unarchive', 'Unarchive') : t('project.archive', 'Archive') }}
-            </UButton>
+              @toggle="() => fetchProject(projectId)"
+            />
           </div>
         </UCard>
 

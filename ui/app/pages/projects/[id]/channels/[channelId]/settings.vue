@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useChannels } from '~/composables/useChannels'
-import { useArchive } from '~/composables/useArchive'
+import { ArchiveEntityType } from '~/types/archive.types'
 
 definePageMeta({
   middleware: 'auth',
@@ -18,8 +18,6 @@ const {
   currentChannel: channel,
   isLoading,
   toggleChannelActive,
-  archiveChannel,
-  unarchiveChannel,
   deleteChannel,
   canEdit,
   canDelete,
@@ -31,7 +29,6 @@ const channelId = computed(() => route.params.channelId as string)
 // UI States
 const isSaving = ref(false)
 const isTogglingActive = ref(false)
-const isArchiving = ref(false)
 const isDeleting = ref(false)
 const showDeleteModal = ref(false)
 const deleteConfirmationInput = ref('')
@@ -72,23 +69,6 @@ async function handleToggleActive() {
     await toggleChannelActive(channel.value.id)
   } finally {
     isTogglingActive.value = false
-  }
-}
-
-/**
- * Handle channel archive toggle
- */
-async function handleArchiveToggle() {
-  if (!channel.value) return
-  isArchiving.value = true
-  try {
-    if (channel.value.archivedAt) {
-      await unarchiveChannel(channel.value.id)
-    } else {
-      await archiveChannel(channel.value.id)
-    }
-  } finally {
-    isArchiving.value = false
   }
 }
 
@@ -233,15 +213,13 @@ async function handleDelete() {
                 {{ channel.archivedAt ? t('channel.unarchive_info', 'Restoring the channel will make it visible again.') : t('channel.archive_info', 'Archive this channel if it is no longer active but you want to keep the data.') }}
               </p>
             </div>
-            <UButton
-              :color="channel.archivedAt ? 'primary' : 'neutral'"
+            <UiArchiveButton
+              :entity-type="ArchiveEntityType.CHANNEL"
+              :entity-id="channel.id"
+              :is-archived="!!channel.archivedAt"
               variant="solid"
-              :icon="channel.archivedAt ? 'i-heroicons-archive-box-arrow-down' : 'i-heroicons-archive-box'"
-              :loading="isArchiving"
-              @click="handleArchiveToggle"
-            >
-              {{ channel.archivedAt ? t('channel.unarchive', 'Unarchive') : t('channel.archive', 'Archive') }}
-            </UButton>
+              @toggle="() => fetchChannel(channelId)"
+            />
           </div>
         </UCard>
 
