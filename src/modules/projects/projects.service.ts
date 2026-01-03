@@ -238,16 +238,20 @@ export class ProjectsService {
       throw new ForbiddenException('You are not a member of this project');
     }
 
+    const publishedPublicationFilter = { status: 'PUBLISHED' as const, archivedAt: null };
+    const publishedPostFilter = { status: 'PUBLISHED' as const, archived: false };
+
     const project = await this.prisma.project.findUnique({
       where: { id: projectId, ...(allowArchived ? {} : { archivedAt: null }) },
       include: {
         _count: {
           select: {
             channels: { where: { archivedAt: null } },
-            publications: { where: { archivedAt: null } },
+            publications: { where: publishedPublicationFilter },
           },
         },
         publications: {
+          where: publishedPublicationFilter,
           take: 1,
           orderBy: { createdAt: 'desc' },
           select: { id: true, createdAt: true },
@@ -256,13 +260,13 @@ export class ProjectsService {
           where: { archivedAt: null },
           include: {
             _count: {
-              select: { posts: true },
+              select: { posts: { where: publishedPostFilter } },
             },
             posts: {
-              where: { archived: false, status: 'PUBLISHED' },
+              where: publishedPostFilter,
               take: 1,
-              orderBy: { createdAt: 'desc' },
-              select: { createdAt: true },
+              orderBy: { publishedAt: 'desc' },
+              select: { publishedAt: true, createdAt: true },
             },
           },
         },
@@ -284,7 +288,7 @@ export class ProjectsService {
     const mappedChannels = project.channels.map(channel => ({
       ...channel,
       postsCount: channel._count.posts,
-      lastPostAt: channel.posts[0]?.createdAt || null,
+      lastPostAt: channel.posts[0]?.publishedAt || channel.posts[0]?.createdAt || null,
     }));
 
     return {

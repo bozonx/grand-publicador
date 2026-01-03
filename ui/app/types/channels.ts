@@ -5,6 +5,7 @@ export interface Channel {
     projectId: string
     socialMedia: SocialMedia
     name: string
+    description?: string | null
     channelIdentifier: string
     language: string
     credentials?: Record<string, any>
@@ -29,6 +30,7 @@ export interface ChannelWithProject extends Channel {
 export interface ChannelCreateInput {
     projectId: string
     name: string
+    description?: string
     socialMedia: SocialMedia
     channelIdentifier: string
     language: string
@@ -38,8 +40,8 @@ export interface ChannelCreateInput {
 
 export interface ChannelUpdateInput {
     name?: string
+    description?: string
     channelIdentifier?: string
-    projectId?: string
     credentials?: Record<string, any>
     isActive?: boolean
 }

@@ -29,6 +29,7 @@ export type ChannelMinAggregateOutputType = {
   projectId: string | null
   socialMedia: $Enums.SocialMedia | null
   name: string | null
+  description: string | null
   channelIdentifier: string | null
   language: string | null
   credentials: string | null
@@ -44,6 +45,7 @@ export type ChannelMaxAggregateOutputType = {
   projectId: string | null
   socialMedia: $Enums.SocialMedia | null
   name: string | null
+  description: string | null
   channelIdentifier: string | null
   language: string | null
   credentials: string | null
@@ -59,6 +61,7 @@ export type ChannelCountAggregateOutputType = {
   projectId: number
   socialMedia: number
   name: number
+  description: number
   channelIdentifier: number
   language: number
   credentials: number
@@ -76,6 +79,7 @@ export type ChannelMinAggregateInputType = {
   projectId?: true
   socialMedia?: true
   name?: true
+  description?: true
   channelIdentifier?: true
   language?: true
   credentials?: true
@@ -91,6 +95,7 @@ export type ChannelMaxAggregateInputType = {
   projectId?: true
   socialMedia?: true
   name?: true
+  description?: true
   channelIdentifier?: true
   language?: true
   credentials?: true
@@ -106,6 +111,7 @@ export type ChannelCountAggregateInputType = {
   projectId?: true
   socialMedia?: true
   name?: true
+  description?: true
   channelIdentifier?: true
   language?: true
   credentials?: true
@@ -194,6 +200,7 @@ export type ChannelGroupByOutputType = {
   projectId: string
   socialMedia: $Enums.SocialMedia
   name: string
+  description: string | null
   channelIdentifier: string
   language: string
   credentials: string
@@ -230,6 +237,7 @@ export type ChannelWhereInput = {
   projectId?: Prisma.StringFilter<"Channel"> | string
   socialMedia?: Prisma.EnumSocialMediaFilter<"Channel"> | $Enums.SocialMedia
   name?: Prisma.StringFilter<"Channel"> | string
+  description?: Prisma.StringNullableFilter<"Channel"> | string | null
   channelIdentifier?: Prisma.StringFilter<"Channel"> | string
   language?: Prisma.StringFilter<"Channel"> | string
   credentials?: Prisma.StringFilter<"Channel"> | string
@@ -247,6 +255,7 @@ export type ChannelOrderByWithRelationInput = {
   projectId?: Prisma.SortOrder
   socialMedia?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
   channelIdentifier?: Prisma.SortOrder
   language?: Prisma.SortOrder
   credentials?: Prisma.SortOrder
@@ -267,6 +276,7 @@ export type ChannelWhereUniqueInput = Prisma.AtLeast<{
   projectId?: Prisma.StringFilter<"Channel"> | string
   socialMedia?: Prisma.EnumSocialMediaFilter<"Channel"> | $Enums.SocialMedia
   name?: Prisma.StringFilter<"Channel"> | string
+  description?: Prisma.StringNullableFilter<"Channel"> | string | null
   channelIdentifier?: Prisma.StringFilter<"Channel"> | string
   language?: Prisma.StringFilter<"Channel"> | string
   credentials?: Prisma.StringFilter<"Channel"> | string
@@ -284,6 +294,7 @@ export type ChannelOrderByWithAggregationInput = {
   projectId?: Prisma.SortOrder
   socialMedia?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
   channelIdentifier?: Prisma.SortOrder
   language?: Prisma.SortOrder
   credentials?: Prisma.SortOrder
@@ -305,6 +316,7 @@ export type ChannelScalarWhereWithAggregatesInput = {
   projectId?: Prisma.StringWithAggregatesFilter<"Channel"> | string
   socialMedia?: Prisma.EnumSocialMediaWithAggregatesFilter<"Channel"> | $Enums.SocialMedia
   name?: Prisma.StringWithAggregatesFilter<"Channel"> | string
+  description?: Prisma.StringNullableWithAggregatesFilter<"Channel"> | string | null
   channelIdentifier?: Prisma.StringWithAggregatesFilter<"Channel"> | string
   language?: Prisma.StringWithAggregatesFilter<"Channel"> | string
   credentials?: Prisma.StringWithAggregatesFilter<"Channel"> | string
@@ -319,6 +331,7 @@ export type ChannelCreateInput = {
   id?: string
   socialMedia: $Enums.SocialMedia
   name: string
+  description?: string | null
   channelIdentifier: string
   language: string
   credentials?: string
@@ -336,6 +349,7 @@ export type ChannelUncheckedCreateInput = {
   projectId: string
   socialMedia: $Enums.SocialMedia
   name: string
+  description?: string | null
   channelIdentifier: string
   language: string
   credentials?: string
@@ -351,6 +365,7 @@ export type ChannelUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   socialMedia?: Prisma.EnumSocialMediaFieldUpdateOperationsInput | $Enums.SocialMedia
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelIdentifier?: Prisma.StringFieldUpdateOperationsInput | string
   language?: Prisma.StringFieldUpdateOperationsInput | string
   credentials?: Prisma.StringFieldUpdateOperationsInput | string
@@ -368,6 +383,7 @@ export type ChannelUncheckedUpdateInput = {
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   socialMedia?: Prisma.EnumSocialMediaFieldUpdateOperationsInput | $Enums.SocialMedia
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelIdentifier?: Prisma.StringFieldUpdateOperationsInput | string
   language?: Prisma.StringFieldUpdateOperationsInput | string
   credentials?: Prisma.StringFieldUpdateOperationsInput | string
@@ -384,6 +400,7 @@ export type ChannelCreateManyInput = {
   projectId: string
   socialMedia: $Enums.SocialMedia
   name: string
+  description?: string | null
   channelIdentifier: string
   language: string
   credentials?: string
@@ -398,6 +415,7 @@ export type ChannelUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   socialMedia?: Prisma.EnumSocialMediaFieldUpdateOperationsInput | $Enums.SocialMedia
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelIdentifier?: Prisma.StringFieldUpdateOperationsInput | string
   language?: Prisma.StringFieldUpdateOperationsInput | string
   credentials?: Prisma.StringFieldUpdateOperationsInput | string
@@ -413,6 +431,7 @@ export type ChannelUncheckedUpdateManyInput = {
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   socialMedia?: Prisma.EnumSocialMediaFieldUpdateOperationsInput | $Enums.SocialMedia
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelIdentifier?: Prisma.StringFieldUpdateOperationsInput | string
   language?: Prisma.StringFieldUpdateOperationsInput | string
   credentials?: Prisma.StringFieldUpdateOperationsInput | string
@@ -438,6 +457,7 @@ export type ChannelCountOrderByAggregateInput = {
   projectId?: Prisma.SortOrder
   socialMedia?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  description?: Prisma.SortOrder
   channelIdentifier?: Prisma.SortOrder
   language?: Prisma.SortOrder
   credentials?: Prisma.SortOrder
@@ -453,6 +473,7 @@ export type ChannelMaxOrderByAggregateInput = {
   projectId?: Prisma.SortOrder
   socialMedia?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  description?: Prisma.SortOrder
   channelIdentifier?: Prisma.SortOrder
   language?: Prisma.SortOrder
   credentials?: Prisma.SortOrder
@@ -468,6 +489,7 @@ export type ChannelMinOrderByAggregateInput = {
   projectId?: Prisma.SortOrder
   socialMedia?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  description?: Prisma.SortOrder
   channelIdentifier?: Prisma.SortOrder
   language?: Prisma.SortOrder
   credentials?: Prisma.SortOrder
@@ -547,6 +569,7 @@ export type ChannelCreateWithoutProjectInput = {
   id?: string
   socialMedia: $Enums.SocialMedia
   name: string
+  description?: string | null
   channelIdentifier: string
   language: string
   credentials?: string
@@ -562,6 +585,7 @@ export type ChannelUncheckedCreateWithoutProjectInput = {
   id?: string
   socialMedia: $Enums.SocialMedia
   name: string
+  description?: string | null
   channelIdentifier: string
   language: string
   credentials?: string
@@ -606,6 +630,7 @@ export type ChannelScalarWhereInput = {
   projectId?: Prisma.StringFilter<"Channel"> | string
   socialMedia?: Prisma.EnumSocialMediaFilter<"Channel"> | $Enums.SocialMedia
   name?: Prisma.StringFilter<"Channel"> | string
+  description?: Prisma.StringNullableFilter<"Channel"> | string | null
   channelIdentifier?: Prisma.StringFilter<"Channel"> | string
   language?: Prisma.StringFilter<"Channel"> | string
   credentials?: Prisma.StringFilter<"Channel"> | string
@@ -620,6 +645,7 @@ export type ChannelCreateWithoutPostsInput = {
   id?: string
   socialMedia: $Enums.SocialMedia
   name: string
+  description?: string | null
   channelIdentifier: string
   language: string
   credentials?: string
@@ -636,6 +662,7 @@ export type ChannelUncheckedCreateWithoutPostsInput = {
   projectId: string
   socialMedia: $Enums.SocialMedia
   name: string
+  description?: string | null
   channelIdentifier: string
   language: string
   credentials?: string
@@ -666,6 +693,7 @@ export type ChannelUpdateWithoutPostsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   socialMedia?: Prisma.EnumSocialMediaFieldUpdateOperationsInput | $Enums.SocialMedia
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelIdentifier?: Prisma.StringFieldUpdateOperationsInput | string
   language?: Prisma.StringFieldUpdateOperationsInput | string
   credentials?: Prisma.StringFieldUpdateOperationsInput | string
@@ -682,6 +710,7 @@ export type ChannelUncheckedUpdateWithoutPostsInput = {
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   socialMedia?: Prisma.EnumSocialMediaFieldUpdateOperationsInput | $Enums.SocialMedia
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelIdentifier?: Prisma.StringFieldUpdateOperationsInput | string
   language?: Prisma.StringFieldUpdateOperationsInput | string
   credentials?: Prisma.StringFieldUpdateOperationsInput | string
@@ -696,6 +725,7 @@ export type ChannelCreateManyProjectInput = {
   id?: string
   socialMedia: $Enums.SocialMedia
   name: string
+  description?: string | null
   channelIdentifier: string
   language: string
   credentials?: string
@@ -710,6 +740,7 @@ export type ChannelUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   socialMedia?: Prisma.EnumSocialMediaFieldUpdateOperationsInput | $Enums.SocialMedia
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelIdentifier?: Prisma.StringFieldUpdateOperationsInput | string
   language?: Prisma.StringFieldUpdateOperationsInput | string
   credentials?: Prisma.StringFieldUpdateOperationsInput | string
@@ -725,6 +756,7 @@ export type ChannelUncheckedUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   socialMedia?: Prisma.EnumSocialMediaFieldUpdateOperationsInput | $Enums.SocialMedia
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelIdentifier?: Prisma.StringFieldUpdateOperationsInput | string
   language?: Prisma.StringFieldUpdateOperationsInput | string
   credentials?: Prisma.StringFieldUpdateOperationsInput | string
@@ -740,6 +772,7 @@ export type ChannelUncheckedUpdateManyWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   socialMedia?: Prisma.EnumSocialMediaFieldUpdateOperationsInput | $Enums.SocialMedia
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelIdentifier?: Prisma.StringFieldUpdateOperationsInput | string
   language?: Prisma.StringFieldUpdateOperationsInput | string
   credentials?: Prisma.StringFieldUpdateOperationsInput | string
@@ -786,6 +819,7 @@ export type ChannelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   projectId?: boolean
   socialMedia?: boolean
   name?: boolean
+  description?: boolean
   channelIdentifier?: boolean
   language?: boolean
   credentials?: boolean
@@ -804,6 +838,7 @@ export type ChannelSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   projectId?: boolean
   socialMedia?: boolean
   name?: boolean
+  description?: boolean
   channelIdentifier?: boolean
   language?: boolean
   credentials?: boolean
@@ -820,6 +855,7 @@ export type ChannelSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   projectId?: boolean
   socialMedia?: boolean
   name?: boolean
+  description?: boolean
   channelIdentifier?: boolean
   language?: boolean
   credentials?: boolean
@@ -836,6 +872,7 @@ export type ChannelSelectScalar = {
   projectId?: boolean
   socialMedia?: boolean
   name?: boolean
+  description?: boolean
   channelIdentifier?: boolean
   language?: boolean
   credentials?: boolean
@@ -846,7 +883,7 @@ export type ChannelSelectScalar = {
   archivedBy?: boolean
 }
 
-export type ChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "socialMedia" | "name" | "channelIdentifier" | "language" | "credentials" | "isActive" | "createdAt" | "updatedAt" | "archivedAt" | "archivedBy", ExtArgs["result"]["channel"]>
+export type ChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "socialMedia" | "name" | "description" | "channelIdentifier" | "language" | "credentials" | "isActive" | "createdAt" | "updatedAt" | "archivedAt" | "archivedBy", ExtArgs["result"]["channel"]>
 export type ChannelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   posts?: boolean | Prisma.Channel$postsArgs<ExtArgs>
@@ -870,6 +907,7 @@ export type $ChannelPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     projectId: string
     socialMedia: $Enums.SocialMedia
     name: string
+    description: string | null
     channelIdentifier: string
     language: string
     credentials: string
@@ -1307,6 +1345,7 @@ export interface ChannelFieldRefs {
   readonly projectId: Prisma.FieldRef<"Channel", 'String'>
   readonly socialMedia: Prisma.FieldRef<"Channel", 'SocialMedia'>
   readonly name: Prisma.FieldRef<"Channel", 'String'>
+  readonly description: Prisma.FieldRef<"Channel", 'String'>
   readonly channelIdentifier: Prisma.FieldRef<"Channel", 'String'>
   readonly language: Prisma.FieldRef<"Channel", 'String'>
   readonly credentials: Prisma.FieldRef<"Channel", 'String'>

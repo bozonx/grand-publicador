@@ -57,6 +57,7 @@ CREATE TABLE "channels" (
     "project_id" TEXT NOT NULL,
     "social_media" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "description" TEXT,
     "channel_identifier" TEXT NOT NULL,
     "language" TEXT NOT NULL,
     "credentials" TEXT NOT NULL DEFAULT '{}',

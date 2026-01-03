@@ -10,11 +10,11 @@ export class UpdateChannelDto {
 
   @IsString()
   @IsOptional()
-  public channelIdentifier?: string;
+  public description?: string;
 
   @IsString()
   @IsOptional()
-  public projectId?: string;
+  public channelIdentifier?: string;
 
   @IsObject()
   @IsOptional()

@@ -20,6 +20,10 @@ export class CreateChannelDto {
   public name!: string;
 
   @IsString()
+  @IsOptional()
+  public description?: string;
+
+  @IsString()
   @IsNotEmpty()
   public channelIdentifier!: string;
 

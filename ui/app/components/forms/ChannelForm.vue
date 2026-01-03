@@ -52,12 +52,21 @@ function formatDate(date: string | undefined): string {
 }
 
 // Fetch projects for the selector
-if (isEditMode.value) {
-  fetchProjects()
-}
+onMounted(() => {
+  if (projects.value.length === 0) {
+    fetchProjects()
+  }
+})
+
+const currentProjectName = computed(() => {
+  if (props.channel?.project?.name) return props.channel.project.name
+  const project = projects.value.find(p => p.id === (props.channel?.projectId || props.projectId))
+  return project?.name || '-'
+})
 
 const state = reactive({
   name: props.channel?.name || '',
+  description: props.channel?.description || '',
   socialMedia: (props.channel?.socialMedia || 'TELEGRAM') as SocialMedia,
   channelIdentifier: props.channel?.channelIdentifier || '',
   language: props.channel?.language || 'en-US',
@@ -80,8 +89,8 @@ async function handleSubmit() {
     // Update existing channel
     const updateData: ChannelUpdateInput = {
       name: state.name,
+      description: state.description,
       channelIdentifier: state.channelIdentifier,
-      projectId: state.projectId,
     }
 
     // Add credentials for supported channels
@@ -105,6 +114,7 @@ async function handleSubmit() {
     const createData: ChannelCreateInput = {
       projectId: props.projectId,
       name: state.name,
+      description: state.description,
       socialMedia: state.socialMedia,
       channelIdentifier: state.channelIdentifier,
       language: state.language,
@@ -308,21 +318,17 @@ const projectOptions = computed(() =>
         </p>
       </div>
 
-      <!-- Project selector (edit mode only) -->
-      <div v-if="isEditMode">
-        <UFormField 
-          :label="t('channel.project', 'Project')" 
-          required
-          :help="t('channel.projectHelp', 'You can move this channel to another project')"
-        >
-          <USelectMenu
-            v-model="state.projectId"
-            :items="projectOptions"
-            value-key="value"
-            label-key="label"
-            class="w-full"
-          />
-        </UFormField>
+      <!-- Project (read-only) -->
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          {{ t('channel.project', 'Project') }}
+        </label>
+        <div class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+          <UIcon name="i-heroicons-briefcase" class="w-5 h-5 text-gray-500" />
+          <span class="font-medium text-gray-900 dark:text-white">
+            {{ currentProjectName }}
+          </span>
+        </div>
       </div>
 
       <!-- Channel name -->
@@ -332,6 +338,16 @@ const projectOptions = computed(() =>
           :placeholder="t('channel.namePlaceholder')"
           class="w-full"
           size="lg"
+        />
+      </UFormField>
+
+      <!-- Description -->
+      <UFormField :label="t('channel.description', 'Description')">
+        <UTextarea
+          v-model="state.description"
+          :placeholder="t('channel.descriptionPlaceholder', 'Enter channel description...')"
+          class="w-full"
+          :rows="3"
         />
       </UFormField>
 

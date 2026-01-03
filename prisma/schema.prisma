@@ -101,6 +101,7 @@ model Channel {
   // Social media platform type (TELEGRAM, INSTAGRAM, etc.)
   socialMedia       SocialMedia @map("social_media")
   name              String
+  description       String?
   // Platform-specific channel identifier (e.g., @channel_name, channel_id)
   channelIdentifier String      @map("channel_identifier")
   // Channel language in format like ru-RU, en-US, etc.

@@ -294,7 +294,7 @@ function mapPostToPublication(post: PostWithRelations): PublicationWithRelations
                                 </h1>
                                 <div class="flex items-center gap-1 text-gray-500 dark:text-gray-400" :title="t('channel.language')">
                                     <UIcon name="i-heroicons-language" class="w-5 h-5" />
-                                    <span class="text-sm font-medium uppercase">{{ channel.language }}</span>
+                                    <span class="text-sm font-medium">{{ channel.language }}</span>
                                 </div>
                             </div>
 
@@ -309,13 +309,13 @@ function mapPostToPublication(post: PostWithRelations): PublicationWithRelations
                                     <UIcon name="i-heroicons-hashtag" class="w-4 h-4" />
                                     {{ channel.channelIdentifier }}
                                 </span>
-                                <span class="flex items-center gap-1">
+                                <span class="flex items-center gap-1" :title="t('channel.publishedPosts')">
                                     <UIcon name="i-heroicons-document-text" class="w-4 h-4" />
-                                    {{ t('post.titlePlural') }}: {{ channel.postsCount || 0 }}
+                                    {{ t('channel.publishedPosts') }}: {{ channel.postsCount || 0 }}
                                 </span>
-                                <span v-if="channel.lastPostAt" class="flex items-center gap-1">
+                                <span v-if="channel.lastPostAt" class="flex items-center gap-1" :title="t('channel.lastPublishedPost')">
                                     <UIcon name="i-heroicons-clock" class="w-4 h-4" />
-                                    {{ t('project.lastPost', 'Last post') }}:
+                                    {{ t('channel.lastPublishedPost') }}:
                                     <NuxtLink 
                                         v-if="channel.lastPublicationId"
                                         :to="`/projects/${projectId}/publications/${channel.lastPublicationId}`"
@@ -328,6 +328,13 @@ function mapPostToPublication(post: PostWithRelations): PublicationWithRelations
                                     </span>
                                 </span>
                             </div>
+
+                            <p 
+                                v-if="channel.description" 
+                                class="mt-4 text-gray-600 dark:text-gray-300 text-sm whitespace-pre-wrap leading-relaxed"
+                            >
+                                {{ channel.description }}
+                            </p>
                         </div>
 
                         <!-- Actions -->

@@ -37,6 +37,7 @@ export class ChannelsService {
         projectId,
         socialMedia: data.socialMedia,
         name: data.name,
+        description: data.description,
         channelIdentifier: data.channelIdentifier,
         language: data.language,
         credentials: JSON.stringify(data.credentials ?? {}),
@@ -60,6 +61,8 @@ export class ChannelsService {
   ) {
     await this.permissions.checkProjectAccess(projectId, userId);
 
+    const publishedPostFilter = { status: 'PUBLISHED' as const, archived: false };
+
     const channels = await this.prisma.channel.findMany({
       where: {
         projectId,
@@ -69,13 +72,13 @@ export class ChannelsService {
       },
       include: {
         _count: {
-          select: { posts: true },
+          select: { posts: { where: publishedPostFilter } },
         },
         posts: {
-          where: { archived: false, status: 'PUBLISHED' },
+          where: publishedPostFilter,
           take: 1,
-          orderBy: { createdAt: 'desc' },
-          select: { createdAt: true, id: true, publicationId: true },
+          orderBy: { publishedAt: 'desc' },
+          select: { publishedAt: true, createdAt: true, id: true, publicationId: true },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -87,7 +90,7 @@ export class ChannelsService {
         ...channelData,
         credentials: credentials ? JSON.parse(credentials) : {},
         postsCount: _count.posts,
-        lastPostAt: posts[0]?.createdAt || null,
+        lastPostAt: posts[0]?.publishedAt || posts[0]?.createdAt || null,
         lastPostId: posts[0]?.id || null,
         lastPublicationId: posts[0]?.publicationId || null,
       };
@@ -120,6 +123,8 @@ export class ChannelsService {
       where.projectId = { in: options.projectIds };
     }
 
+    const publishedPostFilter = { status: 'PUBLISHED' as const, archived: false };
+
     const channels = await this.prisma.channel.findMany({
       where,
       include: {
@@ -127,13 +132,13 @@ export class ChannelsService {
           select: { id: true, name: true }
         },
         _count: {
-          select: { posts: true },
+          select: { posts: { where: publishedPostFilter } },
         },
         posts: {
-          where: { archived: false },
+          where: publishedPostFilter,
           take: 1,
-          orderBy: { createdAt: 'desc' },
-          select: { createdAt: true, id: true, publicationId: true },
+          orderBy: { publishedAt: 'desc' },
+          select: { publishedAt: true, createdAt: true, id: true, publicationId: true },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -145,7 +150,7 @@ export class ChannelsService {
         ...channelData,
         credentials: credentials ? JSON.parse(credentials) : {},
         postsCount: _count.posts,
-        lastPostAt: posts[0]?.createdAt || null,
+        lastPostAt: posts[0]?.publishedAt || posts[0]?.createdAt || null,
         lastPostId: posts[0]?.id || null,
         lastPublicationId: posts[0]?.publicationId || null,
       };
@@ -167,6 +172,8 @@ export class ChannelsService {
   ) {
     await this.permissions.checkProjectAccess(projectId, userId);
 
+    const publishedPostFilter = { status: 'PUBLISHED' as const, archived: false };
+
     const channels = await this.prisma.channel.findMany({
       where: {
         projectId,
@@ -175,13 +182,13 @@ export class ChannelsService {
       },
       include: {
         _count: {
-          select: { posts: true },
+          select: { posts: { where: publishedPostFilter } },
         },
         posts: {
-          where: { archived: false },
+          where: publishedPostFilter,
           take: 1,
-          orderBy: { createdAt: 'desc' },
-          select: { createdAt: true, id: true, publicationId: true },
+          orderBy: { publishedAt: 'desc' },
+          select: { publishedAt: true, createdAt: true, id: true, publicationId: true },
         },
       },
       orderBy: { archivedAt: 'desc' },
@@ -193,7 +200,7 @@ export class ChannelsService {
         ...channelData,
         credentials: credentials ? JSON.parse(credentials) : {},
         postsCount: _count.posts,
-        lastPostAt: posts[0]?.createdAt || null,
+        lastPostAt: posts[0]?.publishedAt || posts[0]?.createdAt || null,
         lastPostId: posts[0]?.id || null,
         lastPublicationId: posts[0]?.publicationId || null,
       };
@@ -209,6 +216,8 @@ export class ChannelsService {
   public async findArchivedForUser(
     userId: string,
   ) {
+    const publishedPostFilter = { status: 'PUBLISHED' as const, archived: false };
+
     const channels = await this.prisma.channel.findMany({
       where: {
         project: {
@@ -224,13 +233,13 @@ export class ChannelsService {
           select: { id: true, name: true }
         },
         _count: {
-          select: { posts: true },
+          select: { posts: { where: publishedPostFilter } },
         },
         posts: {
-          where: { archived: false },
+          where: publishedPostFilter,
           take: 1,
-          orderBy: { createdAt: 'desc' },
-          select: { createdAt: true, id: true, publicationId: true },
+          orderBy: { publishedAt: 'desc' },
+          select: { publishedAt: true, createdAt: true, id: true, publicationId: true },
         },
       },
       orderBy: { archivedAt: 'desc' },
@@ -242,7 +251,7 @@ export class ChannelsService {
         ...channelData,
         credentials: credentials ? JSON.parse(credentials) : {},
         postsCount: _count.posts,
-        lastPostAt: posts[0]?.createdAt || null,
+        lastPostAt: posts[0]?.publishedAt || posts[0]?.createdAt || null,
         lastPostId: posts[0]?.id || null,
         lastPublicationId: posts[0]?.publicationId || null,
       };
@@ -261,6 +270,8 @@ export class ChannelsService {
    * @throws NotFoundException if the channel does not exist.
    */
   public async findOne(id: string, userId: string, allowArchived = false) {
+    const publishedPostFilter = { status: 'PUBLISHED' as const, archived: false };
+
     const channel = await this.prisma.channel.findUnique({
       where: {
         id,
@@ -269,13 +280,13 @@ export class ChannelsService {
       },
       include: {
         _count: {
-          select: { posts: true },
+          select: { posts: { where: publishedPostFilter } },
         },
         posts: {
-          where: { archived: false },
+          where: publishedPostFilter,
           take: 1,
-          orderBy: { createdAt: 'desc' },
-          select: { createdAt: true, id: true, publicationId: true },
+          orderBy: { publishedAt: 'desc' },
+          select: { publishedAt: true, createdAt: true, id: true, publicationId: true },
         },
       },
     });
@@ -293,7 +304,7 @@ export class ChannelsService {
       credentials: creds,
       role: role?.toLowerCase(),
       postsCount: _count.posts,
-      lastPostAt: posts[0]?.createdAt || null,
+      lastPostAt: posts[0]?.publishedAt || posts[0]?.createdAt || null,
       lastPostId: posts[0]?.id || null,
       lastPublicationId: posts[0]?.publicationId || null,
     };
@@ -318,21 +329,12 @@ export class ChannelsService {
       ProjectRole.EDITOR,
     ]);
 
-    // If moving to a different project, check permissions on new project
-    if (data.projectId && data.projectId !== channel.projectId) {
-      await this.permissions.checkProjectPermission(data.projectId, userId, [
-        ProjectRole.OWNER,
-        ProjectRole.ADMIN,
-        ProjectRole.EDITOR,
-      ]);
-    }
-
     return this.prisma.channel.update({
       where: { id: id },
       data: {
         name: data.name,
+        description: data.description,
         channelIdentifier: data.channelIdentifier,
-        projectId: data.projectId,
         credentials: data.credentials ? JSON.stringify(data.credentials) : undefined,
         isActive: data.isActive,
       },

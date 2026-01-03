@@ -1026,6 +1026,7 @@ export const ChannelScalarFieldEnum = {
   projectId: 'projectId',
   socialMedia: 'socialMedia',
   name: 'name',
+  description: 'description',
   channelIdentifier: 'channelIdentifier',
   language: 'language',
   credentials: 'credentials',

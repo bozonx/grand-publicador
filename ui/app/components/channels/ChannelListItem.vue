@@ -63,17 +63,17 @@ function formatDate(date: string | null | undefined): string {
 
           <div class="w-px h-3 bg-gray-300 dark:bg-gray-700 hidden sm:block"></div>
 
-          <div class="flex items-center gap-1.5" :title="t('post.titlePlural')">
+          <div class="flex items-center gap-1.5" :title="t('channel.publishedPosts')">
             <UIcon name="i-heroicons-document-text" class="w-4 h-4" />
             <span>
-              {{ channel.postsCount || 0 }} {{ t('post.titlePlural').toLowerCase() }}
+              {{ channel.postsCount || 0 }} {{ t('channel.publishedPosts').toLowerCase() }}
             </span>
           </div>
 
-          <div class="flex items-center gap-1.5" :title="t('common.lastPublishedPost')">
+          <div class="flex items-center gap-1.5" :title="t('channel.lastPublishedPost')">
             <UIcon name="i-heroicons-clock" class="w-4 h-4" />
             <span>
-              {{ t('common.lastPost') }}: 
+              {{ t('channel.lastPublishedPost') }}: 
               <NuxtLink 
                 v-if="channel.lastPublicationId"
                 :to="`/projects/${channel.projectId}/publications/${channel.lastPublicationId}`"
