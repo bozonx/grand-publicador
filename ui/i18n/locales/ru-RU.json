@@ -307,7 +307,10 @@
     "deleteSuccess": "Публикация успешно удалена",
     "contentInheritedFromPublication": "Контент поста наследуется от публикации",
     "editPublication": "Редактировать публикацию",
-    "tagsOverrideHint": "Оставьте пустым для использования тегов из публикации"
+    "tagsOverrideHint": "Оставьте пустым для использования тегов из публикации",
+    "newPostInChannel": "Новый пост в канал",
+    "languageMismatch": "Язык канала отличается от публикации",
+    "languageMismatchWarning": "Внимание: Язык канала отличается от языка публикации"
   },
   "publication": {
     "titlePlural": "Публикации",

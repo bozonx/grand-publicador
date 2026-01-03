@@ -105,7 +105,21 @@ const selectedChannel = computed(() => {
     return props.post?.channel
 })
 
+const publicationLanguage = computed(() => {
+    return props.publication?.language || props.post?.publication?.language
+})
+
+const channelLanguage = computed(() => {
+    return selectedChannel.value?.language
+})
+
+const hasLanguageMismatch = computed(() => {
+    if (!publicationLanguage.value || !channelLanguage.value) return false
+    return publicationLanguage.value !== channelLanguage.value
+})
+
 function toggleCollapse() {
+  if (props.isCreating) return
   isCollapsed.value = !isCollapsed.value
 }
 
@@ -246,7 +260,10 @@ const isValid = computed(() => {
 
     <!-- Header -->
     <div 
-      class="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-colors select-none"
+      class="p-4 transition-colors select-none"
+      :class="[
+        isCreating ? 'cursor-default' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/80'
+      ]"
       @click="toggleCollapse"
     >
       <div class="flex items-start gap-3">
@@ -265,7 +282,7 @@ const isValid = computed(() => {
                 <!-- Channel Name or Title -->
                 <span class="font-medium text-gray-900 dark:text-white truncate">
                   <template v-if="isCreating">
-                      {{ t('post.createPost', 'Create Post') }}
+                      {{ t('post.newPostInChannel', 'New post in channel') }}
                   </template>
                   <template v-else>
                       {{ props.post?.channel?.name || t('common.unknownChannel') }}
@@ -298,6 +315,14 @@ const isValid = computed(() => {
                      <UIcon :name="headerDateInfo.icon" class="w-3.5 h-3.5" />
                      {{ headerDateInfo.date }}
                 </span>
+
+                <!-- Language Mismatch Warning (Edit Mode) -->
+                <UTooltip 
+                    v-if="!isCreating && hasLanguageMismatch" 
+                    :text="t('post.languageMismatch', 'Channel language differs from publication')"
+                >
+                    <UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 text-amber-500" />
+                </UTooltip>
             </div>
             
             <!-- Overridden Tags -->
@@ -316,7 +341,7 @@ const isValid = computed(() => {
         </div>
 
         <!-- Expand/Collapse Button -->
-        <div class="shrink-0 ml-2">
+        <div class="shrink-0 ml-2" v-if="!isCreating">
           <UButton
             variant="ghost"
             color="neutral"
@@ -352,6 +377,11 @@ const isValid = computed(() => {
                     </div>
                 </template>
             </USelectMenu>
+            <!-- Language Mismatch Warning (Create Mode) -->
+            <div v-if="hasLanguageMismatch" class="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
+                <UIcon name="i-heroicons-exclamation-triangle" class="w-4 h-4" />
+                {{ t('post.languageMismatchWarning', 'Warning: Channel language differs from publication language') }}
+            </div>
        </div>
 
 
@@ -412,7 +442,7 @@ const isValid = computed(() => {
                 leave-from-class="transform scale-100 opacity-100"
                 leave-to-class="transform scale-95 opacity-0"
               >
-                <div v-if="isDirty" class="flex items-center gap-3">
+                <div v-if="isDirty && !isCreating" class="flex items-center gap-3">
                     <UButton
                         color="neutral"
                         variant="outline"

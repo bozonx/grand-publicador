@@ -767,6 +767,7 @@ function formatDate(dateString: string | null | undefined): string {
                   v-for="post in currentPublication.posts"
                   :key="post.id"
                   :post="post"
+                  :publication="currentPublication"
                   @deleted="handlePostDeleted"
                   @success="() => fetchPublication(publicationId)"
                 ></PostsPostEditBlock>
