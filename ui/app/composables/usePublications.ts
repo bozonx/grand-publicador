@@ -21,6 +21,7 @@ export interface Publication {
     postDate: string | null
     createdAt: string
     archivedBy: string | null
+    authorComment: string | null
     archivedAt?: string | null
 }
 

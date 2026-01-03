@@ -56,6 +56,7 @@ const formData = reactive({
   translationGroupId: props.publication?.translationGroupId || undefined as string | undefined,
   meta: props.publication?.meta || '{}',
   description: props.publication?.description || '',
+  authorComment: props.publication?.authorComment || '',
   postDate: props.publication?.postDate ? new Date(props.publication.postDate).toISOString().slice(0, 16) : '',
 })
 
@@ -110,6 +111,7 @@ watch(() => props.publication, (newPub) => {
     formData.translationGroupId = newPub.translationGroupId || undefined
     formData.meta = newPub.meta || '{}'
     formData.description = newPub.description || ''
+    formData.authorComment = newPub.authorComment || ''
     formData.postDate = newPub.postDate ? new Date(newPub.postDate).toISOString().slice(0, 16) : ''
     
     nextTick(() => {
@@ -164,6 +166,7 @@ async function handleSubmit() {
           title: formData.title || undefined,
           description: formData.description || undefined,
           content: formData.content,
+          authorComment: formData.authorComment || null,
           tags: formData.tags || undefined,
           status: formData.status,
           language: formData.language,
@@ -200,6 +203,7 @@ async function handleSubmit() {
         title: formData.title || undefined,
         description: formData.description || undefined,
         content: formData.content,
+        authorComment: formData.authorComment || null,
         tags: formData.tags || undefined,
         status: formData.status === 'SCHEDULED' && formData.channelIds.length > 0 ? 'SCHEDULED' : 'DRAFT', // Master status
         language: formData.language,
@@ -451,14 +455,23 @@ function toggleChannel(channelId: string) {
           class="space-y-6 pt-6 mt-2 border-t border-gray-100 dark:border-gray-700"
         >
 
-          <!-- Post Date -->
-          <UFormField label="Post Date" help="Date of the article (optional)">
-            <UInput v-model="formData.postDate" type="datetime-local" class="w-full" icon="i-heroicons-calendar" />
-          </UFormField>
-
           <!-- Description -->
           <UFormField label="Description" help="Short description">
              <UTextarea v-model="formData.description" :rows="3" />
+          </UFormField>
+
+          <!-- Author Comment -->
+          <UFormField :label="t('post.authorComment')" :help="t('post.authorCommentHint')">
+             <UTextarea 
+               v-model="formData.authorComment" 
+               :rows="3" 
+               :placeholder="t('post.authorCommentPlaceholder')"
+             />
+          </UFormField>
+
+          <!-- Post Date -->
+          <UFormField label="Post Date" help="Date of the article (optional)">
+            <UInput v-model="formData.postDate" type="datetime-local" class="w-full" icon="i-heroicons-calendar" />
           </UFormField>
 
           <!-- Meta -->
