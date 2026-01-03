@@ -101,8 +101,10 @@ onMounted(async () => {
  * Handle successful publication update
  */
 function handleSuccess(id: string) {
-  // Go back to where user came from
-  goBack()
+  // Refresh the data instead of navigating back
+  if (publicationId.value) {
+      fetchPublication(publicationId.value)
+  }
 }
 
 /**
@@ -769,6 +771,7 @@ function formatDate(dateString: string | null | undefined): string {
                   :key="post.id"
                   :post="post"
                   @deleted="handlePostDeleted"
+                  @success="() => fetchPublication(publicationId)"
                 ></PostsPostEditBlock>
 
                 <PostsPostEditBlock 
