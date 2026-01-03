@@ -6,7 +6,7 @@ import { usePublications } from '~/composables/usePublications'
 import { usePosts } from '~/composables/usePosts'
 import SocialIcon from '~/components/common/SocialIcon.vue'
 
-import type { PostStatus, PostType } from '~/types/posts'
+import type { PostStatus, PostType, PublicationStatus } from '~/types/posts'
 
 interface Props {
   /** Project ID for fetching channels */
@@ -49,7 +49,7 @@ const formData = reactive({
   content: props.publication?.content || '',
   tags: props.publication?.tags || '',
   postType: (props.publication?.postType || 'POST') as PostType,
-  status: (props.publication?.status || 'DRAFT') as PostStatus,
+  status: (props.publication?.status || 'DRAFT') as PublicationStatus,
   scheduledAt: '',
   language: props.publication?.language || languageParam.value || 'en-US',
   channelIds: props.publication?.posts?.map((p: any) => p.channelId) || [] as string[],
@@ -105,7 +105,7 @@ watch(() => props.publication, (newPub) => {
     formData.content = newPub.content || ''
     formData.tags = newPub.tags || ''
     formData.postType = (newPub.postType || 'POST') as PostType
-    formData.status = (newPub.status || 'DRAFT') as PostStatus
+    formData.status = (newPub.status || 'DRAFT') as PublicationStatus
     formData.language = newPub.language || 'en-US'
     formData.channelIds = newPub.posts?.map((p: any) => p.channelId) || []
     formData.translationGroupId = newPub.translationGroupId || undefined
@@ -150,7 +150,8 @@ const channelOptions = computed(() => {
 
 // Status options
 const statusOptions = computed(() => {
-  return allStatusOptions.value.filter((opt) => ['DRAFT', 'SCHEDULED'].includes(opt.value as string))
+  // Only allow user-selectable statuses in form
+  return allStatusOptions.value.filter((opt) => ['DRAFT', 'READY', 'SCHEDULED'].includes(opt.value as string))
 })
 
 const { languageOptions } = useLanguages()

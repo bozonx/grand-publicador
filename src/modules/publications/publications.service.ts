@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { PostStatus, PostType, Prisma, ProjectRole } from '../../generated/prisma/client.js';
+import { PublicationStatus, PostStatus, PostType, Prisma, ProjectRole } from '../../generated/prisma/client.js';
 import { randomUUID } from 'node:crypto';
 
 import { PermissionsService } from '../../common/services/permissions.service.js';
@@ -73,7 +73,7 @@ export class PublicationsService {
         authorComment: data.authorComment,
         mediaFiles: JSON.stringify(data.mediaFiles ?? []),
         tags: data.tags,
-        status: data.status ?? PostStatus.DRAFT,
+        status: data.status ?? PublicationStatus.DRAFT,
         language: data.language,
         translationGroupId,
         postType: data.postType ?? PostType.POST,
@@ -103,7 +103,7 @@ export class PublicationsService {
     projectId: string,
     userId: string,
     filters?: {
-      status?: PostStatus;
+      status?: PublicationStatus;
       limit?: number;
       offset?: number;
       includeArchived?: boolean;
@@ -163,7 +163,7 @@ export class PublicationsService {
   public async findAllForUser(
     userId: string,
     filters?: {
-      status?: PostStatus;
+      status?: PublicationStatus;
       limit?: number;
       offset?: number;
       includeArchived?: boolean;
@@ -416,7 +416,7 @@ export class PublicationsService {
             channelId: channel.id,
             socialMedia: channel.socialMedia,
             tags: null, // Can be overridden later, defaults to publication tags
-            status: scheduledAt ? PostStatus.SCHEDULED : PostStatus.DRAFT,
+            status: scheduledAt ? PostStatus.PENDING : PostStatus.PENDING,
             scheduledAt,
           },
           include: {

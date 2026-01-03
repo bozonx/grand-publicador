@@ -1,6 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
-import { PostStatus } from '../../../generated/prisma/client.js';
+import { IsDate, IsOptional, IsString } from 'class-validator';
 
 /**
  * DTO for updating an existing post.
@@ -10,10 +9,6 @@ export class UpdatePostDto {
   @IsString()
   @IsOptional()
   public tags?: string; // Can override publication tags
-
-  @IsEnum(PostStatus)
-  @IsOptional()
-  public status?: PostStatus;
 
   @Type(() => Date)
   @IsDate()

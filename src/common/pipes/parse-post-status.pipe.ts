@@ -16,7 +16,7 @@ export class ParsePostStatusPipe implements PipeTransform<string, PostStatus | u
 
     if (!validStatuses.includes(upperValue)) {
       throw new BadRequestException(
-        `Invalid status. Allowed values: ${validStatuses.join(', ')}`,
+        `Invalid post status. Allowed values: ${validStatuses.join(', ')}`,
       );
     }
 

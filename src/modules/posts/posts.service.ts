@@ -59,7 +59,7 @@ export class PostsService {
         publicationId: data.publicationId,
         socialMedia: data.socialMedia ?? channel.socialMedia,
         tags: data.tags,
-        status: data.status ?? PostStatus.DRAFT,
+        status: data.status ?? PostStatus.PENDING,
         scheduledAt: data.scheduledAt,
       },
       include: {

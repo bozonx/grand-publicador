@@ -1,4 +1,4 @@
-import { PrismaClient, ProjectRole, SocialMedia, PostType, PostStatus } from '../src/generated/prisma/client.js';
+import { PrismaClient, ProjectRole, SocialMedia, PostType, PostStatus, PublicationStatus } from '../src/generated/prisma/client.js';
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 import { config } from 'dotenv';
 import path from 'path';
@@ -160,7 +160,7 @@ async function main() {
             content: '<h1>Освоение Nuxt 4</h1><p>Nuxt 4 приносит удивительные новые функции для создания современных веб-приложений. Давайте изучим новую архитектуру приложений...</p>',
             authorComment: 'Это важный пост для нашего сообщества.',
             tags: 'nuxt,vue,frontend',
-            status: PostStatus.PUBLISHED,
+            status: PublicationStatus.PUBLISHED,
             postType: PostType.ARTICLE,
             postDate: new Date(2025, 0, 1),
             language: 'ru-RU',
@@ -173,7 +173,7 @@ async function main() {
             title: 'Introduction to Nuxt 4',
             content: '<h1>Mastering Nuxt 4</h1><p>Nuxt 4 brings amazing new features for building modern web applications. Let\'s explore the new app architecture...</p>',
             tags: 'nuxt,vue,frontend',
-            status: PostStatus.PUBLISHED,
+            status: PublicationStatus.PUBLISHED,
             postType: PostType.ARTICLE,
             language: 'en-US',
             translationGroupId: translationGroup1,
@@ -185,7 +185,7 @@ async function main() {
             title: 'Топ-5 скрытых жемчужин Киото',
             content: '<p>Киото — это больше, чем просто Кинкаку-дзи. Ознакомьтесь с этими 5 секретными местами, которые обычно пропускают туристы...</p>',
             tags: 'киото,япония,гид',
-            status: PostStatus.PUBLISHED,
+            status: PublicationStatus.PUBLISHED,
             postType: PostType.POST,
             language: 'ru-RU',
         },
@@ -196,7 +196,7 @@ async function main() {
             title: 'Прогноз цен на Биткоин 2025',
             content: '<p>Анализ исторических данных, чтобы понять, куда BTC может направиться в следующем году...</p>',
             tags: 'крипто,биткоин,финансы',
-            status: PostStatus.SCHEDULED,
+            status: PublicationStatus.SCHEDULED,
             postType: PostType.NEWS,
             language: 'ru-RU',
         },
@@ -206,7 +206,7 @@ async function main() {
             createdBy: devUser.id,
             title: 'Тест пустой публикации',
             content: '', // Test empty content
-            status: PostStatus.DRAFT,
+            status: PublicationStatus.DRAFT,
             postType: PostType.POST,
             language: 'ru-RU',
         },
@@ -216,7 +216,7 @@ async function main() {
             createdBy: devUser.id,
             title: 'Быстрый Привет!',
             content: 'Просто хотел поздороваться со всеми нашими подписчиками! Сегодня без больших постов.',
-            status: PostStatus.PUBLISHED,
+            status: PublicationStatus.PUBLISHED,
             postType: PostType.POST,
             language: 'ru-RU',
         }
@@ -267,7 +267,7 @@ async function main() {
             channelId: channelData[4].id,
             socialMedia: 'X',
             tags: 'crypto,bitcoin,trading', // Overriding for X platform
-            status: PostStatus.SCHEDULED,
+            status: PostStatus.PENDING,
             scheduledAt: new Date(Date.now() + 86400000), // In 24 hours
         },
         // Failed post
@@ -295,7 +295,7 @@ async function main() {
             channelId: channelData[0].id,
             socialMedia: 'TELEGRAM',
             tags: null,
-            status: PostStatus.DRAFT,
+            status: PostStatus.PENDING,
         }
     ];
 

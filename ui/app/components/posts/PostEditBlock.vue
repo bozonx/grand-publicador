@@ -406,15 +406,6 @@ const isValid = computed(() => {
                 />
             </UFormField>
 
-            <!-- Status (Only if editing) -->
-            <UFormField v-if="!isCreating" :label="t('post.status')">
-                <USelectMenu
-                   v-model="formData.status"
-                   :items="postStatusOptions"
-                   value-key="value"
-                   label-key="label"
-                />
-            </UFormField>
        </div>
 
       <!-- Actions -->
@@ -452,8 +443,20 @@ const isValid = computed(() => {
                     >
                         {{ t('common.reset') }}
                     </UButton>
-                     <span class="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                        <UIcon name="i-heroicons-exclamation-circle" class="w-4 h-4" />
+                     <div class="flex items-center gap-2">
+            <UBadge
+              :color="getStatusColor(post.status)"
+              variant="subtle"
+              size="sm"
+              class="font-medium"
+            >
+              {{ getStatusDisplayName(post.status) }}
+            </UBadge>
+
+            <span class="text-xs text-gray-400 dark:text-gray-500 font-mono uppercase bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded leading-none">
+              {{ post.channel?.language }}
+            </span>
+          </div> name="i-heroicons-exclamation-circle" class="w-4 h-4" />
                         {{ t('form.unsavedChanges', 'Unsaved changes') }}
                     </span>
                 </div>

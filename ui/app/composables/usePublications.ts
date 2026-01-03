@@ -2,7 +2,7 @@ import { ref, computed } from 'vue'
 import { useApi } from './useApi'
 import { useAuth } from './useAuth'
 import { ArchiveEntityType } from '~/types/archive.types'
-export type PublicationStatus = 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'FAILED' | 'CANCELLED' | 'EXPIRED'
+import type { PublicationStatus } from '~/types/posts'
 
 export interface Publication {
     id: string
@@ -73,12 +73,14 @@ export function usePublications() {
     const totalCount = ref(0) // Note: Backend findAll doesn't seem to return total count yet, just the list
 
     const statusOptions = computed(() => [
-        { value: 'DRAFT', label: t('postStatus.draft') },
-        { value: 'SCHEDULED', label: t('postStatus.scheduled') },
-        { value: 'PUBLISHED', label: t('postStatus.published') },
-        { value: 'FAILED', label: t('postStatus.failed') },
-        { value: 'CANCELLED', label: t('postStatus.cancelled') },
-        { value: 'EXPIRED', label: t('postStatus.expired') },
+        { value: 'DRAFT', label: t('publicationStatus.draft') },
+        { value: 'READY', label: t('publicationStatus.ready') },
+        { value: 'SCHEDULED', label: t('publicationStatus.scheduled') },
+        { value: 'PROCESSING', label: t('publicationStatus.processing') },
+        { value: 'PUBLISHED', label: t('publicationStatus.published') },
+        { value: 'PARTIAL', label: t('publicationStatus.partial') },
+        { value: 'FAILED', label: t('publicationStatus.failed') },
+        { value: 'EXPIRED', label: t('publicationStatus.expired') },
     ])
 
     async function fetchPublicationsByProject(
@@ -157,17 +159,20 @@ export function usePublications() {
 
     function getStatusDisplayName(status: string): string {
         if (!status) return '-'
-        // Reuse postStatus translations if they fit
-        return t(`postStatus.${status.toLowerCase()}`)
+        return t(`publicationStatus.${status.toLowerCase()}`)
     }
 
-    function getStatusColor(status: string): 'neutral' | 'warning' | 'success' | 'error' {
+    function getStatusColor(status: string): 'neutral' | 'warning' | 'success' | 'error' | 'primary' {
         if (!status) return 'neutral'
-        const colors: Record<string, 'neutral' | 'warning' | 'success' | 'error'> = {
+        const colors: Record<string, 'neutral' | 'warning' | 'success' | 'error' | 'primary'> = {
             draft: 'neutral',
+            ready: 'primary',
             scheduled: 'warning',
+            processing: 'warning',
             published: 'success',
+            partial: 'warning',
             failed: 'error',
+            expired: 'neutral',
         }
         return colors[status.toLowerCase()] || 'neutral'
     }

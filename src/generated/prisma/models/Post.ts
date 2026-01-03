@@ -535,6 +535,10 @@ export type PostUncheckedUpdateManyWithoutPublicationNestedInput = {
   deleteMany?: Prisma.PostScalarWhereInput | Prisma.PostScalarWhereInput[]
 }
 
+export type EnumPostStatusFieldUpdateOperationsInput = {
+  set?: $Enums.PostStatus
+}
+
 export type PostCreateWithoutChannelInput = {
   id?: string
   socialMedia: string

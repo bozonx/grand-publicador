@@ -153,8 +153,8 @@ model Publication {
   postType      PostType   @default(POST) @map("post_type")
   // Date of the article which the author specified
   postDate      DateTime?  @map("post_date")
-  // Publication status (DRAFT, SCHEDULED, PUBLISHED, etc.)
-  status        PostStatus @default(DRAFT)
+  // Publication status (DRAFT, READY, SCHEDULED, PROCESSING, PUBLISHED, PARTIAL, FAILED, EXPIRED)
+  status        PublicationStatus @default(DRAFT)
   // Language of the publication (ru-RU, en-US, etc.)
   language      String     @default("ru-RU")
 
@@ -177,8 +177,9 @@ model Post {
   socialMedia   String    @map("social_media")
   // Tags specific to this channel (can override publication tags)
   tags          String?
-  // Post status for tracking publication success (DRAFT, SCHEDULED, PUBLISHED, FAILED, EXPIRED)
-  status        PostStatus @default(DRAFT)
+  // Post status for tracking publication success (PENDING, FAILED, PUBLISHED)
+  // Note: Status is managed by the system only, not manually editable
+  status        PostStatus @default(PENDING)
   // When post is scheduled to be published
   scheduledAt   DateTime? @map("scheduled_at")
   // Actual timestamp when post was published to platform
@@ -226,10 +227,22 @@ enum PostType {
   STORY
 }
 
+// Publication status enum - tracks the lifecycle of a publication
+enum PublicationStatus {
+  DRAFT      // Draft, may be partially filled or incomplete
+  READY      // Ready post, not published (prepared in advance or removed from SCHEDULED)
+  SCHEDULED  // Scheduled for future publication, date is set but not yet reached
+  PROCESSING // Selected by publishing service and being processed
+  PUBLISHED  // All posts successfully published
+  PARTIAL    // Some posts published, some failed
+  FAILED     // All posts failed to publish
+  EXPIRED    // Publication missed the publishing service selection window
+}
+
+// Post status enum - tracks individual post publication status
+// Note: Post status is managed by the system only, not manually editable
 enum PostStatus {
-  DRAFT
-  SCHEDULED
-  PUBLISHED
-  FAILED
-  EXPIRED
+  PENDING    // Post has not yet been attempted to publish
+  FAILED     // Publication failed
+  PUBLISHED  // Post was successfully published to the channel
 }

@@ -1,8 +1,7 @@
 import type { PostStatus, PostType } from '~/types/posts'
 
 export const POST_STATUS_COLORS: Record<string, 'neutral' | 'warning' | 'success' | 'error'> = {
-    draft: 'neutral',
-    scheduled: 'warning',
+    pending: 'neutral',
     published: 'success',
     failed: 'error',
 }
@@ -14,8 +13,7 @@ export function getPostStatusColor(status: string | undefined | null): 'neutral'
 
 export function getPostStatusOptions(t: (key: string) => string) {
     return [
-        { value: 'DRAFT', label: t('postStatus.draft') },
-        { value: 'SCHEDULED', label: t('postStatus.scheduled') },
+        { value: 'PENDING', label: t('postStatus.pending') },
         { value: 'PUBLISHED', label: t('postStatus.published') },
         { value: 'FAILED', label: t('postStatus.failed') },
     ]

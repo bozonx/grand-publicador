@@ -1,6 +1,6 @@
 import { IsArray, IsDate, IsEnum, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
-import { PostStatus, PostType } from '../../../generated/prisma/client.js';
+import { PublicationStatus, PostType } from '../../../generated/prisma/client.js';
 
 /**
  * DTO for creating a new publication.
@@ -39,9 +39,9 @@ export class CreatePublicationDto {
   @IsOptional()
   public postDate?: Date;
 
-  @IsEnum(PostStatus)
+  @IsEnum(PublicationStatus)
   @IsOptional()
-  public status?: PostStatus;
+  public status?: PublicationStatus;
 
   @IsObject()
   @IsOptional()

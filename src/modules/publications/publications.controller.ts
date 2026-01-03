@@ -13,12 +13,12 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { PostStatus } from '../../generated/prisma/client.js';
+import { PublicationStatus } from '../../generated/prisma/client.js';
 
 import { ApiTokenGuard } from '../../common/guards/api-token.guard.js';
 import { JwtOrApiTokenGuard } from '../../common/guards/jwt-or-api-token.guard.js';
 import type { UnifiedAuthRequest } from '../../common/types/unified-auth-request.interface.js';
-import { ParsePostStatusPipe } from '../../common/pipes/parse-post-status.pipe.js';
+import { ParsePublicationStatusPipe } from '../../common/pipes/parse-publication-status.pipe.js';
 import type { PaginatedResponse } from '../../common/dto/pagination-response.dto.js';
 import { CreatePostsDto, CreatePublicationDto, UpdatePublicationDto } from './dto/index.js';
 import { PublicationsService } from './publications.service.js';
@@ -58,7 +58,7 @@ export class PublicationsController {
   public async findAll(
     @Request() req: UnifiedAuthRequest,
     @Query('projectId') projectId?: string,
-    @Query('status', new ParsePostStatusPipe()) status?: PostStatus,
+    @Query('status', new ParsePublicationStatusPipe()) status?: PublicationStatus,
     @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit?: number,
     @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset?: number,
     @Query('includeArchived', new DefaultValuePipe(false), ParseBoolPipe) includeArchived?: boolean,

@@ -101,7 +101,7 @@ CREATE TABLE "posts" (
     "channel_id" TEXT NOT NULL,
     "social_media" TEXT NOT NULL,
     "tags" TEXT,
-    "status" TEXT NOT NULL DEFAULT 'DRAFT',
+    "status" TEXT NOT NULL DEFAULT 'PENDING',
     "scheduled_at" DATETIME,
     "published_at" DATETIME,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
