@@ -71,6 +71,9 @@ export class ChannelsService {
         ...(options.isActive !== undefined ? { isActive: options.isActive } : {}),
       },
       include: {
+        project: {
+          select: { id: true, name: true }
+        },
         _count: {
           select: { posts: { where: publishedPostFilter } },
         },
@@ -181,6 +184,9 @@ export class ChannelsService {
         project: { archivedAt: null },
       },
       include: {
+        project: {
+          select: { id: true, name: true }
+        },
         _count: {
           select: { posts: { where: publishedPostFilter } },
         },
@@ -279,6 +285,9 @@ export class ChannelsService {
         project: { archivedAt: null },
       },
       include: {
+        project: {
+          select: { id: true, name: true }
+        },
         _count: {
           select: { posts: { where: publishedPostFilter } },
         },

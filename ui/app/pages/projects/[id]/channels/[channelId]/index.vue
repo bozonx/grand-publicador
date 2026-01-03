@@ -309,6 +309,15 @@ function mapPostToPublication(post: PostWithRelations): PublicationWithRelations
                                     <UIcon name="i-heroicons-hashtag" class="w-4 h-4" />
                                     {{ channel.channelIdentifier }}
                                 </span>
+                                <NuxtLink 
+                                    v-if="channel.project"
+                                    :to="`/projects/${channel.project.id}`"
+                                    class="flex items-center gap-1 hover:text-primary-500 transition-colors"
+                                    :title="t('project.title')"
+                                >
+                                    <UIcon name="i-heroicons-folder" class="w-4 h-4" />
+                                    {{ channel.project.name }}
+                                </NuxtLink>
                                 <span class="flex items-center gap-1" :title="t('channel.publishedPosts')">
                                     <UIcon name="i-heroicons-document-text" class="w-4 h-4" />
                                     {{ t('channel.publishedPosts') }}: {{ channel.postsCount || 0 }}
