@@ -1,6 +1,10 @@
 import { ref, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { registerDirtyForm, confirmLeaveDirtyForm } from './useDirtyFormsManager'
+
+// Global flag to ensure we only register one navigation guard
+let navigationGuardRegistered = false
 
 /**
  * Composable for tracking form dirty state (unsaved changes)
@@ -24,6 +28,9 @@ export function useFormDirtyState<T extends Record<string, any>>(
 
   const router = useRouter()
   const { t } = useI18n()
+
+  // Generate unique ID for this form instance
+  const formId = `form-${Math.random().toString(36).substr(2, 9)}`
 
   // Store original form data as JSON string for comparison
   const originalDataJson = ref<string>('')
@@ -91,24 +98,25 @@ export function useFormDirtyState<T extends Record<string, any>>(
     window.addEventListener('beforeunload', handleBeforeUnload)
   }
 
-  // Setup router navigation guard
-  let removeGuard: (() => void) | undefined
+  // Register this form in the global manager
+  let unregisterForm: (() => void) | undefined
 
-  if (enableNavigationGuard && router) {
-    removeGuard = router.beforeEach((to, from, next) => {
-      if (isDirty.value) {
-        const answer = window.confirm(
-          t('form.resetConfirm', 'Are you sure you want to leave? You have unsaved changes.')
-        )
-        if (answer) {
+  if (enableNavigationGuard) {
+    const confirmMessage = t('form.resetConfirm', 'Are you sure you want to leave? You have unsaved changes.')
+    unregisterForm = registerDirtyForm(formId, () => isDirty.value, confirmMessage)
+
+    // Register global navigation guard only once
+    if (!navigationGuardRegistered && router) {
+      navigationGuardRegistered = true
+      
+      router.beforeEach((to, from, next) => {
+        if (confirmLeaveDirtyForm()) {
           next()
         } else {
           next(false)
         }
-      } else {
-        next()
-      }
-    })
+      })
+    }
   }
 
   // Cleanup on unmount
@@ -116,8 +124,8 @@ export function useFormDirtyState<T extends Record<string, any>>(
     if (enableBeforeUnload && typeof window !== 'undefined') {
       window.removeEventListener('beforeunload', handleBeforeUnload)
     }
-    if (removeGuard) {
-      removeGuard()
+    if (unregisterForm) {
+      unregisterForm()
     }
   })
 
