@@ -1,15 +1,19 @@
 #!/bin/sh
 set -e
 
-# Set DATABASE_URL for Prisma
-export DATABASE_URL="file:${DATA_DIR}/grand-publicador.db"
+# Ensure DATA_DIR is set
+if [ -z "$DATA_DIR" ]; then
+    echo "❌ ERROR: DATA_DIR environment variable is not set!"
+    exit 1
+fi
 
-echo "📊 Database URL: $DATABASE_URL"
+echo "📊 Data directory: $DATA_DIR"
 
 # Ensure data directory exists
 mkdir -p "${DATA_DIR}"
 
 # Run database migrations
+# DATABASE_URL is automatically constructed from DATA_DIR by prisma.config.ts
 echo "🔄 Running database migrations..."
 if npx prisma migrate deploy; then
     echo "✅ Migrations applied successfully"

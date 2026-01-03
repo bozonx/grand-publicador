@@ -13,14 +13,16 @@ import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module.js';
 import { SpaFallbackFilter } from './common/filters/spa-fallback.filter.js';
 import type { AppConfig } from './config/app.config.js';
-import { getDatabaseUrl } from './config/database.config.js';
 
 /**
- * Set up DATABASE_URL from DATA_DIR before Prisma Client is loaded.
- * This ensures Prisma uses the correct database path with hardcoded filename.
+ * Validate that DATA_DIR is set before starting the application.
+ * This is a REQUIRED environment variable for database configuration.
  */
-if (process.env.DATA_DIR && !process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = getDatabaseUrl();
+if (!process.env.DATA_DIR) {
+  console.error('❌ FATAL ERROR: DATA_DIR environment variable is not set!');
+  console.error('   DATA_DIR must point to the directory where the database file will be stored.');
+  console.error('   Example: DATA_DIR=/data or DATA_DIR=./test-data');
+  process.exit(1);
 }
 
 /**

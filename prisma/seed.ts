@@ -9,14 +9,10 @@ const nodeEnv = process.env.NODE_ENV || 'development';
 config({ path: path.resolve(process.cwd(), `.env.${nodeEnv}`) });
 config();
 
-// Set up DATABASE_URL if not already set
-if (process.env.DATA_DIR && !process.env.DATABASE_URL) {
-    process.env.DATABASE_URL = getDatabaseUrl();
-}
+// getDatabaseUrl() will throw if DATA_DIR is not set
+const url = getDatabaseUrl();
 
-const adapter = new PrismaBetterSqlite3({
-    url: process.env.DATABASE_URL || 'file:./data/dev.db',
-});
+const adapter = new PrismaBetterSqlite3({ url });
 
 const prisma = new PrismaClient({ adapter });
 
