@@ -222,7 +222,6 @@ function openLanguageModal() {
 
 function openTypeModal() {
     if (!currentPublication.value) return
-    newPostType.value = currentPublication.value.postType as PostType
     isTypeModalOpen.value = true
 }
 
@@ -241,12 +240,17 @@ async function handleUpdateLanguage() {
     }
 }
 
-async function handleUpdateType() {
+async function handleUpdateTypeOption(type: PostType) {
     if (!currentPublication.value) return
+    if (currentPublication.value.postType === type) {
+        isTypeModalOpen.value = false
+        return
+    }
+    newPostType.value = type
     isUpdatingType.value = true
     try {
         await updatePublication(currentPublication.value.id, {
-            postType: newPostType.value
+            postType: type
         })
         toast.add({ title: t('common.success'), color: 'success' })
         isTypeModalOpen.value = false
@@ -258,16 +262,20 @@ async function handleUpdateType() {
 
 function openStatusModal() {
     if (!currentPublication.value) return
-    newStatus.value = currentPublication.value.status as PublicationStatus
     isStatusModalOpen.value = true
 }
 
-async function handleUpdateStatus() {
+async function handleUpdateStatusOption(status: PublicationStatus) {
     if (!currentPublication.value) return
+    if (currentPublication.value.status === status) {
+        isStatusModalOpen.value = false
+        return
+    }
+    newStatus.value = status
     isUpdatingStatus.value = true
     try {
         await updatePublication(currentPublication.value.id, {
-            status: newStatus.value
+            status: status
         })
         toast.add({ title: t('common.success'), color: 'success' })
         isStatusModalOpen.value = false
@@ -407,40 +415,33 @@ function formatDate(dateString: string | null | undefined): string {
     <UModal v-model:open="isTypeModalOpen">
       <template #content>
         <div class="p-6">
-          <div class="flex items-center gap-3 text-gray-900 dark:text-white mb-4">
-            <UIcon name="i-heroicons-document-duplicate" class="w-6 h-6 text-primary-500"></UIcon>
-            <h3 class="text-lg font-medium">
-              {{ t('publication.changeType') }}
-            </h3>
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3 text-gray-900 dark:text-white">
+              <UIcon name="i-heroicons-document-duplicate" class="w-6 h-6 text-primary-500"></UIcon>
+              <h3 class="text-lg font-medium">
+                {{ t('publication.changeType') }}
+              </h3>
+            </div>
+            <UButton
+              icon="i-heroicons-x-mark"
+              variant="ghost"
+              color="neutral"
+              size="sm"
+              @click="isTypeModalOpen = false"
+            />
           </div>
 
-          <p class="text-gray-500 dark:text-gray-400 mb-6">
-            {{ t('publication.changeTypeWarning') }}
-          </p>
-
-          <UFormField :label="t('post.postType')" required class="mb-6">
-             <USelectMenu
-                v-model="newPostType"
-                :items="typeOptions"
-                value-key="value"
-                label-key="label"
-                class="w-full"
+          <div class="space-y-2">
+            <UButton
+              v-for="option in typeOptions"
+              :key="option.value"
+              :label="option.label"
+              :variant="currentPublication?.postType === option.value ? 'soft' : 'ghost'"
+              :color="currentPublication?.postType === option.value ? 'primary' : 'neutral'"
+              class="w-full justify-start"
+              :loading="isUpdatingType && newPostType === option.value"
+              @click="handleUpdateTypeOption(option.value as PostType)"
             />
-          </UFormField>
-
-          <div class="flex justify-end gap-3">
-            <UButton
-              color="neutral"
-              variant="ghost"
-              :label="t('common.cancel')"
-              @click="isTypeModalOpen = false"
-            ></UButton>
-            <UButton
-              color="primary"
-              :label="t('common.save')"
-              :loading="isUpdatingType"
-              @click="handleUpdateType"
-            ></UButton>
           </div>
         </div>
       </template>
@@ -450,40 +451,33 @@ function formatDate(dateString: string | null | undefined): string {
     <UModal v-model:open="isStatusModalOpen">
       <template #content>
         <div class="p-6">
-          <div class="flex items-center gap-3 text-gray-900 dark:text-white mb-4">
-            <UIcon name="i-heroicons-arrow-path" class="w-6 h-6 text-primary-500"></UIcon>
-            <h3 class="text-lg font-medium">
-              {{ t('publication.changeStatus') }}
-            </h3>
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3 text-gray-900 dark:text-white">
+              <UIcon name="i-heroicons-arrow-path" class="w-6 h-6 text-primary-500"></UIcon>
+              <h3 class="text-lg font-medium">
+                {{ t('publication.changeStatus') }}
+              </h3>
+            </div>
+            <UButton
+              icon="i-heroicons-x-mark"
+              variant="ghost"
+              color="neutral"
+              size="sm"
+              @click="isStatusModalOpen = false"
+            />
           </div>
 
-          <p class="text-gray-500 dark:text-gray-400 mb-6">
-            {{ t('publication.changeStatusWarning') }}
-          </p>
-
-          <UFormField :label="t('post.status')" required class="mb-6">
-             <USelectMenu
-                v-model="newStatus"
-                :items="statusOptions"
-                value-key="value"
-                label-key="label"
-                class="w-full"
+          <div class="space-y-2">
+            <UButton
+              v-for="option in statusOptions"
+              :key="option.value"
+              :label="option.label"
+              :variant="currentPublication?.status === option.value ? 'soft' : 'ghost'"
+              :color="currentPublication?.status === option.value ? 'primary' : 'neutral'"
+              class="w-full justify-start"
+              :loading="isUpdatingStatus && newStatus === option.value"
+              @click="handleUpdateStatusOption(option.value as PublicationStatus)"
             />
-          </UFormField>
-
-          <div class="flex justify-end gap-3">
-            <UButton
-              color="neutral"
-              variant="ghost"
-              :label="t('common.cancel')"
-              @click="isStatusModalOpen = false"
-            ></UButton>
-            <UButton
-              color="primary"
-              :label="t('common.save')"
-              :loading="isUpdatingStatus"
-              @click="handleUpdateStatus"
-            ></UButton>
           </div>
         </div>
       </template>
