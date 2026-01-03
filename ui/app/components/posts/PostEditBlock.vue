@@ -53,6 +53,31 @@ const formatPublishedAt = (dateStr?: string | null) => {
     return d.toLocaleString()
 }
 
+const headerDateInfo = computed(() => {
+    if (props.post?.publishedAt) {
+        return {
+            date: formatPublishedAt(props.post.publishedAt),
+            icon: 'i-heroicons-check-circle',
+            color: 'text-green-500', 
+            tooltip: t('post.publishedAt')
+        }
+    }
+    if (props.post?.scheduledAt) {
+        return {
+            date: formatPublishedAt(props.post.scheduledAt),
+            icon: 'i-heroicons-clock',
+            color: 'text-amber-500',
+            tooltip: t('post.scheduledAt')
+        }
+    }
+    return null
+})
+
+const overriddenTags = computed(() => {
+    if (!props.post?.tags) return []
+    return props.post.tags.split(',').filter(t => t.trim())
+})
+
 // Form Data - Only post-specific fields
 const formData = reactive({
   channelId: '', 
@@ -221,70 +246,84 @@ const isValid = computed(() => {
 
     <!-- Header -->
     <div 
-      class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-colors select-none"
+      class="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-colors select-none"
       @click="toggleCollapse"
     >
-      <div class="flex items-center gap-3 overflow-hidden">
+      <div class="flex items-start gap-3">
         <!-- Icon -->
-        <SocialIcon 
-          v-if="selectedChannel?.socialMedia" 
-          :platform="selectedChannel.socialMedia" 
-          class="shrink-0"
-        />
-        <UIcon v-else-if="isCreating" name="i-heroicons-plus-circle" class="w-5 h-5 text-primary-500" />
-        <UIcon v-else name="i-heroicons-document-text" class="w-5 h-5 text-gray-400" />
+        <div class="mt-0.5 shrink-0">
+             <SocialIcon 
+              v-if="selectedChannel?.socialMedia" 
+              :platform="selectedChannel.socialMedia" 
+            />
+            <UIcon v-else-if="isCreating" name="i-heroicons-plus-circle" class="w-5 h-5 text-primary-500" />
+            <UIcon v-else name="i-heroicons-document-text" class="w-5 h-5 text-gray-400" />
+        </div>
         
-        <!-- Channel Name or Title -->
-        <span class="font-medium text-gray-900 dark:text-white truncate">
-          <template v-if="isCreating">
-              {{ t('post.createPost', 'Create Post') }}
-          </template>
-          <template v-else>
-              {{ props.post?.channel?.name || t('common.unknownChannel') }}
-          </template>
-        </span>
+        <div class="flex-1 min-w-0 space-y-1">
+            <div class="flex items-center gap-2 flex-wrap">
+                <!-- Channel Name or Title -->
+                <span class="font-medium text-gray-900 dark:text-white truncate">
+                  <template v-if="isCreating">
+                      {{ t('post.createPost', 'Create Post') }}
+                  </template>
+                  <template v-else>
+                      {{ props.post?.channel?.name || t('common.unknownChannel') }}
+                  </template>
+                </span>
 
-        <!-- Language Code -->
-        <UBadge 
-          v-if="!isCreating && displayLanguage" 
-          variant="subtle" 
-          color="neutral" 
-          size="xs"
-          class="ml-1 font-mono shrink-0 rounded-md"
-        >
-          {{ displayLanguage }}
-        </UBadge>
+                <!-- Language Code -->
+                <UBadge 
+                  v-if="!isCreating && displayLanguage" 
+                  variant="subtle" 
+                  color="neutral" 
+                  size="xs"
+                  class="font-mono shrink-0 rounded-md"
+                >
+                  {{ displayLanguage }}
+                </UBadge>
 
-        <!-- Status Display -->
-        <UBadge 
-          v-if="!isCreating && props.post?.status" 
-          variant="subtle" 
-          :color="getStatusColor(props.post.status)" 
-          size="xs"
-          class="ml-1"
-        >
-          {{ getStatusDisplayName(props.post.status) }}
-        </UBadge>
+                <!-- Status Display -->
+                <UBadge 
+                  v-if="!isCreating && props.post?.status" 
+                  variant="subtle" 
+                  :color="getStatusColor(props.post.status)" 
+                  size="xs"
+                >
+                  {{ getStatusDisplayName(props.post.status) }}
+                </UBadge>
 
-        <!-- Published At Display -->
-        <span v-if="!isCreating && props.post?.publishedAt" class="text-xs text-gray-500 flex items-center gap-1">
-             <UIcon name="i-heroicons-check-circle" class="w-3.5 h-3.5 text-green-500" />
-             {{ formatPublishedAt(props.post.publishedAt) }}
-        </span>
-      </div>
+                <!-- Date Display -->
+                <span v-if="!isCreating && headerDateInfo" class="text-xs font-medium flex items-center gap-1" :class="headerDateInfo.color">
+                     <UIcon :name="headerDateInfo.icon" class="w-3.5 h-3.5" />
+                     {{ headerDateInfo.date }}
+                </span>
+            </div>
+            
+            <!-- Overridden Tags -->
+            <div v-if="overriddenTags.length > 0" class="flex flex-wrap gap-1">
+                 <UBadge 
+                    v-for="tag in overriddenTags" 
+                    :key="tag"
+                    variant="subtle" 
+                    color="neutral" 
+                    size="xs"
+                    class="font-mono"
+                >
+                    #{{ tag.trim() }}
+                </UBadge>
+            </div>
+        </div>
 
-      <!-- Expand/Collapse Button -->
-      <div class="flex items-center gap-2">
-           <span v-if="isCollapsed && !isCreating" class="text-xs text-gray-500 hidden sm:flex gap-1">
-               <UIcon v-if="props.post?.scheduledAt" name="i-heroicons-clock" class="w-4 h-4" />
-           </span>
+        <!-- Expand/Collapse Button -->
+        <div class="shrink-0 ml-2">
           <UButton
             variant="ghost"
             color="neutral"
             size="sm"
             :icon="isCollapsed ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-up'"
-            class="ml-2"
           />
+        </div>
       </div>
     </div>
 
@@ -318,10 +357,8 @@ const isValid = computed(() => {
        <!-- Inherited Content Preview (Read-only) -->
        <div class="space-y-4 bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
            <div class="flex items-center justify-between mb-2">
-               <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                   <UIcon name="i-heroicons-information-circle" class="w-4 h-4 text-primary-500" />
-                   {{ t('post.contentInheritedFromPublication') }}
-               </h4>
+               <div class="flex items-center gap-2">
+               </div>
                <UButton 
                  v-if="props.post?.publicationId"
                  :to="`/projects/${selectedChannel?.projectId}/publications/${props.post.publicationId}`"
