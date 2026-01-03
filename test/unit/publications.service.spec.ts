@@ -17,6 +17,7 @@ describe('PublicationsService (unit)', () => {
       findUnique: jest.fn() as any,
       update: jest.fn() as any,
       delete: jest.fn() as any,
+      count: jest.fn() as any,
     },
     projectMember: {
       findUnique: jest.fn() as any,
@@ -113,6 +114,7 @@ describe('PublicationsService (unit)', () => {
 
       mockPermissionsService.checkProjectAccess.mockResolvedValue(undefined);
       mockPrismaService.publication.findMany.mockResolvedValue([{ id: 'p1' }]);
+      mockPrismaService.publication.count.mockResolvedValue(1);
 
       const result = await service.findAll(projectId, userId, {
         status: PostStatus.DRAFT,
@@ -120,7 +122,7 @@ describe('PublicationsService (unit)', () => {
         offset: 0,
       });
 
-      expect(result).toHaveLength(1);
+      expect(result.items).toHaveLength(1);
       expect(mockPrismaService.publication.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
@@ -201,7 +203,7 @@ describe('PublicationsService (unit)', () => {
       );
 
       expect(result).toHaveLength(1);
-      expect(result[0].status).toBe(PostStatus.SCHEDULED);
+      expect(result[0].status).toBe(PostStatus.PENDING);
       expect(result[0].scheduledAt).toEqual(scheduledAt);
     });
 
