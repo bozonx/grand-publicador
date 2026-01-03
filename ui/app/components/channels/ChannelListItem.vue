@@ -38,7 +38,7 @@ function formatDate(date: string | null | undefined): string {
           <!-- Language -->
           <div class="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400" :title="t('channel.language')">
             <UIcon name="i-heroicons-language" class="w-4 h-4" />
-            <span class="font-medium uppercase">
+            <span class="font-medium">
               {{ channel.language }}
             </span>
           </div>
@@ -53,13 +53,16 @@ function formatDate(date: string | null | undefined): string {
           </UBadge>
         </div>
 
-        <!-- ID -->
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 font-mono">
-          ID: {{ channel.channelIdentifier }}
-        </p>
 
-        <!-- Metrics -->
-        <div class="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
+
+        <!-- Metrics & ID -->
+        <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 flex-wrap">
+          <div class="font-mono">
+            ID: {{ channel.channelIdentifier }}
+          </div>
+
+          <div class="w-px h-3 bg-gray-300 dark:bg-gray-700 hidden sm:block"></div>
+
           <div class="flex items-center gap-1.5" :title="t('post.titlePlural')">
             <UIcon name="i-heroicons-document-text" class="w-4 h-4" />
             <span>
