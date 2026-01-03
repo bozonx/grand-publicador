@@ -14,6 +14,8 @@ interface Props {
   hideHeader?: boolean
   /** Whether to hide the cancel button */
   hideCancel?: boolean
+  /** Whether to remove the card styling wrapper */
+  flat?: boolean
 }
 
 interface Emits {
@@ -28,6 +30,7 @@ const props = withDefaults(defineProps<Props>(), {
   cancelLabel: undefined,
   hideHeader: false,
   hideCancel: false,
+  flat: false,
 })
 
 const emit = defineEmits<Emits>()
@@ -66,7 +69,7 @@ function handleCancel() {
 </script>
 
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+  <div :class="[flat ? '' : 'bg-white dark:bg-gray-800 rounded-lg shadow p-6']">
     <div v-if="!hideHeader" class="mb-6">
       <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
         {{ isEditMode ? t('project.editProject') : t('project.createProject') }}

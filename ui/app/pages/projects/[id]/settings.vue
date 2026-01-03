@@ -181,6 +181,7 @@ function cancelDelete() {
             :submit-label="t('settings.saveSettings')"
             hide-header
             hide-cancel
+            flat
           />
         </UCard>
 
