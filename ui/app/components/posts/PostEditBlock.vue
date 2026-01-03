@@ -354,39 +354,7 @@ const isValid = computed(() => {
             </USelectMenu>
        </div>
 
-       <!-- Inherited Content Preview (Read-only) -->
-       <div class="space-y-4 bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-           <div class="flex items-center justify-between mb-2">
-               <div class="flex items-center gap-2">
-               </div>
-               <UButton 
-                 v-if="props.post?.publicationId"
-                 :to="`/projects/${selectedChannel?.projectId}/publications/${props.post.publicationId}`"
-                 variant="ghost"
-                 color="primary"
-                 size="xs"
-                 icon="i-heroicons-pencil-square"
-                >
-                  {{ t('post.editPublication') }}
-               </UButton>
-           </div>
 
-           <div class="space-y-3 opacity-80">
-                <div v-if="displayTitle">
-                    <label class="text-xs font-medium text-gray-500 uppercase">{{ t('post.postTitle') }}</label>
-                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ displayTitle }}</p>
-                </div>
-
-                <div>
-                    <div class="text-sm text-gray-700 dark:text-gray-300 prose prose-sm dark:prose-invert max-w-none line-clamp-5" v-html="displayContent"></div>
-                </div>
-
-                <div v-if="displayDescription">
-                    <label class="text-xs font-medium text-gray-500 uppercase">{{ t('post.description') }}</label>
-                    <p class="text-sm text-gray-700 dark:text-gray-300 italic">{{ displayDescription }}</p>
-                </div>
-           </div>
-       </div>
 
        <!-- Post-specific settings (Editable) -->
        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -427,7 +395,7 @@ const isValid = computed(() => {
             <UButton
               v-if="!isCreating"
               color="error"
-              variant="ghost"
+              variant="outline"
               :loading="isDeleting"
               icon="i-heroicons-trash"
               @click="handleDelete"
@@ -447,7 +415,7 @@ const isValid = computed(() => {
                 <div v-if="isDirty" class="flex items-center gap-3">
                     <UButton
                         color="neutral"
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
                         icon="i-heroicons-arrow-path"
                         @click="resetToOriginal"
