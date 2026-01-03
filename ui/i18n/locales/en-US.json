@@ -360,10 +360,19 @@
     "short": "Short video"
   },
   "postStatus": {
-    "draft": "Draft",
-    "scheduled": "Scheduled",
+    "pending": "Pending",
     "published": "Published",
     "failed": "Failed"
+  },
+  "publicationStatus": {
+    "draft": "Draft",
+    "ready": "Ready",
+    "scheduled": "Scheduled",
+    "processing": "Processing",
+    "published": "Published",
+    "partial": "Partial",
+    "failed": "Failed",
+    "expired": "Expired"
   },
   "settings": {
     "title": "Settings",

@@ -21,11 +21,13 @@ async function main() {
 
     // 1. CLEAR OLD DATA
     console.log('  Cleaning up old data...');
+    await prisma.apiToken.deleteMany({});
     await prisma.post.deleteMany({});
     await prisma.publication.deleteMany({});
     await prisma.channel.deleteMany({});
     await prisma.projectMember.deleteMany({});
     await prisma.project.deleteMany({});
+    await prisma.user.deleteMany({});
 
     // 2. CREATE TEST USERS
     const devTelegramId = BigInt(process.env.TELEGRAM_ADMIN_ID || process.env.VITE_DEV_TELEGRAM_ID || '123456789');

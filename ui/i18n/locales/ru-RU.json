@@ -360,10 +360,19 @@
     "short": "Короткое видео"
   },
   "postStatus": {
-    "draft": "Черновик",
-    "scheduled": "Запланировано",
+    "pending": "Ожидает",
     "published": "Опубликовано",
     "failed": "Ошибка"
+  },
+  "publicationStatus": {
+    "draft": "Черновик",
+    "ready": "Готово",
+    "scheduled": "Запланировано",
+    "processing": "В обработке",
+    "published": "Опубликовано",
+    "partial": "Частично",
+    "failed": "Ошибка",
+    "expired": "Просрочено"
   },
   "settings": {
     "title": "Настройки",

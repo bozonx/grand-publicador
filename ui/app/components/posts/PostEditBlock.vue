@@ -83,7 +83,7 @@ const formData = reactive({
   channelId: '', 
   tags: props.post?.tags || '', // Null or empty means use publication tags
   scheduledAt: toDatetimeLocal(props.post?.scheduledAt),
-  status: props.post?.status || 'DRAFT'
+  status: (props.post?.status || 'PENDING') as PostStatus
 })
 
 // Dirty state tracking
@@ -133,7 +133,7 @@ async function handleSave() {
             publicationId: props.publication.id,
             tags: formData.tags || null,
             scheduledAt: formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : null,
-            status: 'DRAFT',
+            status: 'PENDING',
         }, { silent: true })
 
         if (newPost) {
@@ -443,20 +443,8 @@ const isValid = computed(() => {
                     >
                         {{ t('common.reset') }}
                     </UButton>
-                     <div class="flex items-center gap-2">
-            <UBadge
-              :color="getStatusColor(post.status)"
-              variant="subtle"
-              size="sm"
-              class="font-medium"
-            >
-              {{ getStatusDisplayName(post.status) }}
-            </UBadge>
-
-            <span class="text-xs text-gray-400 dark:text-gray-500 font-mono uppercase bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded leading-none">
-              {{ post.channel?.language }}
-            </span>
-          </div> name="i-heroicons-exclamation-circle" class="w-4 h-4" />
+                     <span v-if="isDirty" class="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                        <UIcon name="i-heroicons-exclamation-circle" class="w-4 h-4" />
                         {{ t('form.unsavedChanges', 'Unsaved changes') }}
                     </span>
                 </div>

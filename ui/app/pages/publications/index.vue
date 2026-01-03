@@ -2,8 +2,7 @@
 import { usePublications } from '~/composables/usePublications'
 import type { PublicationWithRelations } from '~/composables/usePublications'
 
-// PostStatus type (mirrors backend enum)
-type PostStatus = 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'FAILED' | 'EXPIRED'
+import type { PublicationStatus } from '~/types/posts'
 
 definePageMeta({
   middleware: 'auth',
@@ -31,7 +30,7 @@ const currentPage = computed({
 })
 
 // Filter states
-const selectedStatus = ref<PostStatus | null>(null)
+const selectedStatus = ref<PublicationStatus | null>(null)
 const searchQuery = ref('')
 
 // Fetch on mount
