@@ -34,18 +34,47 @@ const formData = reactive({
 onMounted(async () => {
   if (props.projectId) {
     await fetchChannels(props.projectId)
-    
-    // Pre-select channel if provided
+  }
+})
+
+// Initialize form when modal opens or props change
+watch([isOpen, () => props.preselectedLanguage, () => props.preselectedChannelId], ([open]) => {
+  if (open && channels.value.length > 0) {
+    // Set language
     if (props.preselectedChannelId) {
-      formData.channelIds = [props.preselectedChannelId]
-      
-      // Also set language from channel
       const channel = channels.value.find(ch => ch.id === props.preselectedChannelId)
       if (channel) {
         formData.language = channel.language
+        formData.channelIds = [props.preselectedChannelId]
       }
+    } else {
+      if (props.preselectedLanguage) {
+        formData.language = props.preselectedLanguage
+      }
+      
+      // Auto-select channels for the language
+      formData.channelIds = channels.value
+        .filter(ch => ch.language === formData.language)
+        .map(ch => ch.id)
     }
   }
+}, { immediate: true })
+
+// Watch language changes to auto-select matching channels
+watch(() => formData.language, (newLang) => {
+    // Avoid auto-selecting if we are in "single channel" mode from props
+    if (props.preselectedChannelId) {
+        const channel = channels.value.find(ch => ch.id === props.preselectedChannelId)
+        if (channel && channel.language === newLang) return
+    }
+
+    const matchingChannels = channels.value
+      .filter(ch => ch.language === newLang)
+      .map(ch => ch.id)
+    
+    if (matchingChannels.length > 0) {
+        formData.channelIds = matchingChannels
+    }
 })
 
 // Channel options
@@ -106,7 +135,7 @@ function handleClose() {
 </script>
 
 <template>
-  <UModal v-model:open="isOpen" :ui="{ width: 'sm:max-w-2xl' }">
+  <UModal v-model:open="isOpen">
     <template #content>
       <div class="p-6">
         <!-- Header -->

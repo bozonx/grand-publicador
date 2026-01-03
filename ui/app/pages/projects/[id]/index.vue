@@ -109,6 +109,22 @@ function formatDateWithTime(date: string | null | undefined): string {
     minute: '2-digit',
   })
 }
+
+// Create Modal State
+const isCreateModalOpen = ref(false)
+const selectedLanguage = ref<string>('en-US')
+
+function openCreateModal(lang: string) {
+    selectedLanguage.value = lang
+    isCreateModalOpen.value = true
+}
+
+function handleCreateSuccess(publicationId: string) {
+    isCreateModalOpen.value = false
+    // Navigate to the new publication or refresh list
+    // The user wanted the modal to just work. Navigate to the new publication seems appropriate.
+    router.push(`/projects/${projectId.value}/publications/${publicationId}?new=true`)
+}
 </script>
 
 <template>
@@ -304,12 +320,20 @@ function formatDateWithTime(date: string | null | undefined): string {
               :key="lang"
               color="primary"
               icon="i-heroicons-plus"
-              :to="`/projects/${projectId}/publications/new?language=${lang}`"
+              @click="openCreateModal(lang)"
             >
               {{ lang }}
             </UButton>
           </div>
         </div>
+
+        <!-- Create Publication Modal -->
+        <ModalsCreatePublicationModal
+          v-model:open="isCreateModalOpen"
+          :project-id="projectId"
+          :preselected-language="selectedLanguage"
+          @success="handleCreateSuccess"
+        />
 
         <!-- Draft publications list -->
         <div v-if="draftPublications.length > 0" class="mt-6">
