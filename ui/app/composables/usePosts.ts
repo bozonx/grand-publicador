@@ -163,7 +163,7 @@ export function usePosts() {
         }
     }
 
-    async function createPost(data: PostCreateInput): Promise<Post | null> {
+    async function createPost(data: PostCreateInput, options?: { silent?: boolean }): Promise<Post | null> {
         isLoading.value = true
         error.value = null
 
@@ -175,12 +175,14 @@ export function usePosts() {
             }
 
             const post = await api.post<Post>('/posts', payload)
-            toast.add({
-                title: t('common.success'),
-                description: t('post.createSuccess'),
-                color: 'success',
-
-            })
+            
+            if (!options?.silent) {
+                toast.add({
+                    title: t('common.success'),
+                    description: t('post.createSuccess'),
+                    color: 'success',
+                })
+            }
             return post
         } catch (err: any) {
             const message = err.message || 'Failed to create post'

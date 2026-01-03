@@ -758,11 +758,8 @@ function formatDate(dateString: string | null | undefined): string {
           <div v-if="currentPublication.posts && currentPublication.posts.length > 0">
               <div class="flex items-center gap-2 mb-4">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                  {{ t('publication.linkedPosts') }}
+                  {{ t('publication.postsInChannels') }}
                 </h3>
-                <UBadge variant="subtle" color="neutral" size="sm" class="rounded-full">
-                  {{ currentPublication.posts.length }}
-                </UBadge>
               </div>
               
               <div class="space-y-4">
@@ -799,12 +796,12 @@ function formatDate(dateString: string | null | undefined): string {
 
           <div v-if="!isCreatingPost && availableChannels.length > 0" class="mt-4 flex justify-center">
             <UButton
-                variant="ghost"
+                variant="soft"
                 color="primary"
                 icon="i-heroicons-plus"
                 @click="isCreatingPost = true"
             >
-                {{ t('post.addPost') }}
+                {{ t('publication.addChannelToPublication') }}
             </UButton>
           </div>
         </div>

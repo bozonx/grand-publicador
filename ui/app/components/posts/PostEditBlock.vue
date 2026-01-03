@@ -120,7 +120,7 @@ async function handleSave() {
             tags: formData.tags || null,
             scheduledAt: formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : null,
             status: 'DRAFT',
-        })
+        }, { silent: true })
 
         if (newPost) {
             saveButtonRef.value?.showSuccess()
@@ -136,7 +136,7 @@ async function handleSave() {
           tags: formData.tags || null,
           scheduledAt: formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : null,
           status: formData.status as any
-        })
+        }, { silent: true })
         saveButtonRef.value?.showSuccess()
         saveOriginalState() // Clear dirty state
         emit('success')
@@ -378,7 +378,6 @@ const isValid = computed(() => {
                 </div>
 
                 <div>
-                    <label class="text-xs font-medium text-gray-500 uppercase">{{ t('post.content') }}</label>
                     <div class="text-sm text-gray-700 dark:text-gray-300 prose prose-sm dark:prose-invert max-w-none line-clamp-5" v-html="displayContent"></div>
                 </div>
 
@@ -422,35 +421,65 @@ const isValid = computed(() => {
 
       <!-- Actions -->
       <div class="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700/50 mt-4">
-        <!-- Delete Button (Only if NOT creating) -->
-        <UButton
-          v-if="!isCreating"
-          color="error"
-          variant="ghost"
-          :loading="isDeleting"
-          icon="i-heroicons-trash"
-          @click="handleDelete"
-        >
-          {{ t('common.delete') }}
-        </UButton>
+        
+        <div class="flex items-center gap-3">
+             <!-- Delete Button (Only if NOT creating) -->
+            <UButton
+              v-if="!isCreating"
+              color="error"
+              variant="ghost"
+              :loading="isDeleting"
+              icon="i-heroicons-trash"
+              @click="handleDelete"
+            >
+              {{ t('common.delete') }}
+            </UButton>
 
-        <UButton
-          v-if="isCreating"
-          color="neutral"
-          variant="ghost"
-          @click="emit('cancel')"
-        >
-          {{ t('common.cancel') }}
-        </UButton>
-        <div v-else></div> <!-- Spacer -->
+             <!-- Reset Button & unsaved warning -->
+             <Transition
+                enter-active-class="transition duration-200 ease-out"
+                enter-from-class="transform scale-95 opacity-0"
+                enter-to-class="transform scale-100 opacity-100"
+                leave-active-class="transition duration-150 ease-in"
+                leave-from-class="transform scale-100 opacity-100"
+                leave-to-class="transform scale-95 opacity-0"
+              >
+                <div v-if="isDirty" class="flex items-center gap-3">
+                    <UButton
+                        color="neutral"
+                        variant="ghost"
+                        size="sm"
+                        icon="i-heroicons-arrow-path"
+                        @click="resetToOriginal"
+                    >
+                        {{ t('common.reset') }}
+                    </UButton>
+                     <span class="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                        <UIcon name="i-heroicons-exclamation-circle" class="w-4 h-4" />
+                        {{ t('form.unsavedChanges', 'Unsaved changes') }}
+                    </span>
+                </div>
+            </Transition>
+        </div>
 
-        <UiSaveButton
-          ref="saveButtonRef"
-          :loading="isLoading"
-          :disabled="!isValid"
-          :label="isCreating ? t('common.create') : t('common.save')"
-          @click="handleSave"
-        />
+        <div class="flex items-center gap-3">
+            <UButton
+              v-if="isCreating"
+              color="neutral"
+              variant="ghost"
+              @click="emit('cancel')"
+            >
+              {{ t('common.cancel') }}
+            </UButton>
+
+            <UiSaveButton
+              ref="saveButtonRef"
+              :loading="isLoading"
+              :disabled="!isValid"
+              :label="isCreating ? t('common.create') : t('common.save')"
+              @click="handleSave"
+            />
+        </div>
       </div>
 
     </div>
