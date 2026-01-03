@@ -85,8 +85,8 @@ async function handleCreate() {
       isOpen.value = false
       emit('success', publication.id)
       
-      // Navigate to edit page
-      router.push(`/projects/${props.projectId}/publications/${publication.id}`)
+      // Navigate to edit page with query param to expand form
+      router.push(`/projects/${props.projectId}/publications/${publication.id}?new=true`)
     }
   } catch (error) {
     console.error('Failed to create publication:', error)

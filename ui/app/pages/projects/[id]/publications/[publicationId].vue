@@ -82,6 +82,14 @@ const majoritySchedule = computed(() => {
 })
 
 onMounted(async () => {
+    // Check if this is a newly created publication (from modal)
+    const isNewlyCreated = route.query.new === 'true'
+    if (isNewlyCreated) {
+        isFormCollapsed.value = false
+        // Clean up query param
+        router.replace({ query: {} })
+    }
+    
     // Fetch project if needed
     if (projectId.value && (!currentProject.value || currentProject.value.id !== projectId.value)) {
         await fetchProject(projectId.value)
