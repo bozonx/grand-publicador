@@ -63,6 +63,7 @@
   },
   "auth": {
     "login": "Войти",
+    "loginDescription": "Войдите в свой аккаунт",
     "logout": "Выйти",
     "profile": "Профиль",
     "notAuthenticated": "Вы не авторизованы",

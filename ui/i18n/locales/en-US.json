@@ -63,6 +63,7 @@
   },
   "auth": {
     "login": "Log in",
+    "loginDescription": "Sign in to your account",
     "logout": "Log out",
     "profile": "Profile",
     "notAuthenticated": "You are not authenticated",
