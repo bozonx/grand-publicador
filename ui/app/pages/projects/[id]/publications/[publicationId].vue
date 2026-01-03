@@ -144,6 +144,27 @@ function handleCancel() {
   goBack()
 }
 
+async function handleArchiveToggle() {
+    if (!currentPublication.value) return
+
+    // Manually update local state because fetching might fail if API hides archived items
+    if (currentPublication.value.archivedAt) {
+        // Restoring
+        currentPublication.value.archivedAt = null
+        await fetchPublication(currentPublication.value.id)
+    } else {
+        // Archiving
+        currentPublication.value.archivedAt = new Date().toISOString()
+        // Try to fetch to get exact server state, but if it fails (e.g. 404 for archived), 
+        // we keep our local optimistic update
+        try {
+            await fetchPublication(currentPublication.value.id)
+        } catch (e) {
+            console.warn('Could not refresh publication after archiving', e)
+        }
+    }
+}
+
 async function handleDelete() {
     if (!currentPublication.value) return
     isDeleting.value = true
@@ -507,13 +528,6 @@ function formatDate(dateString: string | null | undefined): string {
                     
                     <!-- Action Buttons -->
                     <div class="flex items-center gap-2">
-                        <UiArchiveButton
-                            :entity-type="ArchiveEntityType.PUBLICATION"
-                            :entity-id="currentPublication.id"
-                            :is-archived="!!currentPublication.archivedAt"
-                            @toggle="() => fetchPublication(publicationId)"
-                        />
-
                         <UButton
                             :label="t('publication.changeSchedule')"
                             icon="i-heroicons-clock"
@@ -523,6 +537,14 @@ function formatDate(dateString: string | null | undefined): string {
                             :disabled="allPostsPublished"
                             @click="openScheduleModal"
                         ></UButton>
+
+                        <UiArchiveButton
+                            :key="currentPublication.archivedAt ? 'archived' : 'active'"
+                            :entity-type="ArchiveEntityType.PUBLICATION"
+                            :entity-id="currentPublication.id"
+                            :is-archived="!!currentPublication.archivedAt"
+                            @toggle="handleArchiveToggle"
+                        />
 
                         <UButton
                             :label="t('common.delete')"

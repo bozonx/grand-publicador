@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import type { ArchiveEntityType } from '~/types/archive.types'
 
 interface Props {
@@ -46,7 +46,7 @@ const buttonConfig = computed(() => {
     return {
       label: t('common.restore'),
       icon: 'i-heroicons-archive-box-arrow-down',
-      color: 'primary' as const
+      color: 'warning' as const
     }
   } else {
     return {
