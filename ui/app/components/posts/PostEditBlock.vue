@@ -61,6 +61,9 @@ const formData = reactive({
   status: props.post?.status || 'DRAFT'
 })
 
+// Dirty state tracking
+const { isDirty, saveOriginalState, resetToOriginal } = useFormDirtyState(formData)
+
 const channelOptions = computed(() => {
     return props.availableChannels?.map(c => ({
         value: c.id,
@@ -96,6 +99,7 @@ async function handleSave() {
 
         if (newPost) {
             saveButtonRef.value?.showSuccess()
+            saveOriginalState() // Clear dirty state
             emit('success', newPost)
         } else {
             throw new Error('Failed to create post')
@@ -109,6 +113,7 @@ async function handleSave() {
           status: formData.status as any
         })
         saveButtonRef.value?.showSuccess()
+        saveOriginalState() // Clear dirty state
         emit('success')
     }
   } catch (error) {
@@ -136,6 +141,7 @@ async function confirmDelete() {
   isDeleteModalOpen.value = false
   
   if (success) {
+    saveOriginalState() // Clear dirty state
     emit('deleted', props.post.id)
   }
 }
@@ -153,7 +159,12 @@ watch(() => props.post, (newPost) => {
     formData.tags = newPost.tags || ''
     formData.scheduledAt = toDatetimeLocal(newPost.scheduledAt)
     formData.status = newPost.status
-}, { deep: true })
+    
+    // Save original state after update
+    nextTick(() => {
+        saveOriginalState()
+    })
+}, { deep: true, immediate: true })
 
 onMounted(() => {
     if (props.isCreating) {
@@ -162,6 +173,8 @@ onMounted(() => {
             formData.channelId = channels[0].id
         }
     }
+    // Initialize dirty state tracking
+    saveOriginalState()
 })
 
 const isValid = computed(() => {
