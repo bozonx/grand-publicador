@@ -104,6 +104,23 @@ function formatDateWithTime(date: string | null | undefined): string {
               </div>
             </template>
           </div>
+
+          <!-- Channels -->
+          <div v-if="project.channels?.length" class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center gap-2 flex-wrap">
+            <UTooltip 
+              v-for="channel in project.channels" 
+              :key="channel.id" 
+              :text="channel.name"
+            >
+              <NuxtLink 
+                :to="`/projects/${project.id}/channels/${channel.id}`"
+                class="hover:opacity-80 transition-opacity"
+                @click.stop
+              >
+                <CommonSocialIcon :platform="channel.socialMedia" :show-background="true" />
+              </NuxtLink>
+            </UTooltip>
+          </div>
         </div>
       </div>
     </div>

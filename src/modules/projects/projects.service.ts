@@ -98,8 +98,12 @@ export class ProjectsService {
         },
         channels: {
           where: { archivedAt: null },
-          select: { language: true },
-          distinct: ['language'],
+          select: {
+            id: true,
+            name: true,
+            socialMedia: true,
+            language: true,
+          },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -110,13 +114,18 @@ export class ProjectsService {
 
       const lastPublicationAt = project.publications[0]?.createdAt || null;
       const lastPublicationId = project.publications[0]?.id || null;
-      const languages = (project.channels || []).map(c => c.language).sort();
+      const languages = [...new Set((project.channels || []).map(c => c.language))].sort();
+      const channels = (project.channels || []).map(c => ({
+        id: c.id,
+        name: c.name,
+        socialMedia: c.socialMedia,
+      }));
 
-      const { publications: _, channels: _channels, ...projectData } = project;
+      const { publications: _, channels: _originalChannels, ...projectData } = project;
 
       return {
         ...projectData,
-        // channels: [] - removed to reduce payload
+        channels,
         role: userMember?.role?.toLowerCase(),
         channelCount: project._count.channels,
         publicationsCount: project._count.publications,
@@ -172,8 +181,12 @@ export class ProjectsService {
         },
         channels: {
           where: { archivedAt: null },
-          select: { language: true },
-          distinct: ['language'],
+          select: {
+            id: true,
+            name: true,
+            socialMedia: true,
+            language: true,
+          },
         },
       },
       orderBy: { archivedAt: 'desc' },
@@ -184,12 +197,18 @@ export class ProjectsService {
 
       const lastPublicationAt = project.publications[0]?.createdAt || null;
       const lastPublicationId = project.publications[0]?.id || null;
-      const languages = (project.channels || []).map(c => c.language).sort();
+      const languages = [...new Set((project.channels || []).map(c => c.language))].sort();
+      const channels = (project.channels || []).map(c => ({
+        id: c.id,
+        name: c.name,
+        socialMedia: c.socialMedia,
+      }));
 
-      const { publications: _, channels: _channels, ...projectData } = project;
+      const { publications: _, channels: _originalChannels, ...projectData } = project;
 
       return {
         ...projectData,
+        channels,
         role: userMember?.role?.toLowerCase(),
         channelCount: project._count.channels,
         publicationsCount: project._count.publications,
