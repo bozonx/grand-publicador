@@ -194,20 +194,6 @@ function handleReset() {
   resetToOriginal()
 }
 
-// Warn before leaving page with unsaved changes
-onBeforeRouteLeave((to, from, next) => {
-  if (isDirty.value) {
-    const answer = window.confirm(t('form.resetConfirm'))
-    if (answer) {
-      next()
-    } else {
-      next(false)
-    }
-  } else {
-    next()
-  }
-})
-
 /**
  * Get identifier placeholder based on selected social media
  */

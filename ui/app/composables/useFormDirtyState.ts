@@ -1,5 +1,6 @@
-import { ref, computed, watch, onBeforeUnmount } from 'vue'
-import type { Ref } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
 /**
  * Composable for tracking form dirty state (unsaved changes)
@@ -13,11 +14,16 @@ export function useFormDirtyState<T extends Record<string, any>>(
   options: {
     /** Enable browser warning when leaving page with unsaved changes */
     enableBeforeUnload?: boolean
+    /** Enable router navigation guard */
+    enableNavigationGuard?: boolean
     /** Custom comparison function for dirty state detection */
     compareFn?: (original: T, current: T) => boolean
   } = {}
 ) {
-  const { enableBeforeUnload = true, compareFn } = options
+  const { enableBeforeUnload = true, enableNavigationGuard = true, compareFn } = options
+
+  const router = useRouter()
+  const { t } = useI18n()
 
   // Store original form data as JSON string for comparison
   const originalDataJson = ref<string>('')
@@ -83,11 +89,37 @@ export function useFormDirtyState<T extends Record<string, any>>(
   // Setup beforeunload listener
   if (enableBeforeUnload && typeof window !== 'undefined') {
     window.addEventListener('beforeunload', handleBeforeUnload)
+  }
 
-    onBeforeUnmount(() => {
-      window.removeEventListener('beforeunload', handleBeforeUnload)
+  // Setup router navigation guard
+  let removeGuard: (() => void) | undefined
+
+  if (enableNavigationGuard && router) {
+    removeGuard = router.beforeEach((to, from, next) => {
+      if (isDirty.value) {
+        const answer = window.confirm(
+          t('form.resetConfirm', 'Are you sure you want to leave? You have unsaved changes.')
+        )
+        if (answer) {
+          next()
+        } else {
+          next(false)
+        }
+      } else {
+        next()
+      }
     })
   }
+
+  // Cleanup on unmount
+  onBeforeUnmount(() => {
+    if (enableBeforeUnload && typeof window !== 'undefined') {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+    if (removeGuard) {
+      removeGuard()
+    }
+  })
 
   return {
     /** Whether the form has unsaved changes */

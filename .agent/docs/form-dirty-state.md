@@ -36,6 +36,7 @@ resetToOriginal()
 ```typescript
 useFormDirtyState(formData, {
   enableBeforeUnload: true, // Предупреждение браузера при закрытии вкладки
+  enableNavigationGuard: true, // Предупреждение при навигации через Vue Router
   compareFn: (original, current) => { /* custom comparison */ }
 })
 ```
@@ -78,7 +79,7 @@ const formData = reactive({
 
 const formActionsRef = ref(null)
 
-// 1. Инициализация dirty state
+// 1. Инициализация dirty state (navigation guard настраивается автоматически)
 const { isDirty, saveOriginalState, resetToOriginal } = useFormDirtyState(formData)
 
 // 2. Сохранение исходного состояния после загрузки
@@ -107,19 +108,8 @@ function handleReset() {
   resetToOriginal()
 }
 
-// 5. Предупреждение при уходе со страницы
-onBeforeRouteLeave((to, from, next) => {
-  if (isDirty.value) {
-    const answer = window.confirm(t('form.resetConfirm'))
-    if (answer) {
-      next()
-    } else {
-      next(false)
-    }
-  } else {
-    next()
-  }
-})
+// Navigation guard настраивается автоматически в composable!
+// Не нужно добавлять onBeforeRouteLeave вручную
 </script>
 
 <template>

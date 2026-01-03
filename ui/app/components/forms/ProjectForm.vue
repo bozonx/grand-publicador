@@ -98,20 +98,6 @@ function handleCancel() {
 function handleReset() {
   resetToOriginal()
 }
-
-// Warn before leaving page with unsaved changes
-onBeforeRouteLeave((to, from, next) => {
-  if (isDirty.value) {
-    const answer = window.confirm(t('form.resetConfirm'))
-    if (answer) {
-      next()
-    } else {
-      next(false)
-    }
-  } else {
-    next()
-  }
-})
 </script>
 
 <template>
