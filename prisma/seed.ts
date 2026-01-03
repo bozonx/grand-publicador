@@ -101,6 +101,12 @@ async function main() {
             name: 'Здоровый Образ Жизни 🥗',
             description: null, // Test null description
             ownerId: devUser.id,
+        },
+        {
+            id: '11111111-1111-1111-1111-111111111115',
+            name: 'UI Stress Test Project 🧪 with a very very long name to check if it fits in the sidebar or header correctly without breaking layout',
+            description: 'A project designed specifically to break the UI with long strings and edge cases.',
+            ownerId: devUser.id,
         }
     ];
 
@@ -121,6 +127,7 @@ async function main() {
         { projectId: projectData[2].id, userId: adminUser.id, role: ProjectRole.OWNER },
         { projectId: projectData[2].id, userId: devUser.id, role: ProjectRole.ADMIN },
         { projectId: projectData[3].id, userId: devUser.id, role: ProjectRole.OWNER },
+        { projectId: '11111111-1111-1111-1111-111111111115', userId: devUser.id, role: ProjectRole.OWNER },
     ];
 
     for (const m of memberships) {
@@ -139,6 +146,7 @@ async function main() {
         { id: '22222222-2222-2222-2222-222222222224', projectId: projectData[1].id, socialMedia: SocialMedia.TELEGRAM, name: 'Путешествия Ежедневно', channelIdentifier: '@travel_daily', language: 'ru-RU', isActive: true },
         { id: '22222222-2222-2222-2222-222222222225', projectId: projectData[2].id, socialMedia: SocialMedia.X, name: 'Финансовые Алертс', channelIdentifier: 'finance_guru', language: 'en-US', isActive: true },
         { id: '22222222-2222-2222-2222-222222222226', projectId: projectData[0].id, socialMedia: SocialMedia.TIKTOK, name: 'Tech Shorts', channelIdentifier: '@tech_shorts', language: 'en-US', isActive: true },
+        { id: '22222222-2222-2222-2222-222222222227', projectId: '11111111-1111-1111-1111-111111111115', socialMedia: SocialMedia.TELEGRAM, name: 'Stress Test Channel with Long Name', channelIdentifier: '@stress_test_long_id', language: 'ru-RU', isActive: true },
     ];
 
     for (const c of channelData) {
@@ -221,6 +229,39 @@ async function main() {
             status: PublicationStatus.PUBLISHED,
             postType: PostType.POST,
             language: 'ru-RU',
+        },
+        {
+            id: '44444444-4444-4444-4444-444444444450',
+            projectId: '11111111-1111-1111-1111-111111111115',
+            createdBy: devUser.id,
+            title: 'Очень длинный заголовок публикации, который должен проверить, как интерфейс справляется с переносом строк. Если он не переносится, то все сломается и выйдет за пределы контейнера. Поэтому мы пишем здесь очень много текста.',
+            content: '<p>Контент для проверки длинного заголовка.</p>',
+            tags: 'test,long-title',
+            status: PublicationStatus.DRAFT,
+            postType: PostType.POST,
+            language: 'ru-RU',
+        },
+        {
+            id: '44444444-4444-4444-4444-444444444451',
+            projectId: '11111111-1111-1111-1111-111111111115',
+            createdBy: devUser.id,
+            title: 'Публикация с огромным количеством тегов',
+            content: '<p>Здесь очень много тегов.</p>',
+            tags: 'tag1,tag2,tag3,very-long-tag-name-example,another-tag,frontend,backend,testing,ui-ux,design,development,database,prisma,nestjs,vue,nuxt,javascript,typescript,css,html,responsive,mobile-first,accessibility,performance,security,optimization,deployment,ci-cd,git,github,gitlab,bitbucket,jira,trello,notion,slack,discord,telegram,whatsapp,viber,signal,facebook,instagram,twitter,linkedin,youtube,tiktok,snapchat,pinterest,reddit,quora,medium,dev-to,hashnode,stackoverflow,google,bing,yahoo,yandex,duckduckgo,brave,firefox,chrome,edge,safari,opera,vivaldi,ie,netscape,mosaic,lynx,w3c,whatwg,ietf,iso,ansi,ieee,acm,ieee-cs,bcs,cs,it,ict,iot,ai,ml,dl,ds,big-data,cloud,serverless,microservices,monolith,soa,rest,graphql,grpc,soap,xml,json,yaml,toml,ini,csv,tsv,xls,xlsx,doc,docx,ppt,pptx,pdf,txt,md,rst,tex,latex,bib,bibtex',
+            status: PublicationStatus.READY,
+            postType: PostType.ARTICLE,
+            language: 'ru-RU',
+        },
+        {
+            id: '44444444-4444-4444-4444-444444444452',
+            projectId: '11111111-1111-1111-1111-111111111115',
+            createdBy: devUser.id,
+            title: 'Комбо: Супер длинный заголовок и миллион тегов в одной публикации для максимального стресс-теста интерфейса на прочность',
+            content: '<p>Удачи интерфейсу.</p>',
+            tags: 'stress,test,crash,burn,ui,layout,overflow,hidden,scroll,wrap,break-word,whitespace,nowrap,text-overflow,ellipsis,line-clamp,flex,grid,block,inline,inline-block,position,absolute,relative,fixed,sticky,z-index,opacity,visibility,display,float,clear,margin,padding,border,width,height,min-width,min-height,max-width,max-height,box-sizing,border-box,content-box,transform,transition,animation,keyframes,media-query,hover,focus,active,visited,link,disabled,checked,selected,required,optional,read-only,read-write,valid,invalid,in-range,out-of-range,placeholder-shown,default,checked,indeterminate,blank,empty,target,lang,not,nth-child,nth-last-child,nth-of-type,nth-last-of-type,first-child,last-child,first-of-type,last-of-type,only-child,only-of-type,root,empty',
+            status: PublicationStatus.PUBLISHED,
+            postType: PostType.POST,
+            language: 'ru-RU',
         }
     ];
 
@@ -298,6 +339,15 @@ async function main() {
             socialMedia: 'TELEGRAM',
             tags: null,
             status: PostStatus.PENDING,
+        },
+        {
+            id: '33333333-3333-3333-3333-333333333352',
+            publicationId: '44444444-4444-4444-4444-444444444452',
+            channelId: '22222222-2222-2222-2222-222222222227',
+            socialMedia: 'TELEGRAM',
+            tags: null,
+            status: PostStatus.PUBLISHED,
+            publishedAt: new Date(Date.now() - 3600),
         }
     ];
 
