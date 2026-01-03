@@ -141,7 +141,7 @@ model Publication {
 
   title         String?
   description   String?
-  content       String
+  content       String?
   // Comment from author for post with type NEWS
   authorComment String?    @map("author_comment")
   tags          String?

@@ -10,7 +10,7 @@ export interface Publication {
     createdBy: string | null
     title: string | null
     description: string | null
-    content: string
+    content: string | null
     mediaFiles: string
     tags: string | null
     status: PublicationStatus

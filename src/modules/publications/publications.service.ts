@@ -87,6 +87,19 @@ export class PublicationsService {
       `Publication "${publication.title ?? publication.id}" created in project ${data.projectId} by ${author}`,
     );
 
+    // Automatically create posts for specified channels
+    if (data.channelIds && data.channelIds.length > 0) {
+      await this.createPostsFromPublication(
+        publication.id,
+        data.channelIds,
+        userId,
+        undefined, // no scheduled time by default
+      );
+      this.logger.log(
+        `Created ${data.channelIds.length} posts for publication ${publication.id}`,
+      );
+    }
+
     return publication;
   }
 

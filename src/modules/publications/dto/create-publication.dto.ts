@@ -19,8 +19,8 @@ export class CreatePublicationDto {
   public description?: string;
 
   @IsString()
-  @IsNotEmpty()
-  public content!: string;
+  @IsOptional()
+  public content?: string;
 
   @IsString()
   @IsOptional()
@@ -66,4 +66,9 @@ export class CreatePublicationDto {
   @IsString()
   @IsOptional()
   public linkToPublicationId?: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  public channelIds?: string[];
 }

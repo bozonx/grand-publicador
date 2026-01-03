@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { ChannelWithProject } from '~/composables/useChannels'
 import type { PostWithRelations, PostStatus, PostType } from '~/composables/usePosts'
-import type { PublicationWithRelations, PublicationStatus } from '~/composables/usePublications'
+import type { PublicationWithRelations } from '~/composables/usePublications'
+import type { PublicationStatus } from '~/types/posts'
 
 definePageMeta({
   middleware: 'auth',
@@ -64,6 +65,18 @@ const isDeletingPost = ref(false)
 const isTogglingActive = ref(false)
 const isArchiving = ref(false)
 
+// Create publication modal state
+const showCreatePublicationModal = ref(false)
+
+function openCreatePublicationModal() {
+  showCreatePublicationModal.value = true
+}
+
+function handlePublicationCreated(publicationId: string) {
+  // Refresh posts list
+  fetchPostsByProject(projectId.value)
+}
+
 // Initialization
 onMounted(async () => {
     if (channelId.value) {
@@ -91,17 +104,6 @@ watch(
     fetchPostsByProject(projectId.value)
   }
 )
-
-
-/**
- * Handle Post Navigation
- */
-function goToCreatePost() {
-  router.push({
-      path: `/projects/${projectId.value}/publications/new`,
-      query: { channelId: channelId.value }
-  })
-}
 
 function goToPost(postId: string) {
   // Find the post to get its publicationId
@@ -431,7 +433,7 @@ function mapPostToPublication(post: PostWithRelations): PublicationWithRelations
                     <h2 class="text-xl font-bold text-gray-900 dark:text-white">
                         {{ t('publication.titlePlural', 'Publications') }}
                     </h2>
-                     <UButton icon="i-heroicons-plus" color="primary" @click="goToCreatePost">
+                     <UButton icon="i-heroicons-plus" color="primary" @click="openCreatePublicationModal">
                         {{ t('post.createPost') }}
                     </UButton>
                 </div>
@@ -508,6 +510,15 @@ function mapPostToPublication(post: PostWithRelations): PublicationWithRelations
              </div>
         </div>
 
+
+        <!-- Create Publication Modal -->
+        <ModalsCreatePublicationModal
+          v-model:open="showCreatePublicationModal"
+          :project-id="projectId"
+          :preselected-channel-id="channelId"
+          :preselected-language="channel?.language"
+          @success="handlePublicationCreated"
+        />
 
         <!-- Delete Post Modal -->
          <UModal v-model:open="showDeletePostModal">

@@ -350,7 +350,17 @@
     "changeStatus": "Изменить статус",
     "changeStatusWarning": "Внимание! Это изменит статус для всех связанных постов.",
     "linkedPostsInfo": "Связанные посты",
-    "linkedPostsInfoDescription": "Изменения в этой публикации автоматически применятся к {count} связанным постам"
+    "linkedPostsInfoDescription": "Изменения в этой публикации автоматически применятся к {count} связанным постам",
+    "createError": "Не удалось создать публикацию",
+    "createModal": {
+      "title": "Создать публикацию",
+      "selectLanguage": "Язык",
+      "selectPostType": "Тип поста",
+      "selectChannels": "Каналы (необязательно)",
+      "channelsHelp": "Выберите каналы для немедленного создания постов",
+      "createButton": "Создать",
+      "cancelButton": "Отмена"
+    }
   },
   "postType": {
     "post": "Пост",

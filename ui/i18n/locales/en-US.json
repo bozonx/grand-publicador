@@ -350,7 +350,17 @@
     "changeStatus": "Change Status",
     "changeStatusWarning": "Warning! This will change the status for all linked posts.",
     "linkedPostsInfo": "Linked Posts",
-    "linkedPostsInfoDescription": "Changes to this publication will automatically apply to {count} linked posts"
+    "linkedPostsInfoDescription": "Changes to this publication will automatically apply to {count} linked posts",
+    "createError": "Failed to create publication",
+    "createModal": {
+      "title": "Create Publication",
+      "selectLanguage": "Language",
+      "selectPostType": "Post Type",
+      "selectChannels": "Channels (Optional)",
+      "channelsHelp": "Select channels to create posts immediately",
+      "createButton": "Create",
+      "cancelButton": "Cancel"
+    }
   },
   "postType": {
     "post": "Post",

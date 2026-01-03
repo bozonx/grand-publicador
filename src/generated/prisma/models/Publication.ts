@@ -242,7 +242,7 @@ export type PublicationGroupByOutputType = {
   archivedBy: string | null
   title: string | null
   description: string | null
-  content: string
+  content: string | null
   authorComment: string | null
   tags: string | null
   mediaFiles: string
@@ -285,7 +285,7 @@ export type PublicationWhereInput = {
   archivedBy?: Prisma.StringNullableFilter<"Publication"> | string | null
   title?: Prisma.StringNullableFilter<"Publication"> | string | null
   description?: Prisma.StringNullableFilter<"Publication"> | string | null
-  content?: Prisma.StringFilter<"Publication"> | string
+  content?: Prisma.StringNullableFilter<"Publication"> | string | null
   authorComment?: Prisma.StringNullableFilter<"Publication"> | string | null
   tags?: Prisma.StringNullableFilter<"Publication"> | string | null
   mediaFiles?: Prisma.StringFilter<"Publication"> | string
@@ -310,7 +310,7 @@ export type PublicationOrderByWithRelationInput = {
   archivedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   title?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
-  content?: Prisma.SortOrder
+  content?: Prisma.SortOrderInput | Prisma.SortOrder
   authorComment?: Prisma.SortOrderInput | Prisma.SortOrder
   tags?: Prisma.SortOrderInput | Prisma.SortOrder
   mediaFiles?: Prisma.SortOrder
@@ -338,7 +338,7 @@ export type PublicationWhereUniqueInput = Prisma.AtLeast<{
   archivedBy?: Prisma.StringNullableFilter<"Publication"> | string | null
   title?: Prisma.StringNullableFilter<"Publication"> | string | null
   description?: Prisma.StringNullableFilter<"Publication"> | string | null
-  content?: Prisma.StringFilter<"Publication"> | string
+  content?: Prisma.StringNullableFilter<"Publication"> | string | null
   authorComment?: Prisma.StringNullableFilter<"Publication"> | string | null
   tags?: Prisma.StringNullableFilter<"Publication"> | string | null
   mediaFiles?: Prisma.StringFilter<"Publication"> | string
@@ -363,7 +363,7 @@ export type PublicationOrderByWithAggregationInput = {
   archivedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   title?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
-  content?: Prisma.SortOrder
+  content?: Prisma.SortOrderInput | Prisma.SortOrder
   authorComment?: Prisma.SortOrderInput | Prisma.SortOrder
   tags?: Prisma.SortOrderInput | Prisma.SortOrder
   mediaFiles?: Prisma.SortOrder
@@ -391,7 +391,7 @@ export type PublicationScalarWhereWithAggregatesInput = {
   archivedBy?: Prisma.StringNullableWithAggregatesFilter<"Publication"> | string | null
   title?: Prisma.StringNullableWithAggregatesFilter<"Publication"> | string | null
   description?: Prisma.StringNullableWithAggregatesFilter<"Publication"> | string | null
-  content?: Prisma.StringWithAggregatesFilter<"Publication"> | string
+  content?: Prisma.StringNullableWithAggregatesFilter<"Publication"> | string | null
   authorComment?: Prisma.StringNullableWithAggregatesFilter<"Publication"> | string | null
   tags?: Prisma.StringNullableWithAggregatesFilter<"Publication"> | string | null
   mediaFiles?: Prisma.StringWithAggregatesFilter<"Publication"> | string
@@ -411,7 +411,7 @@ export type PublicationCreateInput = {
   archivedBy?: string | null
   title?: string | null
   description?: string | null
-  content: string
+  content?: string | null
   authorComment?: string | null
   tags?: string | null
   mediaFiles?: string
@@ -436,7 +436,7 @@ export type PublicationUncheckedCreateInput = {
   archivedBy?: string | null
   title?: string | null
   description?: string | null
-  content: string
+  content?: string | null
   authorComment?: string | null
   tags?: string | null
   mediaFiles?: string
@@ -457,7 +457,7 @@ export type PublicationUpdateInput = {
   archivedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  content?: Prisma.StringFieldUpdateOperationsInput | string
+  content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authorComment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mediaFiles?: Prisma.StringFieldUpdateOperationsInput | string
@@ -482,7 +482,7 @@ export type PublicationUncheckedUpdateInput = {
   archivedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  content?: Prisma.StringFieldUpdateOperationsInput | string
+  content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authorComment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mediaFiles?: Prisma.StringFieldUpdateOperationsInput | string
@@ -505,7 +505,7 @@ export type PublicationCreateManyInput = {
   archivedBy?: string | null
   title?: string | null
   description?: string | null
-  content: string
+  content?: string | null
   authorComment?: string | null
   tags?: string | null
   mediaFiles?: string
@@ -525,7 +525,7 @@ export type PublicationUpdateManyMutationInput = {
   archivedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  content?: Prisma.StringFieldUpdateOperationsInput | string
+  content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authorComment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mediaFiles?: Prisma.StringFieldUpdateOperationsInput | string
@@ -547,7 +547,7 @@ export type PublicationUncheckedUpdateManyInput = {
   archivedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  content?: Prisma.StringFieldUpdateOperationsInput | string
+  content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authorComment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mediaFiles?: Prisma.StringFieldUpdateOperationsInput | string
@@ -754,7 +754,7 @@ export type PublicationCreateWithoutCreatorInput = {
   archivedBy?: string | null
   title?: string | null
   description?: string | null
-  content: string
+  content?: string | null
   authorComment?: string | null
   tags?: string | null
   mediaFiles?: string
@@ -777,7 +777,7 @@ export type PublicationUncheckedCreateWithoutCreatorInput = {
   archivedBy?: string | null
   title?: string | null
   description?: string | null
-  content: string
+  content?: string | null
   authorComment?: string | null
   tags?: string | null
   mediaFiles?: string
@@ -828,7 +828,7 @@ export type PublicationScalarWhereInput = {
   archivedBy?: Prisma.StringNullableFilter<"Publication"> | string | null
   title?: Prisma.StringNullableFilter<"Publication"> | string | null
   description?: Prisma.StringNullableFilter<"Publication"> | string | null
-  content?: Prisma.StringFilter<"Publication"> | string
+  content?: Prisma.StringNullableFilter<"Publication"> | string | null
   authorComment?: Prisma.StringNullableFilter<"Publication"> | string | null
   tags?: Prisma.StringNullableFilter<"Publication"> | string | null
   mediaFiles?: Prisma.StringFilter<"Publication"> | string
@@ -848,7 +848,7 @@ export type PublicationCreateWithoutProjectInput = {
   archivedBy?: string | null
   title?: string | null
   description?: string | null
-  content: string
+  content?: string | null
   authorComment?: string | null
   tags?: string | null
   mediaFiles?: string
@@ -871,7 +871,7 @@ export type PublicationUncheckedCreateWithoutProjectInput = {
   archivedBy?: string | null
   title?: string | null
   description?: string | null
-  content: string
+  content?: string | null
   authorComment?: string | null
   tags?: string | null
   mediaFiles?: string
@@ -917,7 +917,7 @@ export type PublicationCreateWithoutPostsInput = {
   archivedBy?: string | null
   title?: string | null
   description?: string | null
-  content: string
+  content?: string | null
   authorComment?: string | null
   tags?: string | null
   mediaFiles?: string
@@ -941,7 +941,7 @@ export type PublicationUncheckedCreateWithoutPostsInput = {
   archivedBy?: string | null
   title?: string | null
   description?: string | null
-  content: string
+  content?: string | null
   authorComment?: string | null
   tags?: string | null
   mediaFiles?: string
@@ -977,7 +977,7 @@ export type PublicationUpdateWithoutPostsInput = {
   archivedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  content?: Prisma.StringFieldUpdateOperationsInput | string
+  content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authorComment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mediaFiles?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1001,7 +1001,7 @@ export type PublicationUncheckedUpdateWithoutPostsInput = {
   archivedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  content?: Prisma.StringFieldUpdateOperationsInput | string
+  content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authorComment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mediaFiles?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1022,7 +1022,7 @@ export type PublicationCreateManyCreatorInput = {
   archivedBy?: string | null
   title?: string | null
   description?: string | null
-  content: string
+  content?: string | null
   authorComment?: string | null
   tags?: string | null
   mediaFiles?: string
@@ -1042,7 +1042,7 @@ export type PublicationUpdateWithoutCreatorInput = {
   archivedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  content?: Prisma.StringFieldUpdateOperationsInput | string
+  content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authorComment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mediaFiles?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1065,7 +1065,7 @@ export type PublicationUncheckedUpdateWithoutCreatorInput = {
   archivedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  content?: Prisma.StringFieldUpdateOperationsInput | string
+  content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authorComment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mediaFiles?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1087,7 +1087,7 @@ export type PublicationUncheckedUpdateManyWithoutCreatorInput = {
   archivedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  content?: Prisma.StringFieldUpdateOperationsInput | string
+  content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authorComment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mediaFiles?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1108,7 +1108,7 @@ export type PublicationCreateManyProjectInput = {
   archivedBy?: string | null
   title?: string | null
   description?: string | null
-  content: string
+  content?: string | null
   authorComment?: string | null
   tags?: string | null
   mediaFiles?: string
@@ -1128,7 +1128,7 @@ export type PublicationUpdateWithoutProjectInput = {
   archivedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  content?: Prisma.StringFieldUpdateOperationsInput | string
+  content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authorComment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mediaFiles?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1151,7 +1151,7 @@ export type PublicationUncheckedUpdateWithoutProjectInput = {
   archivedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  content?: Prisma.StringFieldUpdateOperationsInput | string
+  content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authorComment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mediaFiles?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1173,7 +1173,7 @@ export type PublicationUncheckedUpdateManyWithoutProjectInput = {
   archivedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  content?: Prisma.StringFieldUpdateOperationsInput | string
+  content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authorComment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mediaFiles?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1345,7 +1345,7 @@ export type $PublicationPayload<ExtArgs extends runtime.Types.Extensions.Interna
     archivedBy: string | null
     title: string | null
     description: string | null
-    content: string
+    content: string | null
     authorComment: string | null
     tags: string | null
     mediaFiles: string

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { PublicationWithRelations, PublicationStatus } from '~/composables/usePublications'
+import type { PublicationWithRelations } from '~/composables/usePublications'
+import type { PublicationStatus } from '~/types/posts'
 
 definePageMeta({
   middleware: 'auth',
@@ -44,6 +45,22 @@ const showDeleteModal = ref(false)
 const publicationToDelete = ref<PublicationWithRelations | null>(null)
 const isDeleting = ref(false)
 
+// Create modal state
+const showCreateModal = ref(false)
+
+function openCreateModal() {
+  showCreateModal.value = true
+}
+
+function handlePublicationCreated(publicationId: string) {
+  // Refresh the list
+  fetchPublicationsByProject(projectId.value, {
+    includeArchived: showArchived.value,
+    limit: limit.value,
+    offset: offset.value
+  })
+}
+
 // Fetch data on mount
 onMounted(async () => {
   if (projectId.value) {
@@ -72,10 +89,6 @@ const statusFilterOptions = computed(() => [
   { value: 'PUBLISHED', label: t('postStatus.published') },
   { value: 'FAILED', label: t('postStatus.failed') },
 ])
-
-function goToCreatePublication() {
-  router.push(`/projects/${projectId.value}/publications/new`)
-}
 
 function goToPublication(id: string) {
   // TODO: Create publication details page? Or just edit?
@@ -158,7 +171,7 @@ function resetFilters() {
            {{ totalCount }} {{ t('publication.titlePlural', 'Publications').toLowerCase() }}
         </p>
       </div>
-      <UButton icon="i-heroicons-plus" color="primary" @click="goToCreatePublication">
+      <UButton icon="i-heroicons-plus" color="primary" @click="openCreateModal">
         {{ t('publication.create') }}
       </UButton>
     </div>
@@ -241,7 +254,7 @@ function resetFilters() {
       <p class="text-gray-500 dark:text-gray-400 mb-6">
          {{ hasActiveFilters ? t('post.noPostsFiltered') : t('publication.createDescription') }}
       </p>
-      <UButton v-if="!hasActiveFilters" icon="i-heroicons-plus" @click="goToCreatePublication">
+      <UButton v-if="!hasActiveFilters" icon="i-heroicons-plus" @click="openCreateModal">
         {{ t('publication.create') }}
       </UButton>
     </div>
@@ -349,6 +362,13 @@ function resetFilters() {
         :next-button="{ color: 'neutral', icon: 'i-heroicons-arrow-small-right', label: t('common.next'), trailing: true }"
       />
     </div>
+    
+    <!-- Create Publication Modal -->
+    <ModalsCreatePublicationModal
+      v-model:open="showCreateModal"
+      :project-id="projectId"
+      @success="handlePublicationCreated"
+    />
     
     <!-- Delete confirmation modal -->
     <UModal v-model:open="showDeleteModal">
