@@ -20,21 +20,44 @@ const {
   fetchUserPublications,
 } = usePublications()
 
+// Pagination state
+const limit = ref(12)
+const offset = ref(0)
+const currentPage = computed({
+  get: () => Math.floor(offset.value / limit.value) + 1,
+  set: (val) => {
+    offset.value = (val - 1) * limit.value
+  }
+})
+
 // Filter states
 const selectedStatus = ref<PostStatus | null>(null)
 const searchQuery = ref('')
 
 // Fetch on mount
 onMounted(async () => {
-    await fetchUserPublications()
+    await fetchUserPublications({
+        limit: limit.value,
+        offset: offset.value
+    })
 })
 
-// Watch filters
-watch([selectedStatus, searchQuery], () => {
+// Watch filters (reset to page 1)
+watch([selectedStatus], () => {
+    currentPage.value = 1
     fetchUserPublications({
         status: selectedStatus.value || undefined,
-        // search is not currently supported in fetchUserPublications filters, 
-        // but we can add it to the backend later if needed.
+        limit: limit.value,
+        offset: 0
+    })
+})
+
+// Watch pagination
+watch(currentPage, (val) => {
+    fetchUserPublications({
+        status: selectedStatus.value || undefined,
+        limit: limit.value,
+        offset: (val - 1) * limit.value
     })
 })
 
@@ -125,6 +148,17 @@ const filteredPublications = computed(() => {
           show-project-info
           @click="goToPublication"
         />
+    </div>
+
+    <!-- Pagination -->
+    <div v-if="totalCount > limit" class="mt-8 flex justify-center">
+      <UPagination
+        v-model:model-value="currentPage"
+        :total="totalCount"
+        :page-count="limit"
+        :prev-button="{ color: 'neutral', icon: 'i-heroicons-arrow-small-left', label: t('common.prev') }"
+        :next-button="{ color: 'neutral', icon: 'i-heroicons-arrow-small-right', label: t('common.next'), trailing: true }"
+      />
     </div>
   </div>
 </template>

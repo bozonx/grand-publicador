@@ -284,16 +284,7 @@ function toggleChannel(channelId: string) {
 <template>
     <form class="space-y-6" @submit.prevent="handleSubmit">
       
-      <!-- Linked Posts Info Alert -->
-      <div v-if="publication && publication.posts && publication.posts.length > 0" class="mb-6">
-        <UAlert 
-          icon="i-heroicons-information-circle"
-          color="info"
-          variant="subtle"
-          :title="t('publication.linkedPostsInfo')"
-          :description="t('publication.linkedPostsInfoDescription', { count: publication.posts.length })"
-        />
-      </div>
+
 
       <!-- Channels (Multi-select) -->
       <div v-if="!isEditMode">
@@ -413,6 +404,21 @@ function toggleChannel(channelId: string) {
         />
       </UFormField>
 
+      <!-- Translation Group (Link to another publication) - Moved out of Advanced -->
+      <UFormField :label="t('publication.linkTranslation', 'Link as Translation of')" :help="t('publication.linkTranslationHelp', 'Select a publication to link this one as a translation version.')">
+        <USelectMenu
+            :model-value="linkedPublicationId"
+            :items="availablePublications"
+            value-key="value"
+            label-key="label"
+            searchable
+            :placeholder="formData.translationGroupId ? t('publication.linked', 'Linked to a group') : t('publication.selectToLink', 'Select to link...')"
+            class="w-full"
+            @update:model-value="handleTranslationLink"
+        >
+        </USelectMenu>
+      </UFormField>
+
        <!-- Advanced fields toggle -->
       <div class="flex justify-center">
         <UButton
@@ -460,20 +466,7 @@ function toggleChannel(channelId: string) {
              <UTextarea v-model="formData.meta" :rows="4" font-family="mono" />
           </UFormField>
 
-          <!-- Translation Group (Link to another publication) -->
-          <UFormField :label="t('publication.linkTranslation', 'Link as Translation of')" :help="t('publication.linkTranslationHelp', 'Select a publication to link this one as a translation version.')">
-            <USelectMenu
-                :model-value="linkedPublicationId"
-                :items="availablePublications"
-                value-key="value"
-                label-key="label"
-                searchable
-                :placeholder="formData.translationGroupId ? t('publication.linked', 'Linked to a group') : t('publication.selectToLink', 'Select to link...')"
-                class="w-full"
-                @update:model-value="handleTranslationLink"
-            >
-            </USelectMenu>
-          </UFormField>
+
           
         </div>
       </Transition>

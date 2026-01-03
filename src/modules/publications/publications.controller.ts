@@ -5,6 +5,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseBoolPipe,
   ParseIntPipe,
   Patch,
   Post,
@@ -17,6 +18,8 @@ import { PostStatus } from '../../generated/prisma/client.js';
 import { ApiTokenGuard } from '../../common/guards/api-token.guard.js';
 import { JwtOrApiTokenGuard } from '../../common/guards/jwt-or-api-token.guard.js';
 import type { UnifiedAuthRequest } from '../../common/types/unified-auth-request.interface.js';
+import { ParsePostStatusPipe } from '../../common/pipes/parse-post-status.pipe.js';
+import type { PaginatedResponse } from '../../common/dto/pagination-response.dto.js';
 import { CreatePostsDto, CreatePublicationDto, UpdatePublicationDto } from './dto/index.js';
 import { PublicationsService } from './publications.service.js';
 
@@ -26,6 +29,8 @@ import { PublicationsService } from './publications.service.js';
 @Controller('publications')
 @UseGuards(JwtOrApiTokenGuard)
 export class PublicationsController {
+  private readonly MAX_LIMIT = 100;
+
   constructor(private readonly publicationsService: PublicationsService) { }
 
   /**
@@ -53,26 +58,45 @@ export class PublicationsController {
   public async findAll(
     @Request() req: UnifiedAuthRequest,
     @Query('projectId') projectId?: string,
-    @Query('status') status?: PostStatus,
+    @Query('status', new ParsePostStatusPipe()) status?: PostStatus,
     @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit?: number,
     @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset?: number,
-    @Query('includeArchived') includeArchived?: string,
-  ) {
+    @Query('includeArchived', new DefaultValuePipe(false), ParseBoolPipe) includeArchived?: boolean,
+  ): Promise<PaginatedResponse<any>> {
+    // Validate and cap limit
+    const validatedLimit = Math.min(limit || 50, this.MAX_LIMIT);
+
     if (projectId) {
-      return this.publicationsService.findAll(projectId, req.user.userId, {
+      const result = await this.publicationsService.findAll(projectId, req.user.userId, {
         status,
-        limit,
+        limit: validatedLimit,
         offset,
-        includeArchived: includeArchived === 'true',
+        includeArchived,
       });
+      return {
+        items: result.items,
+        meta: {
+          total: result.total,
+          limit: validatedLimit,
+          offset: offset || 0,
+        },
+      };
     }
 
-    return this.publicationsService.findAllForUser(req.user.userId, {
+    const result = await this.publicationsService.findAllForUser(req.user.userId, {
       status,
-      limit,
+      limit: validatedLimit,
       offset,
-      includeArchived: includeArchived === 'true',
+      includeArchived,
     });
+    return {
+      items: result.items,
+      meta: {
+        total: result.total,
+        limit: validatedLimit,
+        offset: offset || 0,
+      },
+    };
   }
 
   /**

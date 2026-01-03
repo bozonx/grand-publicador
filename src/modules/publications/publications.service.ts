@@ -97,7 +97,7 @@ export class PublicationsService {
    * @param projectId - The ID of the project.
    * @param userId - The ID of the user.
    * @param filters - Optional filters (status, limit, offset).
-   * @returns A list of publications with associated data (author, posts).
+   * @returns Publications with total count for pagination.
    */
   public async findAll(
     projectId: string,
@@ -120,32 +120,37 @@ export class PublicationsService {
       where.status = filters.status;
     }
 
-    return this.prisma.publication.findMany({
-      where,
-      include: {
-        creator: {
-          select: {
-            id: true,
-            fullName: true,
-            telegramUsername: true,
-            avatarUrl: true,
+    const [items, total] = await Promise.all([
+      this.prisma.publication.findMany({
+        where,
+        include: {
+          creator: {
+            select: {
+              id: true,
+              fullName: true,
+              telegramUsername: true,
+              avatarUrl: true,
+            },
+          },
+          posts: {
+            include: {
+              channel: true,
+            },
+          },
+          _count: {
+            select: {
+              posts: true,
+            },
           },
         },
-        posts: {
-          include: {
-            channel: true,
-          },
-        },
-        _count: {
-          select: {
-            posts: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: filters?.limit,
-      skip: filters?.offset,
-    });
+        orderBy: { createdAt: 'desc' },
+        take: filters?.limit,
+        skip: filters?.offset,
+      }),
+      this.prisma.publication.count({ where }),
+    ]);
+
+    return { items, total };
   }
 
   /**
@@ -153,7 +158,7 @@ export class PublicationsService {
    *
    * @param userId - The ID of the user requesting the publications.
    * @param filters - Optional filters (status, limit, offset, includeArchived).
-   * @returns A list of publications with author and posts info.
+   * @returns Publications with total count for pagination.
    */
   public async findAllForUser(
     userId: string,
@@ -178,32 +183,37 @@ export class PublicationsService {
       where.status = filters.status;
     }
 
-    return this.prisma.publication.findMany({
-      where,
-      include: {
-        creator: {
-          select: {
-            id: true,
-            fullName: true,
-            telegramUsername: true,
-            avatarUrl: true,
+    const [items, total] = await Promise.all([
+      this.prisma.publication.findMany({
+        where,
+        include: {
+          creator: {
+            select: {
+              id: true,
+              fullName: true,
+              telegramUsername: true,
+              avatarUrl: true,
+            },
+          },
+          posts: {
+            include: {
+              channel: true,
+            },
+          },
+          _count: {
+            select: {
+              posts: true,
+            },
           },
         },
-        posts: {
-          include: {
-            channel: true,
-          },
-        },
-        _count: {
-          select: {
-            posts: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: filters?.limit,
-      skip: filters?.offset,
-    });
+        orderBy: { createdAt: 'desc' },
+        take: filters?.limit,
+        skip: filters?.offset,
+      }),
+      this.prisma.publication.count({ where }),
+    ]);
+
+    return { items, total };
   }
 
   /**
@@ -246,7 +256,23 @@ export class PublicationsService {
 
     await this.permissions.checkProjectAccess(publication.projectId, userId);
 
-    return publication;
+    // Fetch other publications in the same translation group
+    let translations: any[] = [];
+    if (publication.translationGroupId) {
+      translations = await this.prisma.publication.findMany({
+        where: {
+          translationGroupId: publication.translationGroupId,
+          id: { not: id },
+          archivedAt: null,
+        },
+        select: {
+          id: true,
+          language: true,
+        },
+      });
+    }
+
+    return { ...publication, translations };
   }
 
   /**

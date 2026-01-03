@@ -676,24 +676,65 @@ function formatDate(dateString: string | null | undefined): string {
         <div class="border border-gray-200 dark:border-gray-700/50 rounded-lg bg-white dark:bg-gray-800/50 overflow-hidden shadow-sm">
             <!-- Header -->
             <div 
-                class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-colors select-none"
+                class="p-5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-colors select-none group"
                 @click="toggleFormCollapse"
             >
-                <div class="flex items-center gap-3">
-                    <UIcon name="i-heroicons-pencil-square" class="w-5 h-5 text-gray-500"></UIcon>
-                    <span class="font-medium text-gray-900 dark:text-white">
-                        {{ t('publication.editDescription') }}
-                    </span>
-                </div>
+                <div class="flex items-start justify-between">
+                    <div class="flex-1 space-y-2">
+                        <div class="flex items-center gap-2">
+                             <UIcon name="i-heroicons-pencil-square" class="w-5 h-5 text-gray-400 group-hover:text-primary-500 transition-colors"></UIcon>
+                             <h3 v-if="currentPublication.title" class="font-semibold text-gray-900 dark:text-white">
+                                {{ currentPublication.title }}
+                             </h3>
+                             <span v-else class="font-medium text-gray-500 italic">
+                                {{ t('post.untitled') }}
+                             </span>
+                        </div>
+                        
+                        <!-- Content Preview -->
+                        <p v-if="currentPublication.content" class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                            {{ currentPublication.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() }}
+                        </p>
 
-                <!-- Expand/Collapse Button -->
-                <UButton
-                    variant="ghost"
-                    color="neutral"
-                    size="sm"
-                    :icon="isFormCollapsed ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-up'"
-                    class="ml-2"
-                ></UButton>
+                        <!-- Tags -->
+                        <div v-if="currentPublication.tags" class="flex flex-wrap gap-1 mt-2">
+                            <span 
+                                v-for="tag in currentPublication.tags.split(',')" 
+                                :key="tag"
+                                class="text-xxs px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded font-mono"
+                            >
+                                #{{ tag.trim() }}
+                            </span>
+                        </div>
+
+                        <!-- Translation Info -->
+                        <div v-if="currentPublication.translations && currentPublication.translations.length > 0" class="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700/50">
+                             <UIcon name="i-heroicons-language" class="w-3.5 h-3.5 text-gray-400" />
+                             <span class="text-xs text-gray-500">{{ t('publication.linked') }}:</span>
+                             <div class="flex gap-1.5">
+                                 <UBadge 
+                                    v-for="trans in currentPublication.translations" 
+                                    :key="trans.id"
+                                    color="neutral"
+                                    variant="soft"
+                                    size="sm"
+                                    class="uppercase font-mono text-[10px]"
+                                 >
+                                    {{ trans.language }}
+                                 </UBadge>
+                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Expand/Collapse Button -->
+                    <UButton
+                        variant="ghost"
+                        color="neutral"
+                        size="sm"
+                        :icon="isFormCollapsed ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-up'"
+                        class="ml-4 shrink-0"
+                    ></UButton>
+                </div>
             </div>
 
             <!-- Collapsible Content -->

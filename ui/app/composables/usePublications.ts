@@ -36,6 +36,7 @@ export interface PublicationWithRelations extends Publication {
         name: string
     } | null
     posts?: any[]
+    translations?: { id: string; language: string }[]
     _count?: {
         posts: number
     }
@@ -46,6 +47,15 @@ export interface PublicationsFilter {
     limit?: number
     offset?: number
     includeArchived?: boolean
+}
+
+export interface PaginatedPublications {
+    items: PublicationWithRelations[]
+    meta: {
+        total: number
+        limit: number
+        offset: number
+    }
 }
 
 export function usePublications() {
@@ -73,7 +83,7 @@ export function usePublications() {
     async function fetchPublicationsByProject(
         projectId: string,
         filters: PublicationsFilter = {}
-    ): Promise<PublicationWithRelations[]> {
+    ): Promise<PaginatedPublications> {
         isLoading.value = true
         error.value = null
 
@@ -84,14 +94,16 @@ export function usePublications() {
             if (filters.offset) params.offset = filters.offset
             if (filters.includeArchived) params.includeArchived = true
 
-            const data = await api.get<PublicationWithRelations[]>('/publications', { params })
-            publications.value = data
+            const data = await api.get<PaginatedPublications>('/publications', { params })
+            publications.value = data.items
+            totalCount.value = data.meta.total
             return data
         } catch (err: any) {
             console.error('[usePublications] fetchPublicationsByProject error:', err)
             error.value = err.message || 'Failed to fetch publications'
             publications.value = []
-            return []
+            totalCount.value = 0
+            return { items: [], meta: { total: 0, limit: filters.limit || 50, offset: filters.offset || 0 } }
         } finally {
             isLoading.value = false
         }
@@ -99,7 +111,7 @@ export function usePublications() {
 
     async function fetchUserPublications(
         filters: PublicationsFilter = {}
-    ): Promise<PublicationWithRelations[]> {
+    ): Promise<PaginatedPublications> {
         isLoading.value = true
         error.value = null
 
@@ -110,15 +122,16 @@ export function usePublications() {
             if (filters.offset) params.offset = filters.offset
             if (filters.includeArchived) params.includeArchived = true
 
-            const data = await api.get<PublicationWithRelations[]>('/publications', { params })
-            publications.value = data
-            totalCount.value = data.length // Crude count
+            const data = await api.get<PaginatedPublications>('/publications', { params })
+            publications.value = data.items
+            totalCount.value = data.meta.total
             return data
         } catch (err: any) {
             console.error('[usePublications] fetchUserPublications error:', err)
             error.value = err.message || 'Failed to fetch publications'
             publications.value = []
-            return []
+            totalCount.value = 0
+            return { items: [], meta: { total: 0, limit: filters.limit || 50, offset: filters.offset || 0 } }
         } finally {
             isLoading.value = false
         }

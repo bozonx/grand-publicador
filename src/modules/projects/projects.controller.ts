@@ -7,6 +7,7 @@ import {
   Get,
   Logger,
   Param,
+  ParseBoolPipe,
   ParseIntPipe,
   Patch,
   Post,
@@ -50,10 +51,10 @@ export class ProjectsController {
   @Get()
   public async findAll(
     @Request() req: UnifiedAuthRequest,
-    @Query('includeArchived') includeArchived?: string,
+    @Query('includeArchived', new DefaultValuePipe(false), ParseBoolPipe) includeArchived?: boolean,
   ) {
     const projects = await this.projectsService.findAllForUser(req.user.userId, {
-      includeArchived: includeArchived === 'true'
+      includeArchived
     });
 
     // Filter projects based on token scope

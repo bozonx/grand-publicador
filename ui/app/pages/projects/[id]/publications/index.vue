@@ -16,6 +16,7 @@ const {
   publications,
   isLoading,
   error,
+  totalCount,
   fetchPublicationsByProject,
   deletePublication,
   toggleArchive,
@@ -28,6 +29,16 @@ const selectedStatus = ref<PublicationStatus | null>(null)
 const showArchived = ref(false)
 // const searchQuery = ref('') // Search depends on backend implementation
 
+// Pagination state
+const limit = ref(10)
+const offset = ref(0)
+const currentPage = computed({
+  get: () => Math.floor(offset.value / limit.value) + 1,
+  set: (val) => {
+    offset.value = (val - 1) * limit.value
+  }
+})
+
 // Delete modal state
 const showDeleteModal = ref(false)
 const publicationToDelete = ref<PublicationWithRelations | null>(null)
@@ -36,15 +47,21 @@ const isDeleting = ref(false)
 // Fetch data on mount
 onMounted(async () => {
   if (projectId.value) {
-    await fetchPublicationsByProject(projectId.value, { includeArchived: showArchived.value })
+    await fetchPublicationsByProject(projectId.value, { 
+      includeArchived: showArchived.value,
+      limit: limit.value,
+      offset: offset.value
+    })
   }
 })
 
-// Watch for filter changes
-watch([selectedStatus, showArchived], () => {
+// Watch for filter/pagination changes
+watch([selectedStatus, showArchived, currentPage], () => {
   fetchPublicationsByProject(projectId.value, {
     status: selectedStatus.value || undefined,
-    includeArchived: showArchived.value
+    includeArchived: showArchived.value,
+    limit: limit.value,
+    offset: (currentPage.value - 1) * limit.value
   })
 })
 
@@ -111,7 +128,8 @@ const hasActiveFilters = computed(() => {
 
 function resetFilters() {
   selectedStatus.value = null
-  fetchPublicationsByProject(projectId.value)
+  offset.value = 0
+  fetchPublicationsByProject(projectId.value, { limit: limit.value, offset: 0 })
 }
 </script>
 
@@ -137,7 +155,7 @@ function resetFilters() {
           {{ t('publication.titlePlural', 'Publications') }}
         </h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-           <!-- {{ totalCount }} --> {{ t('publication.titlePlural', 'Publications').toLowerCase() }}
+           {{ totalCount }} {{ t('publication.titlePlural', 'Publications').toLowerCase() }}
         </p>
       </div>
       <UButton icon="i-heroicons-plus" color="primary" @click="goToCreatePublication">
@@ -319,6 +337,17 @@ function resetFilters() {
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Pagination -->
+    <div v-if="totalCount > limit" class="mt-8 flex justify-center">
+      <UPagination
+        v-model:model-value="currentPage"
+        :total="totalCount"
+        :page-count="limit"
+        :prev-button="{ color: 'neutral', icon: 'i-heroicons-arrow-small-left', label: t('common.prev') }"
+        :next-button="{ color: 'neutral', icon: 'i-heroicons-arrow-small-right', label: t('common.next'), trailing: true }"
+      />
     </div>
     
     <!-- Delete confirmation modal -->

@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   Param,
+  ParseBoolPipe,
   Patch,
   Post,
   Query,
@@ -47,12 +49,12 @@ export class ChannelsController {
   public async findAll(
     @Request() req: UnifiedAuthRequest,
     @Query('projectId') projectId?: string,
-    @Query('isActive') isActive?: string,
-    @Query('includeArchived') includeArchived?: string,
+    @Query('isActive', new DefaultValuePipe(true), ParseBoolPipe) isActive?: boolean,
+    @Query('includeArchived', new DefaultValuePipe(false), ParseBoolPipe) includeArchived?: boolean,
   ) {
     const options = {
-      isActive: isActive !== undefined ? isActive === 'true' : undefined,
-      allowArchived: includeArchived === 'true'
+      isActive,
+      allowArchived: includeArchived
     };
 
     if (projectId) {
@@ -90,14 +92,6 @@ export class ChannelsController {
       return this.channelsService.findArchivedForProject(projectId, req.user.userId);
     }
 
-    // Filter projects based on token scope
-    // Note: findArchivedForUser does not yet support filtering by projectIds within the service, 
-    // so we might need to filter result or update service.
-    // However, for consistency with findAll, let's update findArchivedForUser signature or do checking here?
-    // ChannelsService.findArchivedForUser doesn't take options yet.
-    // Let's assume standard user access for now, or token scope limited users should probably provide projectId or we filter results.
-    // Ideally findArchivedForUser should accept projectIds. But I just implemented it without arguments.
-
     // For now, let's just return for user. If API token is used with scope, we should filter.
     const channels = await this.channelsService.findArchivedForUser(req.user.userId);
 
@@ -111,7 +105,6 @@ export class ChannelsController {
   }
 
   @Get(':id')
-
   public async findOne(@Request() req: UnifiedAuthRequest, @Param('id') id: string) {
     const channel = await this.channelsService.findOne(id, req.user.userId, true);
 

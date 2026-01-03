@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   Param,
+  ParseBoolPipe,
   Patch,
   Post,
   Query,
@@ -14,6 +16,8 @@ import {
 import { ApiTokenGuard } from '../../common/guards/api-token.guard.js';
 import { JwtOrApiTokenGuard } from '../../common/guards/jwt-or-api-token.guard.js';
 import type { UnifiedAuthRequest } from '../../common/types/unified-auth-request.interface.js';
+import { ParsePostStatusPipe } from '../../common/pipes/parse-post-status.pipe.js';
+import { ParsePostTypePipe } from '../../common/pipes/parse-post-type.pipe.js';
 import { ChannelsService } from '../channels/channels.service.js';
 import { CreatePostDto, UpdatePostDto } from './dto/index.js';
 import { PostsService } from './posts.service.js';
@@ -50,12 +54,12 @@ export class PostsController {
     @Request() req: UnifiedAuthRequest,
     @Query('channelId') channelId?: string,
     @Query('projectId') projectId?: string,
-    @Query('status') status?: any,
-    @Query('postType') postType?: any,
+    @Query('status', new ParsePostStatusPipe()) status?: any,
+    @Query('postType', new ParsePostTypePipe()) postType?: any,
     @Query('search') search?: string,
-    @Query('includeArchived') includeArchived?: string,
+    @Query('includeArchived', new DefaultValuePipe(false), ParseBoolPipe) includeArchived?: boolean,
   ) {
-    const filters = { status, postType, search, includeArchived: includeArchived === 'true' };
+    const filters = { status, postType, search, includeArchived };
 
     // Validate project scope for API token users
     if (req.user.scopeProjectIds) {
