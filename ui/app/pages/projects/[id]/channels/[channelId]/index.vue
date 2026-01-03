@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ChannelWithProject } from '~/composables/useChannels'
 import type { PostWithRelations, PostStatus, PostType } from '~/composables/usePosts'
+import type { PublicationWithRelations, PublicationStatus } from '~/composables/usePublications'
 
 definePageMeta({
   middleware: 'auth',
@@ -194,6 +195,43 @@ const hasActiveFilters = computed(() => {
   return selectedStatus.value || selectedType.value || searchQuery.value
 })
 
+function mapPostToPublication(post: PostWithRelations): PublicationWithRelations {
+  const basePublication = post.publication || {
+     id: post.publicationId,
+     projectId: post.channel?.projectId || '',
+     title: t('post.untitled'),
+     content: '',
+     status: 'DRAFT',
+     language: 'ru-RU',
+     postType: 'POST',
+     mediaFiles: '[]',
+     meta: '{}',
+     createdAt: post.createdAt, 
+     updatedAt: post.updatedAt,
+     createdBy: null,
+     archivedAt: null,
+     archivedBy: null,
+     tags: post.tags,
+     description: null,
+     authorComment: null,
+     postDate: null,
+     translationGroupId: null
+  }
+
+  // Create a minimal creator object if ID exists, to avoid errors if component checks it
+  const creator = basePublication.createdBy ? { id: basePublication.createdBy } as any : undefined
+
+  return {
+      ...basePublication,
+      // Visualize the Post's status as the Publication's status in this view
+      status: (post.status as unknown) as PublicationStatus, 
+      createdAt: post.createdAt,
+      posts: [post],
+      _count: { posts: 1 },
+      creator
+  } as PublicationWithRelations
+}
+
 
 
 </script>
@@ -371,7 +409,7 @@ const hasActiveFilters = computed(() => {
              <div>
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-                        {{ t('post.titlePlural') }}
+                        {{ t('publication.titlePlural', 'Publications') }}
                     </h2>
                      <UButton icon="i-heroicons-plus" color="primary" @click="goToCreatePost">
                         {{ t('post.createPost') }}
@@ -417,12 +455,12 @@ const hasActiveFilters = computed(() => {
                 </div>
 
                 <div v-else class="space-y-4">
-                    <PostsPostListItem
+                    <PublicationsPublicationListItem
                         v-for="post in posts"
                         :key="post.id"
-                        :post="post"
+                        :publication="mapPostToPublication(post)"
                         @click="goToPost(post.id)"
-                        @delete="confirmDeletePost"
+                        @delete="confirmDeletePost(post)"
                     />
                 </div>
                  <!-- Pagination -->
