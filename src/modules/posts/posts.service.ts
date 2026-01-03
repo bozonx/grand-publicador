@@ -101,11 +101,15 @@ export class PostsService {
       where.status = filters.status.toUpperCase() as PostStatus;
     }
     if (filters?.postType && typeof filters.postType === 'string') {
-      where.postType = filters.postType.toUpperCase() as PostType;
+      where.publication = {
+        ...where.publication,
+        postType: filters.postType.toUpperCase() as PostType,
+      };
     }
     if (filters?.search) {
       // Search in publication content instead of post
       where.publication = {
+        ...where.publication,
         OR: [
           { title: { contains: filters.search, mode: 'insensitive' } },
           { content: { contains: filters.search, mode: 'insensitive' } },
@@ -158,11 +162,15 @@ export class PostsService {
       where.status = filters.status.toUpperCase() as PostStatus;
     }
     if (filters?.postType && typeof filters.postType === 'string') {
-      where.postType = filters.postType.toUpperCase() as PostType;
+      where.publication = {
+        ...where.publication,
+        postType: filters.postType.toUpperCase() as PostType,
+      };
     }
     if (filters?.search) {
       // Search in publication content
       where.publication = {
+        ...where.publication,
         OR: [
           { title: { contains: filters.search, mode: 'insensitive' } },
           { content: { contains: filters.search, mode: 'insensitive' } },
@@ -215,11 +223,15 @@ export class PostsService {
       where.status = filters.status.toUpperCase() as PostStatus;
     }
     if (filters?.postType && typeof filters.postType === 'string') {
-      where.postType = filters.postType.toUpperCase() as PostType;
+      where.publication = {
+        ...where.publication,
+        postType: filters.postType.toUpperCase() as PostType,
+      };
     }
     if (filters?.search) {
       // Search in publication content
       where.publication = {
+        ...where.publication,
         OR: [
           { title: { contains: filters.search, mode: 'insensitive' } },
           { content: { contains: filters.search, mode: 'insensitive' } },
