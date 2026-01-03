@@ -26,6 +26,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 
+const saveButtonRef = ref<{ showSuccess: () => void; showError: () => void } | null>(null)
+
 const { t } = useI18n()
 const route = useRoute()
 const { createPublication, updatePublication, createPostsFromPublication, isLoading, getStatusDisplayName, fetchPublicationsByProject, publications } = usePublications()
@@ -126,68 +128,82 @@ const { languageOptions } = useLanguages()
  * Handle form submission
  */
 async function handleSubmit() {
-  if (isEditMode.value && props.publication) {
-    // Update existing publication
-    const updateData: any = {
+  try {
+    if (isEditMode.value && props.publication) {
+      // Update existing publication
+      const updateData: any = {
+          title: formData.title || undefined,
+          description: formData.description || undefined,
+          content: formData.content,
+          tags: formData.tags || undefined,
+          status: formData.status,
+          language: formData.language,
+          linkToPublicationId: linkedPublicationId.value || undefined, // Send linkToPublicationId
+          postType: formData.postType,
+          meta: JSON.parse(formData.meta),
+          postDate: formData.postDate ? new Date(formData.postDate).toISOString() : undefined,
+      }
+      
+      // Update the publication itself
+      await updatePublication(props.publication.id, updateData)
+      
+      // Handle post creation for newly selected channels
+      const originalChannelIds = props.publication.posts?.map((p: any) => p.channelId) || []
+      const newChannelIds = formData.channelIds.filter(id => !originalChannelIds.includes(id))
+      
+      if (newChannelIds.length > 0) {
+          await createPostsFromPublication(
+              props.publication.id, 
+              newChannelIds, 
+              formData.status === 'SCHEDULED' ? formData.scheduledAt : undefined
+          )
+      }
+
+      saveButtonRef.value?.showSuccess()
+      emit('success', props.publication.id)
+
+    } else {
+      // Create new publication
+      const createData: any = {
+        projectId: props.projectId,
         title: formData.title || undefined,
         description: formData.description || undefined,
         content: formData.content,
         tags: formData.tags || undefined,
-        status: formData.status,
+        status: formData.status === 'SCHEDULED' && formData.channelIds.length > 0 ? 'SCHEDULED' : 'DRAFT', // Master status
         language: formData.language,
-        linkToPublicationId: linkedPublicationId.value || undefined, // Send linkToPublicationId
+        linkToPublicationId: linkedPublicationId.value || undefined,
         postType: formData.postType,
         meta: JSON.parse(formData.meta),
         postDate: formData.postDate ? new Date(formData.postDate).toISOString() : undefined,
-    }
-    
-    // Update the publication itself
-    await updatePublication(props.publication.id, updateData)
-    
-    // Handle post creation for newly selected channels
-    const originalChannelIds = props.publication.posts?.map((p: any) => p.channelId) || []
-    const newChannelIds = formData.channelIds.filter(id => !originalChannelIds.includes(id))
-    
-    if (newChannelIds.length > 0) {
-        await createPostsFromPublication(
-            props.publication.id, 
-            newChannelIds, 
-            formData.status === 'SCHEDULED' ? formData.scheduledAt : undefined
-        )
-    }
-
-    emit('success', props.publication.id)
-
-  } else {
-    // Create new publication
-    const createData: any = {
-      projectId: props.projectId,
-      title: formData.title || undefined,
-      description: formData.description || undefined,
-      content: formData.content,
-      tags: formData.tags || undefined,
-      status: formData.status === 'SCHEDULED' && formData.channelIds.length > 0 ? 'SCHEDULED' : 'DRAFT', // Master status
-      language: formData.language,
-      linkToPublicationId: linkedPublicationId.value || undefined,
-      postType: formData.postType,
-      meta: JSON.parse(formData.meta),
-      postDate: formData.postDate ? new Date(formData.postDate).toISOString() : undefined,
-    }
-
-    const publication = await createPublication(createData)
-    
-    if (publication) {
-      // If channels are selected, distribute posts
-      if (formData.channelIds.length > 0) {
-        await createPostsFromPublication(
-            publication.id, 
-            formData.channelIds, 
-            formData.status === 'SCHEDULED' ? formData.scheduledAt : undefined
-        )
       }
+
+      const publication = await createPublication(createData)
       
-      emit('success', publication.id)
+      if (publication) {
+        // If channels are selected, distribute posts
+        if (formData.channelIds.length > 0) {
+          await createPostsFromPublication(
+              publication.id, 
+              formData.channelIds, 
+              formData.status === 'SCHEDULED' ? formData.scheduledAt : undefined
+          )
+        }
+        
+        saveButtonRef.value?.showSuccess()
+        emit('success', publication.id)
+      } else {
+        throw new Error('Failed to create publication')
+      }
     }
+  } catch (error) {
+    saveButtonRef.value?.showError()
+    const toast = useToast()
+    toast.add({
+      title: t('common.error'),
+      description: t('common.saveError', 'Failed to save'),
+      color: 'error',
+    })
   }
 }
 
@@ -426,14 +442,12 @@ function toggleChannel(channelId: string) {
       </Transition>
 
       <div class="flex items-center justify-end gap-3 pt-6">
-        <UButton
-          type="submit"
-          color="primary"
+        <UiSaveButton
+          ref="saveButtonRef"
           :loading="isLoading"
           :disabled="!isFormValid"
-        >
-          {{ isEditMode ? t('common.save') : t('common.create') }}
-        </UButton>
+          :label="isEditMode ? t('common.save') : t('common.create')"
+        />
       </div>
     </form>
 </template>

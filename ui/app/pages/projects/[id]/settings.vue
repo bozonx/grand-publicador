@@ -67,11 +67,15 @@ async function handleUpdate(data: { name: string; description: string }) {
   if (!projectId.value) return
 
   isSaving.value = true
-  await updateProject(projectId.value, {
+  const success = await updateProject(projectId.value, {
     name: data.name,
     description: data.description,
   })
   isSaving.value = false
+  
+  if (!success) {
+    throw new Error('Failed to update project')
+  }
 }
 
 /**

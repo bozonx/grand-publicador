@@ -45,7 +45,8 @@
     },
     "language": "Language",
     "showArchived": "Show Archived",
-    "hideArchived": "Hide Archived"
+    "hideArchived": "Hide Archived",
+    "saveError": "Failed to save"
   },
   "navigation": {
     "home": "Home",

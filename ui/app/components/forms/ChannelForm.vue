@@ -18,7 +18,7 @@ interface Props {
 }
 
 interface Emits {
-  (e: 'success', channel: any): void
+  (e: 'success', channel: any): void | Promise<void>
   (e: 'cancel'): void
 }
 
@@ -29,6 +29,8 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<Emits>()
+
+const saveButtonRef = ref<{ showSuccess: () => void; showError: () => void } | null>(null)
 
 const { t } = useI18n()
 const {
@@ -85,59 +87,75 @@ const state = reactive({
 async function handleSubmit() {
   if (!state.name || !state.channelIdentifier || !state.language) return
 
-  if (isEditMode.value && props.channel) {
-    // Update existing channel
-    const updateData: ChannelUpdateInput = {
-      name: state.name,
-      description: state.description,
-      channelIdentifier: state.channelIdentifier,
-    }
-
-    // Add credentials for supported channels
-    if (props.channel.socialMedia === 'TELEGRAM') {
-      updateData.credentials = {
-        telegramChannelId: state.credentials.telegramChannelId,
-        telegramBotToken: state.credentials.telegramBotToken,
+  try {
+    if (isEditMode.value && props.channel) {
+      // Update existing channel
+      const updateData: ChannelUpdateInput = {
+        name: state.name,
+        description: state.description,
+        channelIdentifier: state.channelIdentifier,
       }
-    } else if (props.channel.socialMedia === 'VK') {
-      updateData.credentials = {
-        vkAccessToken: state.credentials.vkAccessToken,
+
+      // Add credentials for supported channels
+      if (props.channel.socialMedia === 'TELEGRAM') {
+        updateData.credentials = {
+          telegramChannelId: state.credentials.telegramChannelId,
+          telegramBotToken: state.credentials.telegramBotToken,
+        }
+      } else if (props.channel.socialMedia === 'VK') {
+        updateData.credentials = {
+          vkAccessToken: state.credentials.vkAccessToken,
+        }
+      }
+
+      const result = await updateChannel(props.channel.id, updateData)
+      if (result) {
+        await emit('success', result)
+        saveButtonRef.value?.showSuccess()
+      } else {
+        throw new Error('Failed to update channel')
+      }
+    } else {
+      // Create new channel
+      const createData: ChannelCreateInput = {
+        projectId: props.projectId,
+        name: state.name,
+        description: state.description,
+        socialMedia: state.socialMedia,
+        channelIdentifier: state.channelIdentifier,
+        language: state.language,
+        isActive: state.isActive,
+      }
+
+      // Add credentials for supported channels
+      if (state.socialMedia === 'TELEGRAM') {
+        createData.credentials = {
+          telegramChannelId: state.credentials.telegramChannelId,
+          telegramBotToken: state.credentials.telegramBotToken,
+        }
+      } else if (state.socialMedia === 'VK') {
+        createData.credentials = {
+          vkAccessToken: state.credentials.vkAccessToken,
+        }
+      }
+
+      const result = await createChannel(createData)
+
+      if (result) {
+        await emit('success', result)
+        saveButtonRef.value?.showSuccess()
+      } else {
+        throw new Error('Failed to create channel')
       }
     }
-
-    const result = await updateChannel(props.channel.id, updateData)
-    if (result) {
-      emit('success', result)
-    }
-  } else {
-    // Create new channel
-    const createData: ChannelCreateInput = {
-      projectId: props.projectId,
-      name: state.name,
-      description: state.description,
-      socialMedia: state.socialMedia,
-      channelIdentifier: state.channelIdentifier,
-      language: state.language,
-      isActive: state.isActive,
-    }
-
-    // Add credentials for supported channels
-    if (state.socialMedia === 'TELEGRAM') {
-      createData.credentials = {
-        telegramChannelId: state.credentials.telegramChannelId,
-        telegramBotToken: state.credentials.telegramBotToken,
-      }
-    } else if (state.socialMedia === 'VK') {
-      createData.credentials = {
-        vkAccessToken: state.credentials.vkAccessToken,
-      }
-    }
-
-    const result = await createChannel(createData)
-
-    if (result) {
-      emit('success', result)
-    }
+  } catch (error) {
+    saveButtonRef.value?.showError()
+    const toast = useToast()
+    toast.add({
+      title: t('common.error'),
+      description: t('common.saveError', 'Failed to save'),
+      color: 'error',
+    })
   }
 }
 
@@ -436,14 +454,12 @@ const projectOptions = computed(() =>
         >
           {{ t('common.cancel') }}
         </UButton>
-        <UButton
-          type="submit"
-          color="primary"
+        <UiSaveButton
+          ref="saveButtonRef"
           :loading="isLoading"
           :disabled="!state.name || !state.channelIdentifier || !state.language"
-        >
-          {{ isEditMode ? t('common.save') : t('common.create') }}
-        </UButton>
+          :label="isEditMode ? t('common.save') : t('common.create')"
+        />
       </div>
     </form>
   </div>

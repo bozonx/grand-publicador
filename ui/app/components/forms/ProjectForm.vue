@@ -19,7 +19,7 @@ interface Props {
 }
 
 interface Emits {
-  (e: 'submit', data: { name: string; description: string }): void
+  (e: 'submit', data: { name: string; description: string }): void | Promise<void>
   (e: 'cancel'): void
 }
 
@@ -34,6 +34,8 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<Emits>()
+
+const saveButtonRef = ref<{ showSuccess: () => void; showError: () => void } | null>(null)
 
 const { t } = useI18n()
 
@@ -54,13 +56,24 @@ const state = reactive({
 /**
  * Handle form submission
  */
-function handleSubmit() {
+async function handleSubmit() {
   if (!state.name || state.name.length < 2) return
 
-  emit('submit', {
-    name: state.name,
-    description: state.description,
-  })
+  try {
+    await emit('submit', {
+      name: state.name,
+      description: state.description,
+    })
+    saveButtonRef.value?.showSuccess()
+  } catch (error) {
+    saveButtonRef.value?.showError()
+    const toast = useToast()
+    toast.add({
+      title: t('common.error'),
+      description: t('common.saveError', 'Failed to save'),
+      color: 'error',
+    })
+  }
 }
 
 function handleCancel() {
@@ -139,14 +152,12 @@ function handleCancel() {
         >
           {{ cancelLabel || t('common.cancel') }}
         </UButton>
-        <UButton
-          type="submit"
-          color="primary"
+        <UiSaveButton
+          ref="saveButtonRef"
           :loading="isLoading"
           :disabled="!state.name || state.name.length < 2 || state.description.length > 500"
-        >
-          {{ submitLabel || (isEditMode ? t('common.save') : t('common.create')) }}
-        </UButton>
+          :label="submitLabel || (isEditMode ? t('common.save') : t('common.create'))"
+        />
       </div>
     </form>
   </div>

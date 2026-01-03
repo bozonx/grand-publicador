@@ -45,7 +45,8 @@
     },
     "language": "Язык",
     "showArchived": "Показать архивные",
-    "hideArchived": "Скрыть архивные"
+    "hideArchived": "Скрыть архивные",
+    "saveError": "Ошибка сохранения"
   },
   "navigation": {
     "home": "Главная",

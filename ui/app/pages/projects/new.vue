@@ -20,6 +20,8 @@ async function handleCreate(data: { name: string; description: string }) {
   if (project) {
     // Navigate to the created project
     router.push(`/projects/${project.id}`)
+  } else {
+    throw new Error('Failed to create project')
   }
 }
 

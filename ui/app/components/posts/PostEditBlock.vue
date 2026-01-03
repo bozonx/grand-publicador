@@ -23,6 +23,8 @@ interface Props {
 const props = defineProps<Props>()
 const emit = defineEmits(['deleted', 'cancel', 'success'])
 
+const saveButtonRef = ref<{ showSuccess: () => void; showError: () => void } | null>(null)
+
 const { t } = useI18n()
 const { updatePost, deletePost, createPost, isLoading, statusOptions: postStatusOptions } = usePosts()
 const { getStatusColor, getStatusDisplayName } = usePosts()
@@ -80,29 +82,43 @@ function toggleCollapse() {
 }
 
 async function handleSave() {
-  if (props.isCreating) {
-      if (!formData.channelId || !props.publication) return 
+  try {
+    if (props.isCreating) {
+        if (!formData.channelId || !props.publication) return 
 
-      const newPost = await createPost({
-          channelId: formData.channelId,
-          publicationId: props.publication.id,
+        const newPost = await createPost({
+            channelId: formData.channelId,
+            publicationId: props.publication.id,
+            tags: formData.tags || null,
+            scheduledAt: formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : null,
+            status: 'DRAFT',
+        })
+
+        if (newPost) {
+            saveButtonRef.value?.showSuccess()
+            emit('success', newPost)
+        } else {
+            throw new Error('Failed to create post')
+        }
+
+    } else {
+        if (!props.post) return
+        await updatePost(props.post.id, {
           tags: formData.tags || null,
           scheduledAt: formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : null,
-          status: 'DRAFT',
-      })
-
-      if (newPost) {
-          emit('success', newPost)
-      }
-
-  } else {
-      if (!props.post) return
-      await updatePost(props.post.id, {
-        tags: formData.tags || null,
-        scheduledAt: formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : null,
-        status: formData.status as any
-      })
-      emit('success')
+          status: formData.status as any
+        })
+        saveButtonRef.value?.showSuccess()
+        emit('success')
+    }
+  } catch (error) {
+    saveButtonRef.value?.showError()
+    const toast = useToast()
+    toast.add({
+      title: t('common.error'),
+      description: t('common.saveError', 'Failed to save'),
+      color: 'error',
+    })
   }
 }
 
@@ -378,14 +394,13 @@ const isValid = computed(() => {
         </UButton>
         <div v-else></div> <!-- Spacer -->
 
-        <UButton
-          color="primary"
+        <UiSaveButton
+          ref="saveButtonRef"
           :loading="isLoading"
           :disabled="!isValid"
+          :label="isCreating ? t('common.create') : t('common.save')"
           @click="handleSave"
-        >
-          {{ isCreating ? t('common.create') : t('common.save') }}
-        </UButton>
+        />
       </div>
 
     </div>
