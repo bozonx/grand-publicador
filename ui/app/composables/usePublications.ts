@@ -31,6 +31,10 @@ export interface PublicationWithRelations extends Publication {
         telegramUsername: string | null
         avatarUrl: string | null
     } | null
+    project?: {
+        id: string
+        name: string
+    } | null
     posts?: any[]
     _count?: {
         posts: number

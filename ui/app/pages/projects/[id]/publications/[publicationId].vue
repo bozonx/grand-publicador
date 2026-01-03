@@ -18,7 +18,8 @@ const {
   isLoading: isPublicationLoading, 
   deletePublication, 
   toggleArchive,
-  updatePublication 
+  updatePublication,
+  statusOptions 
 } = usePublications()
 const { fetchChannels, channels } = useChannels()
 const { canGoBack, goBack } = useNavigation()
@@ -205,10 +206,13 @@ const { typeOptions } = usePosts()
 
 const isLanguageModalOpen = ref(false)
 const isTypeModalOpen = ref(false)
+const isStatusModalOpen = ref(false)
 const newLanguage = ref('')
 const newPostType = ref<PostType>('POST')
+const newStatus = ref<PublicationStatus>('DRAFT')
 const isUpdatingLanguage = ref(false)
 const isUpdatingType = ref(false)
+const isUpdatingStatus = ref(false)
 
 function openLanguageModal() {
     if (!currentPublication.value) return
@@ -249,6 +253,27 @@ async function handleUpdateType() {
         await fetchPublication(currentPublication.value.id)
     } finally {
         isUpdatingType.value = false
+    }
+}
+
+function openStatusModal() {
+    if (!currentPublication.value) return
+    newStatus.value = currentPublication.value.status as PublicationStatus
+    isStatusModalOpen.value = true
+}
+
+async function handleUpdateStatus() {
+    if (!currentPublication.value) return
+    isUpdatingStatus.value = true
+    try {
+        await updatePublication(currentPublication.value.id, {
+            status: newStatus.value
+        })
+        toast.add({ title: t('common.success'), color: 'success' })
+        isStatusModalOpen.value = false
+        await fetchPublication(currentPublication.value.id)
+    } finally {
+        isUpdatingStatus.value = false
     }
 }
 
@@ -421,6 +446,49 @@ function formatDate(dateString: string | null | undefined): string {
       </template>
     </UModal>
 
+    <!-- Status Change Modal -->
+    <UModal v-model:open="isStatusModalOpen">
+      <template #content>
+        <div class="p-6">
+          <div class="flex items-center gap-3 text-gray-900 dark:text-white mb-4">
+            <UIcon name="i-heroicons-arrow-path" class="w-6 h-6 text-primary-500"></UIcon>
+            <h3 class="text-lg font-medium">
+              {{ t('publication.changeStatus') }}
+            </h3>
+          </div>
+
+          <p class="text-gray-500 dark:text-gray-400 mb-6">
+            {{ t('publication.changeStatusWarning') }}
+          </p>
+
+          <UFormField :label="t('post.status')" required class="mb-6">
+             <USelectMenu
+                v-model="newStatus"
+                :items="statusOptions"
+                value-key="value"
+                label-key="label"
+                class="w-full"
+            />
+          </UFormField>
+
+          <div class="flex justify-end gap-3">
+            <UButton
+              color="neutral"
+              variant="ghost"
+              :label="t('common.cancel')"
+              @click="isStatusModalOpen = false"
+            ></UButton>
+            <UButton
+              color="primary"
+              :label="t('common.save')"
+              :loading="isUpdatingStatus"
+              @click="handleUpdateStatus"
+            ></UButton>
+          </div>
+        </div>
+      </template>
+    </UModal>
+
     <!-- Back button -->
     <div class="mb-6">
       <UButton
@@ -490,8 +558,37 @@ function formatDate(dateString: string | null | undefined): string {
 
                 <!-- Metadata Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <!-- Created -->
+                    <!-- Zone 1: Created, Project/Channel Info, Scheduled -->
                     <div>
+                        <!-- Project and Channel Info -->
+                        <div v-if="currentPublication.project || (currentPublication.posts && currentPublication.posts.length > 0)" class="mb-3">
+                            <!-- Project -->
+                            <div v-if="currentPublication.project" class="flex items-center gap-1 text-xs mb-1">
+                                <UIcon name="i-heroicons-folder" class="w-3.5 h-3.5 text-gray-400" />
+                                <NuxtLink 
+                                    :to="`/projects/${currentPublication.project.id}`"
+                                    class="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
+                                >
+                                    {{ currentPublication.project.name }}
+                                </NuxtLink>
+                            </div>
+                            
+                            <!-- First Channel (if exists) -->
+                            <div v-if="currentPublication.posts && currentPublication.posts.length > 0 && currentPublication.posts[0].channel" class="flex items-center gap-1 text-xs">
+                                <UIcon name="i-heroicons-signal" class="w-3.5 h-3.5 text-gray-400" />
+                                <NuxtLink 
+                                    :to="`/projects/${projectId}/channels/${currentPublication.posts[0].channel.id}`"
+                                    class="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
+                                >
+                                    {{ currentPublication.posts[0].channel.name }}
+                                </NuxtLink>
+                                <span v-if="currentPublication.posts.length > 1" class="text-gray-400">
+                                    +{{ currentPublication.posts.length - 1 }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Created -->
                         <div class="text-gray-500 dark:text-gray-400 mb-1">{{ t('post.createdAt') }}</div>
                         <div class="text-gray-900 dark:text-white font-medium">
                             {{ formatDate(currentPublication.createdAt) }}
@@ -515,8 +612,29 @@ function formatDate(dateString: string | null | undefined): string {
                         </div>
                     </div>
 
-                    <!-- Language and Type Column -->
+                    <!-- Zone 2: Status, Language and Type Column -->
                     <div class="space-y-4">
+                        <!-- Status -->
+                        <div>
+                            <div class="text-gray-500 dark:text-gray-400 mb-1 text-xs">
+                                {{ t('post.status') }}
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 text-gray-400" />
+                                <span class="text-gray-900 dark:text-white font-medium text-base">
+                                    {{ statusOptions.find(s => s.value === currentPublication?.status)?.label || currentPublication?.status }}
+                                </span>
+                                <UButton
+                                    icon="i-heroicons-pencil-square"
+                                    variant="ghost"
+                                    color="neutral"
+                                    size="xs"
+                                    class="ml-1 text-gray-400 hover:text-primary-500 transition-colors"
+                                    @click="openStatusModal"
+                                />
+                            </div>
+                        </div>
+
                         <!-- Language -->
                         <div>
                             <div class="text-gray-500 dark:text-gray-400 mb-1 text-xs">
