@@ -379,10 +379,6 @@ function formatDate(dateString: string | null | undefined): string {
             </h3>
           </div>
 
-          <p class="text-gray-500 dark:text-gray-400 mb-6">
-            {{ t('publication.changeLanguageWarning') }}
-          </p>
-
           <UFormField :label="t('common.language')" required class="mb-6">
              <USelectMenu
                 v-model="newLanguage"
@@ -555,7 +551,7 @@ function formatDate(dateString: string | null | undefined): string {
                     <!-- Zone 1: Created, Project/Channel Info, Scheduled -->
                     <div>
                         <!-- Project and Channel Info -->
-                        <div v-if="currentPublication.project || (currentPublication.posts && currentPublication.posts.length > 0)" class="mb-3">
+                        <div v-if="currentPublication.project" class="mb-3">
                             <!-- Project -->
                             <div v-if="currentPublication.project" class="flex items-center gap-1 text-xs mb-1">
                                 <UIcon name="i-heroicons-folder" class="w-3.5 h-3.5 text-gray-400" />
@@ -567,19 +563,7 @@ function formatDate(dateString: string | null | undefined): string {
                                 </NuxtLink>
                             </div>
                             
-                            <!-- First Channel (if exists) -->
-                            <div v-if="currentPublication.posts && currentPublication.posts.length > 0 && currentPublication.posts[0].channel" class="flex items-center gap-1 text-xs">
-                                <UIcon name="i-heroicons-signal" class="w-3.5 h-3.5 text-gray-400" />
-                                <NuxtLink 
-                                    :to="`/projects/${projectId}/channels/${currentPublication.posts[0].channel.id}`"
-                                    class="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
-                                >
-                                    {{ currentPublication.posts[0].channel.name }}
-                                </NuxtLink>
-                                <span v-if="currentPublication.posts.length > 1" class="text-gray-400">
-                                    +{{ currentPublication.posts.length - 1 }}
-                                </span>
-                            </div>
+
                         </div>
 
                         <!-- Created -->
