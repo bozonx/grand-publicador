@@ -30,9 +30,10 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 
-const saveButtonRef = ref<{ showSuccess: () => void; showError: () => void } | null>(null)
+const formActionsRef = ref<{ showSuccess: () => void; showError: () => void } | null>(null)
 
 const { t } = useI18n()
+const router = useRouter()
 const {
   createChannel,
   updateChannel,
@@ -81,6 +82,28 @@ const state = reactive({
   }
 })
 
+// Dirty state tracking
+const { isDirty, saveOriginalState, resetToOriginal } = useFormDirtyState(state)
+
+// Save original state when component mounts or channel changes
+watch(() => props.channel, () => {
+  state.name = props.channel?.name || ''
+  state.description = props.channel?.description || ''
+  state.socialMedia = (props.channel?.socialMedia || 'TELEGRAM') as SocialMedia
+  state.channelIdentifier = props.channel?.channelIdentifier || ''
+  state.language = props.channel?.language || 'en-US'
+  state.projectId = props.channel?.projectId || props.projectId
+  state.isActive = props.channel?.isActive ?? true
+  state.credentials = {
+    telegramChannelId: props.channel?.credentials?.telegramChannelId || '',
+    telegramBotToken: props.channel?.credentials?.telegramBotToken || '',
+    vkAccessToken: props.channel?.credentials?.vkAccessToken || '',
+  }
+  nextTick(() => {
+    saveOriginalState()
+  })
+}, { immediate: true })
+
 /**
  * Form submission handler
  */
@@ -111,7 +134,9 @@ async function handleSubmit() {
       const result = await updateChannel(props.channel.id, updateData)
       if (result) {
         await emit('success', result)
-        saveButtonRef.value?.showSuccess()
+        formActionsRef.value?.showSuccess()
+        // Update original state after successful save
+        saveOriginalState()
       } else {
         throw new Error('Failed to update channel')
       }
@@ -143,13 +168,15 @@ async function handleSubmit() {
 
       if (result) {
         await emit('success', result)
-        saveButtonRef.value?.showSuccess()
+        formActionsRef.value?.showSuccess()
+        // Update original state after successful save
+        saveOriginalState()
       } else {
         throw new Error('Failed to create channel')
       }
     }
   } catch (error) {
-    saveButtonRef.value?.showError()
+    formActionsRef.value?.showError()
     const toast = useToast()
     toast.add({
       title: t('common.error'),
@@ -162,6 +189,24 @@ async function handleSubmit() {
 function handleCancel() {
   emit('cancel')
 }
+
+function handleReset() {
+  resetToOriginal()
+}
+
+// Warn before leaving page with unsaved changes
+onBeforeRouteLeave((to, from, next) => {
+  if (isDirty.value) {
+    const answer = window.confirm(t('form.resetConfirm'))
+    if (answer) {
+      next()
+    } else {
+      next(false)
+    }
+  } else {
+    next()
+  }
+})
 
 /**
  * Get identifier placeholder based on selected social media
@@ -440,27 +485,17 @@ const projectOptions = computed(() =>
       </div>
 
 
-      <div
-        class="flex items-center justify-end gap-3 pt-6"
-        :class="[hideHeader ? '' : 'border-t border-gray-200 dark:border-gray-700']"
-      >
-        <UButton
-          v-if="!hideCancel"
-          type="button"
-          color="neutral"
-          variant="ghost"
-          :disabled="isLoading"
-          @click="handleCancel"
-        >
-          {{ t('common.cancel') }}
-        </UButton>
-        <UiSaveButton
-          ref="saveButtonRef"
-          :loading="isLoading"
-          :disabled="!state.name || !state.channelIdentifier || !state.language"
-          :label="isEditMode ? t('common.save') : t('common.create')"
-        />
-      </div>
+      <UiFormActions
+        ref="formActionsRef"
+        :loading="isLoading"
+        :disabled="!state.name || !state.channelIdentifier || !state.language"
+        :is-dirty="isDirty"
+        :save-label="isEditMode ? t('common.save') : t('common.create')"
+        :hide-cancel="hideCancel"
+        :show-border="!hideHeader"
+        @reset="handleReset"
+        @cancel="handleCancel"
+      />
     </form>
   </div>
 </template>

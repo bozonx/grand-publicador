@@ -393,6 +393,10 @@
     "noTokens": "You don't have any API tokens yet",
     "confirmDeleteToken": "Are you sure you want to delete this token?"
   },
+  "form": {
+    "unsavedChanges": "Unsaved changes",
+    "resetConfirm": "Are you sure you want to reset all changes? The form will return to the last saved state."
+  },
   "validation": {
     "required": "This field is required",
     "minLength": "Minimum length: {min} characters",

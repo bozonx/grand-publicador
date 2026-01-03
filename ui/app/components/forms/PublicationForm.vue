@@ -26,10 +26,11 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 
-const saveButtonRef = ref<{ showSuccess: () => void; showError: () => void } | null>(null)
+const formActionsRef = ref<{ showSuccess: () => void; showError: () => void } | null>(null)
 
 const { t } = useI18n()
 const route = useRoute()
+const router = useRouter()
 const { createPublication, updatePublication, createPostsFromPublication, isLoading, getStatusDisplayName, fetchPublicationsByProject, publications } = usePublications()
 const { 
   channels, 
@@ -37,7 +38,6 @@ const {
   isLoading: isChannelsLoading
 } = useChannels()
 const { typeOptions, statusOptions: allStatusOptions } = usePosts()
-const router = useRouter()
 
 // Get language and channelId from URL query parameters
 const languageParam = computed(() => route.query.language as string | undefined)
@@ -64,6 +64,9 @@ const linkedPublicationId = ref<string | undefined>(undefined)
 const isEditMode = computed(() => !!props.publication?.id)
 const showAdvancedFields = ref(false)
 
+// Dirty state tracking
+const { isDirty, saveOriginalState, resetToOriginal } = useFormDirtyState(formData)
+
 // Fetch channels and publications on mount
 onMounted(async () => {
   if (props.projectId) {
@@ -86,8 +89,34 @@ onMounted(async () => {
         .map(ch => ch.id)
       formData.channelIds = matchingChannels
     }
+    
+    // Save original state after initialization
+    nextTick(() => {
+      saveOriginalState()
+    })
   }
 })
+
+// Watch for publication changes and update form data
+watch(() => props.publication, (newPub) => {
+  if (newPub) {
+    formData.title = newPub.title || ''
+    formData.content = newPub.content || ''
+    formData.tags = newPub.tags || ''
+    formData.postType = (newPub.postType || 'POST') as PostType
+    formData.status = (newPub.status || 'DRAFT') as PostStatus
+    formData.language = newPub.language || 'en-US'
+    formData.channelIds = newPub.posts?.map((p: any) => p.channelId) || []
+    formData.translationGroupId = newPub.translationGroupId || undefined
+    formData.meta = newPub.meta || '{}'
+    formData.description = newPub.description || ''
+    formData.postDate = newPub.postDate ? new Date(newPub.postDate).toISOString().slice(0, 16) : ''
+    
+    nextTick(() => {
+      saveOriginalState()
+    })
+  }
+}, { immediate: true })
 
 // Publications available for linking (exclude current)
 const availablePublications = computed(() => {
@@ -159,8 +188,10 @@ async function handleSubmit() {
           )
       }
 
-      saveButtonRef.value?.showSuccess()
+      formActionsRef.value?.showSuccess()
       emit('success', props.publication.id)
+      // Update original state after successful save
+      saveOriginalState()
 
     } else {
       // Create new publication
@@ -190,14 +221,16 @@ async function handleSubmit() {
           )
         }
         
-        saveButtonRef.value?.showSuccess()
+        formActionsRef.value?.showSuccess()
         emit('success', publication.id)
+        // Update original state after successful save
+        saveOriginalState()
       } else {
         throw new Error('Failed to create publication')
       }
     }
   } catch (error) {
-    saveButtonRef.value?.showError()
+    formActionsRef.value?.showError()
     const toast = useToast()
     toast.add({
       title: t('common.error'),
@@ -214,6 +247,24 @@ function handleCancel() {
 function toggleAdvancedFields() {
   showAdvancedFields.value = !showAdvancedFields.value
 }
+
+function handleReset() {
+  resetToOriginal()
+}
+
+// Warn before leaving page with unsaved changes
+onBeforeRouteLeave((to, from, next) => {
+  if (isDirty.value) {
+    const answer = window.confirm(t('form.resetConfirm'))
+    if (answer) {
+      next()
+    } else {
+      next(false)
+    }
+  } else {
+    next()
+  }
+})
 
 const isContentValid = computed(() => {
   const textContent = formData.content.replace(/<[^>]*>/g, '').trim()
@@ -441,13 +492,14 @@ function toggleChannel(channelId: string) {
         </div>
       </Transition>
 
-      <div class="flex items-center justify-end gap-3 pt-6">
-        <UiSaveButton
-          ref="saveButtonRef"
-          :loading="isLoading"
-          :disabled="!isFormValid"
-          :label="isEditMode ? t('common.save') : t('common.create')"
-        />
-      </div>
+      <UiFormActions
+        ref="formActionsRef"
+        :loading="isLoading"
+        :disabled="!isFormValid"
+        :is-dirty="isDirty"
+        :save-label="isEditMode ? t('common.save') : t('common.create')"
+        hide-cancel
+        @reset="handleReset"
+      />
     </form>
 </template>

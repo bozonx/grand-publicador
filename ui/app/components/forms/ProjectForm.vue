@@ -35,9 +35,10 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 
-const saveButtonRef = ref<{ showSuccess: () => void; showError: () => void } | null>(null)
+const formActionsRef = ref<{ showSuccess: () => void; showError: () => void } | null>(null)
 
 const { t } = useI18n()
+const router = useRouter()
 
 const isEditMode = computed(() => !!props.project?.id)
 
@@ -53,6 +54,18 @@ const state = reactive({
   description: props.project?.description || '',
 })
 
+// Dirty state tracking
+const { isDirty, saveOriginalState, resetToOriginal } = useFormDirtyState(state)
+
+// Save original state when component mounts or project changes
+watch(() => props.project, () => {
+  state.name = props.project?.name || ''
+  state.description = props.project?.description || ''
+  nextTick(() => {
+    saveOriginalState()
+  })
+}, { immediate: true })
+
 /**
  * Handle form submission
  */
@@ -64,9 +77,11 @@ async function handleSubmit() {
       name: state.name,
       description: state.description,
     })
-    saveButtonRef.value?.showSuccess()
+    formActionsRef.value?.showSuccess()
+    // Update original state after successful save
+    saveOriginalState()
   } catch (error) {
-    saveButtonRef.value?.showError()
+    formActionsRef.value?.showError()
     const toast = useToast()
     toast.add({
       title: t('common.error'),
@@ -79,6 +94,24 @@ async function handleSubmit() {
 function handleCancel() {
   emit('cancel')
 }
+
+function handleReset() {
+  resetToOriginal()
+}
+
+// Warn before leaving page with unsaved changes
+onBeforeRouteLeave((to, from, next) => {
+  if (isDirty.value) {
+    const answer = window.confirm(t('form.resetConfirm'))
+    if (answer) {
+      next()
+    } else {
+      next(false)
+    }
+  } else {
+    next()
+  }
+})
 </script>
 
 <template>
@@ -139,26 +172,17 @@ function handleCancel() {
       </UFormField>
 
       <!-- Form actions -->
-      <div
-        class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700"
-      >
-        <UButton
-          v-if="!hideCancel"
-          type="button"
-          color="neutral"
-          variant="ghost"
-          :disabled="isLoading"
-          @click="handleCancel"
-        >
-          {{ cancelLabel || t('common.cancel') }}
-        </UButton>
-        <UiSaveButton
-          ref="saveButtonRef"
-          :loading="isLoading"
-          :disabled="!state.name || state.name.length < 2 || state.description.length > 500"
-          :label="submitLabel || (isEditMode ? t('common.save') : t('common.create'))"
-        />
-      </div>
+      <UiFormActions
+        ref="formActionsRef"
+        :loading="isLoading"
+        :disabled="!state.name || state.name.length < 2 || state.description.length > 500"
+        :is-dirty="isDirty"
+        :save-label="submitLabel || (isEditMode ? t('common.save') : t('common.create'))"
+        :cancel-label="cancelLabel"
+        :hide-cancel="hideCancel"
+        @reset="handleReset"
+        @cancel="handleCancel"
+      />
     </form>
   </div>
 </template>
