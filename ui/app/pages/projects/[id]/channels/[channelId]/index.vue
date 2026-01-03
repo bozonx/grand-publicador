@@ -278,9 +278,9 @@ function mapPostToPublication(post: PostWithRelations): PublicationWithRelations
                 <div class="p-6">
                     <div class="flex items-start justify-between">
                         <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-3 mb-2">
+                            <div class="flex items-start gap-3 mb-2">
                                 <div 
-                                    class="p-2 rounded-lg"
+                                    class="p-2 rounded-lg mt-1"
                                     :style="{ backgroundColor: getSocialMediaColor(channel.socialMedia) + '20' }"
                                 >
                                     <UIcon 
@@ -289,12 +289,24 @@ function mapPostToPublication(post: PostWithRelations): PublicationWithRelations
                                         :style="{ color: getSocialMediaColor(channel.socialMedia) }"
                                     />
                                 </div>
-                                <h1 class="text-2xl font-bold text-gray-900 dark:text-white truncate">
-                                    {{ channel.name }}
-                                </h1>
-                                <div class="flex items-center gap-1 text-gray-500 dark:text-gray-400" :title="t('channel.language')">
-                                    <UIcon name="i-heroicons-language" class="w-5 h-5" />
-                                    <span class="text-sm font-medium">{{ channel.language }}</span>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-3">
+                                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white truncate">
+                                            {{ channel.name }}
+                                        </h1>
+                                        <div class="flex items-center gap-1 text-gray-500 dark:text-gray-400" :title="t('channel.language')">
+                                            <UIcon name="i-heroicons-language" class="w-5 h-5" />
+                                            <span class="text-sm font-medium">{{ channel.language }}</span>
+                                        </div>
+                                    </div>
+                                    <NuxtLink 
+                                        v-if="channel.project"
+                                        :to="`/projects/${channel.project.id}`"
+                                        class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-primary-500 transition-colors mt-0.5"
+                                    >
+                                        <UIcon name="i-heroicons-folder" class="w-3.5 h-3.5" />
+                                        {{ channel.project.name }}
+                                    </NuxtLink>
                                 </div>
                             </div>
 
@@ -309,15 +321,7 @@ function mapPostToPublication(post: PostWithRelations): PublicationWithRelations
                                     <UIcon name="i-heroicons-hashtag" class="w-4 h-4" />
                                     {{ channel.channelIdentifier }}
                                 </span>
-                                <NuxtLink 
-                                    v-if="channel.project"
-                                    :to="`/projects/${channel.project.id}`"
-                                    class="flex items-center gap-1 hover:text-primary-500 transition-colors"
-                                    :title="t('project.title')"
-                                >
-                                    <UIcon name="i-heroicons-folder" class="w-4 h-4" />
-                                    {{ channel.project.name }}
-                                </NuxtLink>
+
                                 <span class="flex items-center gap-1" :title="t('channel.publishedPosts')">
                                     <UIcon name="i-heroicons-document-text" class="w-4 h-4" />
                                     {{ t('channel.publishedPosts') }}: {{ channel.postsCount || 0 }}
