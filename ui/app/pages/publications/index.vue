@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { usePublications } from '~/composables/usePublications'
 import type { PublicationWithRelations } from '~/composables/usePublications'
-import type { PostStatus } from '@prisma/client'
+
+// PostStatus type (mirrors backend enum)
+type PostStatus = 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'FAILED' | 'EXPIRED'
 
 definePageMeta({
   middleware: 'auth',

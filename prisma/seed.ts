@@ -1,4 +1,5 @@
-import { PrismaClient, ProjectRole, SocialMedia, PostType, PostStatus } from '@prisma/client';
+import { PrismaClient, ProjectRole, SocialMedia, PostType, PostStatus } from '../src/generated/prisma/client.js';
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 import { config } from 'dotenv';
 import path from 'path';
 import { getDatabaseUrl } from '../src/config/database.config.js';
@@ -13,13 +14,11 @@ if (process.env.DATA_DIR && !process.env.DATABASE_URL) {
     process.env.DATABASE_URL = getDatabaseUrl();
 }
 
-const prisma = new PrismaClient({
-    datasources: {
-        db: {
-            url: process.env.DATABASE_URL,
-        },
-    },
+const adapter = new PrismaBetterSqlite3({
+    url: process.env.DATABASE_URL || 'file:./data/dev.db',
 });
+
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
     console.log('🌱 Starting comprehensive seeding...');

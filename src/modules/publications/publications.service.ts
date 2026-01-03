@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { PostStatus, PostType, Prisma, ProjectRole } from '@prisma/client';
+import { PostStatus, PostType, Prisma, ProjectRole } from '../../generated/prisma/client.js';
 import { randomUUID } from 'node:crypto';
 
 import { PermissionsService } from '../../common/services/permissions.service.js';

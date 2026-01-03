@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsLocale, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
-import { SocialMedia } from '@prisma/client';
+import { SocialMedia } from '../../../generated/prisma/client.js';
 
 /**
  * DTO for creating a new social media channel.

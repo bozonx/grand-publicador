@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import type { Project, Channel, Publication, Post } from '@prisma/client';
+import type { Project, Channel, Publication, Post } from '../../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ArchiveEntityType, ArchiveStatsDto } from './dto/archive.dto.js';
 

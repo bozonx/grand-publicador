@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { PostStatus, PostType, ProjectRole } from '@prisma/client';
+import { PostStatus, PostType, ProjectRole } from '../../generated/prisma/client.js';
 
 import { PermissionsService } from '../../common/services/permissions.service.js';
 import { ChannelsService } from '../channels/channels.service.js';

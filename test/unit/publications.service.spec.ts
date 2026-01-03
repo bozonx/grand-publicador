@@ -4,7 +4,7 @@ import { PublicationsService } from '../../src/modules/publications/publications
 import { PrismaService } from '../../src/modules/prisma/prisma.service.js';
 import { PermissionsService } from '../../src/common/services/permissions.service.js';
 import { jest } from '@jest/globals';
-import { PostStatus } from '@prisma/client';
+import { PostStatus } from '../../src/generated/prisma/client.js';
 
 describe('PublicationsService (unit)', () => {
   let service: PublicationsService;

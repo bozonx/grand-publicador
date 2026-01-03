@@ -2,7 +2,7 @@ import { Test, type TestingModule } from '@nestjs/testing';
 import { PermissionsService } from '../../src/common/services/permissions.service.js';
 import { PrismaService } from '../../src/modules/prisma/prisma.service.js';
 import { ForbiddenException } from '@nestjs/common';
-import { ProjectRole } from '@prisma/client';
+import { ProjectRole } from '../../src/generated/prisma/client.js';
 import { jest } from '@jest/globals';
 
 describe('PermissionsService (unit)', () => {

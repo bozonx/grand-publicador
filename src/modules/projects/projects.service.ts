@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { ProjectRole, type Project } from '@prisma/client';
+import { ProjectRole, type Project } from '../../generated/prisma/client.js';
 
 import { TRANSACTION_TIMEOUT } from '../../common/constants/database.constants.js';
 import { PermissionsService } from '../../common/services/permissions.service.js';

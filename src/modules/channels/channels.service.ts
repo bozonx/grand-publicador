@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { ProjectRole } from '@prisma/client';
+import { ProjectRole } from '../../generated/prisma/client.js';
 
 import { PermissionsService } from '../../common/services/permissions.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
