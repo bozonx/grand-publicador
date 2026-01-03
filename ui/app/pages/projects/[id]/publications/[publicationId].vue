@@ -710,20 +710,25 @@ function formatDate(dateString: string | null | undefined): string {
                         </div>
 
                         <!-- Translation Info -->
-                        <div v-if="currentPublication.translations && currentPublication.translations.length > 0" class="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700/50">
+                         <div v-if="currentPublication.translations && currentPublication.translations.length > 0" class="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700/50">
                              <UIcon name="i-heroicons-language" class="w-3.5 h-3.5 text-gray-400" />
                              <span class="text-xs text-gray-500">{{ t('publication.linked') }}:</span>
                              <div class="flex gap-1.5">
-                                 <UBadge 
+                                 <NuxtLink 
                                     v-for="trans in currentPublication.translations" 
                                     :key="trans.id"
-                                    color="neutral"
-                                    variant="soft"
-                                    size="sm"
-                                    class="uppercase font-mono text-[10px]"
+                                    :to="`/projects/${projectId}/publications/${trans.id}`"
+                                    class="hover:opacity-80 transition-opacity"
                                  >
-                                    {{ trans.language }}
-                                 </UBadge>
+                                     <UBadge 
+                                        color="neutral"
+                                        variant="soft"
+                                        size="sm"
+                                        class="uppercase font-mono text-[10px] cursor-pointer"
+                                     >
+                                        {{ trans.language }}
+                                     </UBadge>
+                                 </NuxtLink>
                              </div>
                         </div>
                     </div>
