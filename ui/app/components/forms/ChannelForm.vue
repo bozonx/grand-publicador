@@ -216,6 +216,19 @@ const projectOptions = computed(() =>
         </p>
       </div>
 
+      <!-- Project (read-only) -->
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          {{ t('channel.project', 'Project') }}
+        </label>
+        <div class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+          <UIcon name="i-heroicons-briefcase" class="w-5 h-5 text-gray-500" />
+          <span class="font-medium text-gray-900 dark:text-white">
+            {{ currentProjectName }}
+          </span>
+        </div>
+      </div>
+
       <!-- Channel language -->
       <div v-if="!isEditMode">
         <UFormField
@@ -316,19 +329,6 @@ const projectOptions = computed(() =>
         <p class="text-xs text-gray-500 dark:text-gray-400">
           {{ t('channel.socialMediaCannotChange') }}
         </p>
-      </div>
-
-      <!-- Project (read-only) -->
-      <div class="space-y-2">
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          {{ t('channel.project', 'Project') }}
-        </label>
-        <div class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
-          <UIcon name="i-heroicons-briefcase" class="w-5 h-5 text-gray-500" />
-          <span class="font-medium text-gray-900 dark:text-white">
-            {{ currentProjectName }}
-          </span>
-        </div>
       </div>
 
       <!-- Channel name -->
