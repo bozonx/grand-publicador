@@ -157,6 +157,8 @@ model Publication {
   status        PublicationStatus @default(DRAFT)
   // Language of the publication (ru-RU, en-US, etc.)
   language      String     @default("ru-RU")
+  // When the publication is scheduled to be published
+  scheduledAt   DateTime? @map("scheduled_at")
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   creator User?   @relation("PublicationCreator", fields: [createdBy], references: [id], onDelete: SetNull)
@@ -165,6 +167,7 @@ model Publication {
   @@index([translationGroupId])
   @@index([projectId, status])
   @@index([projectId, createdAt])
+  @@index([projectId, scheduledAt])
   @@map("publications")
 }
 

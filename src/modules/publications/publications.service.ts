@@ -78,6 +78,7 @@ export class PublicationsService {
         translationGroupId,
         postType: data.postType ?? PostType.POST,
         postDate: data.postDate,
+        scheduledAt: data.scheduledAt,
         meta: JSON.stringify(data.meta ?? {}),
       },
     });
@@ -342,6 +343,7 @@ export class PublicationsService {
         translationGroupId,
         postType: data.postType,
         postDate: data.postDate,
+        scheduledAt: data.scheduledAt,
         meta: data.meta ? JSON.stringify(data.meta) : undefined,
       },
     });
@@ -429,8 +431,8 @@ export class PublicationsService {
             channelId: channel.id,
             socialMedia: channel.socialMedia,
             tags: null, // Can be overridden later, defaults to publication tags
-            status: scheduledAt ? PostStatus.PENDING : PostStatus.PENDING,
-            scheduledAt,
+            status: PostStatus.PENDING,
+            scheduledAt: scheduledAt ?? publication.scheduledAt,
           },
           include: {
             channel: true,

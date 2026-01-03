@@ -3,6 +3,7 @@ import { useProjects } from '~/composables/useProjects'
 import { usePublications } from '~/composables/usePublications'
 import { useChannels } from '~/composables/useChannels'
 import { usePosts } from '~/composables/usePosts'
+import type { PublicationStatus, PostType } from '~/types/posts'
 
 definePageMeta({
   middleware: 'auth',
@@ -168,31 +169,16 @@ function openScheduleModal() {
 }
 
 async function handleBulkSchedule() {
-    if (!currentPublication.value?.posts?.length) return
+    if (!currentPublication.value) return
     if (!newScheduledDate.value) return
 
     isBulkScheduling.value = true
     try {
-        const postsToUpdate = currentPublication.value.posts.filter((post: any) => !post.publishedAt)
-        
-        if (postsToUpdate.length === 0) {
-            isBulkScheduling.value = false
-            return
-        }
-
-        const promises = postsToUpdate.map((post: any) => 
-            updatePost(post.id, { 
-                scheduledAt: new Date(newScheduledDate.value).toISOString(),
-                status: 'SCHEDULED' 
-            }, { silent: true })
-        )
-        
-        // Update publication status as well
-        const publicationPromise = updatePublication(currentPublication.value.id, {
+        // Update only the publication's scheduledAt
+        await updatePublication(currentPublication.value.id, {
+            scheduledAt: new Date(newScheduledDate.value).toISOString(),
             status: 'SCHEDULED'
         })
-        
-        await Promise.all([...promises, publicationPromise])
         
         toast.add({
             title: t('common.success'),
@@ -353,7 +339,7 @@ function formatDate(dateString: string | null | undefined): string {
           </div>
 
           <p class="text-gray-500 dark:text-gray-400 mb-4">
-            {{ t('publication.changeScheduleWarning') }}
+            {{ t('publication.changeScheduleInfo', 'This will update the scheduled time for the publication. Posts without their own scheduled time will inherit this value.') }}
           </p>
 
           <UFormField :label="t('publication.newScheduleTime')" required class="mb-6">
@@ -585,17 +571,14 @@ function formatDate(dateString: string | null | undefined): string {
                             {{ currentPublication.creator.fullName || currentPublication.creator.telegramUsername || t('common.unknown') }}
                         </div>
                         
-                        <div v-if="majoritySchedule.date" class="mt-2 border-t border-gray-100 dark:border-gray-700/50 pt-2">
+                        <div v-if="currentPublication.scheduledAt" class="mt-2 border-t border-gray-100 dark:border-gray-700/50 pt-2">
                              <div class="text-gray-500 dark:text-gray-400 text-xs mb-0.5">
                                 {{ t('post.scheduledAt') }}
                              </div>
                              <div class="flex items-center gap-2">
                                  <span class="text-gray-900 dark:text-white font-medium">
-                                      {{ formatDate(majoritySchedule.date) }}
+                                      {{ formatDate(currentPublication.scheduledAt) }}
                                  </span>
-                                 <UTooltip v-if="majoritySchedule.conflict" :text="t('publication.multipleDatesWarning')">
-                                     <UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 text-orange-500 cursor-help" />
-                                 </UTooltip>
                              </div>
                         </div>
                     </div>

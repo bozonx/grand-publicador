@@ -207,6 +207,41 @@ describe('PublicationsService (unit)', () => {
       expect(result[0].scheduledAt).toEqual(scheduledAt);
     });
 
+    it('should inherit scheduledAt from publication if not provided explicitly', async () => {
+      const userId = 'user-1';
+      const publicationId = 'pub-1';
+      const channelIds = ['channel-1'];
+      const pubScheduledAt = new Date();
+
+      const mockPublication = {
+        id: publicationId,
+        projectId: 'project-1',
+        content: 'Test',
+        mediaFiles: '[]',
+        meta: '{}',
+        scheduledAt: pubScheduledAt,
+      };
+
+      mockPrismaService.publication.findUnique.mockResolvedValue(mockPublication);
+      mockPermissionsService.checkProjectAccess.mockResolvedValue(undefined);
+      mockPrismaService.channel.findMany.mockResolvedValue([
+        { id: 'channel-1', projectId: 'project-1' },
+      ]);
+      mockPrismaService.post.create.mockImplementation(({ data }: any) =>
+        Promise.resolve({ id: 'p1', ...data }),
+      );
+
+      const result = await service.createPostsFromPublication(
+        publicationId,
+        channelIds,
+        userId,
+        undefined, // Explicitly undefined to test inheritance
+      );
+
+      expect(result).toHaveLength(1);
+      expect(result[0].scheduledAt).toEqual(pubScheduledAt);
+    });
+
     it('should throw NotFoundException if some channels missing', async () => {
       mockPrismaService.publication.findUnique.mockResolvedValue({ projectId: 'p1' });
       mockPermissionsService.checkProjectAccess.mockResolvedValue(undefined);

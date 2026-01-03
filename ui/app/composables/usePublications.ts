@@ -23,6 +23,7 @@ export interface Publication {
     archivedBy: string | null
     authorComment: string | null
     archivedAt?: string | null
+    scheduledAt?: string | null
 }
 
 export interface PublicationWithRelations extends Publication {

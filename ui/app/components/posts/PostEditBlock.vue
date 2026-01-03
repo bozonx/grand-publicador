@@ -62,12 +62,13 @@ const headerDateInfo = computed(() => {
             tooltip: t('post.publishedAt')
         }
     }
-    if (props.post?.scheduledAt) {
+    const scheduledAt = props.post?.scheduledAt || props.publication?.scheduledAt
+    if (scheduledAt) {
         return {
-            date: formatPublishedAt(props.post.scheduledAt),
+            date: formatPublishedAt(scheduledAt),
             icon: 'i-heroicons-clock',
             color: 'text-amber-500',
-            tooltip: t('post.scheduledAt')
+            tooltip: props.post?.scheduledAt ? t('post.scheduledAt') : t('post.inheritedScheduledAt', 'Scheduled (inherited from publication)')
         }
     }
     return null
@@ -132,8 +133,7 @@ async function handleSave() {
             channelId: formData.channelId,
             publicationId: props.publication.id,
             tags: formData.tags || null,
-            scheduledAt: formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : null,
-            status: 'PENDING',
+            scheduledAt: formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : undefined,
         }, { silent: true })
 
         if (newPost) {
@@ -148,8 +148,7 @@ async function handleSave() {
         if (!props.post) return
         await updatePost(props.post.id, {
           tags: formData.tags || null,
-          scheduledAt: formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : null,
-          status: formData.status as any
+          scheduledAt: formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : undefined,
         }, { silent: true })
         saveButtonRef.value?.showSuccess()
         saveOriginalState() // Clear dirty state
@@ -398,7 +397,7 @@ const isValid = computed(() => {
             </UFormField>
 
             <!-- Scheduled At -->
-            <UFormField :label="t('post.scheduledAt')" :disabled="!!props.post?.publishedAt">
+            <UFormField :label="t('post.scheduledAt')" :disabled="!!props.post?.publishedAt" :help="formData.scheduledAt ? t('post.scheduledAtHint', 'Specific time for this channel') : (props.publication?.scheduledAt ? t('post.inheritedTimeHint', 'Using time from publication: ') + formatPublishedAt(props.publication.scheduledAt) : '')">
                 <UInput 
                   v-model="formData.scheduledAt" 
                   type="datetime-local" 

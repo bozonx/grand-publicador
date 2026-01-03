@@ -59,6 +59,11 @@ export class CreatePublicationDto {
   @IsOptional()
   public translationGroupId?: string;
 
+  @Type(() => Date)
+  @IsDate()
+  @IsOptional()
+  public scheduledAt?: Date;
+
   @IsEnum(PostType)
   @IsOptional()
   public postType?: PostType;

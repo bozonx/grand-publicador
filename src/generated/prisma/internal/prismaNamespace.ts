@@ -1059,7 +1059,8 @@ export const PublicationScalarFieldEnum = {
   postType: 'postType',
   postDate: 'postDate',
   status: 'status',
-  language: 'language'
+  language: 'language',
+  scheduledAt: 'scheduledAt'
 } as const
 
 export type PublicationScalarFieldEnum = (typeof PublicationScalarFieldEnum)[keyof typeof PublicationScalarFieldEnum]

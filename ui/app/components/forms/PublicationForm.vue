@@ -50,7 +50,7 @@ const formData = reactive({
   tags: props.publication?.tags || '',
   postType: (props.publication?.postType || 'POST') as PostType,
   status: (props.publication?.status || 'DRAFT') as PublicationStatus,
-  scheduledAt: '',
+  scheduledAt: props.publication?.scheduledAt ? new Date(props.publication.scheduledAt).toISOString().slice(0, 16) : '',
   language: props.publication?.language || languageParam.value || 'en-US',
   channelIds: props.publication?.posts?.map((p: any) => p.channelId) || [] as string[],
   translationGroupId: props.publication?.translationGroupId || undefined as string | undefined,
@@ -113,6 +113,7 @@ watch(() => props.publication, (newPub) => {
     formData.description = newPub.description || ''
     formData.authorComment = newPub.authorComment || ''
     formData.postDate = newPub.postDate ? new Date(newPub.postDate).toISOString().slice(0, 16) : ''
+    formData.scheduledAt = newPub.scheduledAt ? new Date(newPub.scheduledAt).toISOString().slice(0, 16) : ''
     
     nextTick(() => {
       saveOriginalState()
@@ -175,6 +176,7 @@ async function handleSubmit() {
           postType: formData.postType,
           meta: JSON.parse(formData.meta),
           postDate: formData.postDate ? new Date(formData.postDate).toISOString() : undefined,
+          scheduledAt: formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : undefined,
       }
       
       // Update the publication itself
@@ -212,6 +214,7 @@ async function handleSubmit() {
         postType: formData.postType,
         meta: JSON.parse(formData.meta),
         postDate: formData.postDate ? new Date(formData.postDate).toISOString() : undefined,
+        scheduledAt: formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : undefined,
       }
 
       const publication = await createPublication(createData)
@@ -345,7 +348,7 @@ function toggleChannel(channelId: string) {
          </UFormField>
 
          <!-- Scheduling -->
-        <UFormField v-if="!isEditMode && formData.status === 'SCHEDULED'" :label="t('post.scheduledAt')" required>
+        <UFormField v-if="formData.status === 'SCHEDULED'" :label="t('post.scheduledAt')" required>
             <UInput v-model="formData.scheduledAt" type="datetime-local" class="w-full" icon="i-heroicons-clock" />
         </UFormField>
 
